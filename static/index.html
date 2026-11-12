@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Wildbound</title>
+<meta name="description" content="Wildbound: a retro creature-collecting adventure across regions. Plays in the browser on phone or desktop.">
+<meta name="theme-color" content="#1b1f3a">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/static/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preload" href="/static/fonts/pixelify-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="console">
+  <div id="screen-frame"><canvas id="screen" width="240" height="160" aria-label="Wildbound game screen"></canvas></div>
+  <div id="pad">
+    <div id="dpad" aria-label="D-pad"><span class="arm h"></span><span class="arm v"></span><span class="hub"></span></div>
+    <div id="mid">
+      <button data-btn="select" aria-label="Select">SELECT</button>
+      <button data-btn="start" aria-label="Start">START</button>
+    </div>
+    <div id="ab">
+      <button data-btn="b" class="round b" aria-label="B">B</button>
+      <button data-btn="a" class="round a" aria-label="A">A</button>
+    </div>
+  </div>
+  <p id="hint">Move: arrows/WASD &nbsp;·&nbsp; A: Z / Enter / Space &nbsp;·&nbsp; B: X / Backspace (hold to run) &nbsp;·&nbsp; Start: Esc / M</p>
+</main>
+<div id="name-entry" hidden>
+  <div class="panel">
+    <label id="name-title" for="name-input">Your name?</label>
+    <input id="name-input" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button id="name-ok">OK</button>
+  </div>
+</div>
+<input type="file" id="import-file" accept=".json,application/json" hidden>
+<script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
