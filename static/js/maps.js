@@ -489,7 +489,7 @@ mkTown('thistlewood', 'Thistlewood', 26, 20, {
   streets: [[8, 1, 24], [15, 3, 21]], vstreets: [[12, 0, 16]], open: [['west', 8], ['north', 12]],
   stock: ['orb', 'greatorb', 'potion', 'superpotion', 'fullheal', 'repel'],
   b: [['center', 2, 8], ['mart', 7, 8], ['house', 15, 8, { name: 'Ranger\'s Cabin', npcs: [{ look: 'hiker', script: 'td_slash' }] }],
-    ['house2', 20, 8, { name: 'Cottage', npcs: [{ look: 'girl', text: ['Thorny bushes block the path north to Route 3.', 'If you had a creature that knew Slash, you could cut right through!'] }] }],
+    ['house2', 20, 8, { name: 'Name Rater\'s Cottage', npcs: [{ look: 'girl', text: ['Thorny bushes block the path north to Route 3.', 'If you had a creature that knew Slash, you could cut right through!'] }, { look: 'oldman', script: 'namerater' }] }],
     ['gym', 4, 15, { gym: GYMS.thistle }], ['house', 15, 15, { name: 'Herbalist', npcs: [{ look: 'oldman', text: ['A Leaf Stone makes some plant creatures bloom into their final form.', 'There\'s one hidden on Route 4, I hear.'] }] }]],
 });
 sign(MAPS.thistlewood, 10, 10, 'THISTLEWOOD\nA village grown into the forest.');

@@ -6,7 +6,7 @@ import { G, flag, setFlag, save, addItem, addToCollection } from './state.js';
 import { SPECIES, SPECIES_LIST, ITEMS, BADGES } from './data.js';
 import { MAPS, GYMS } from './maps.js';
 import { makeMon, healFull, name } from './mon.js';
-import { say, yesNo, choose, setNameHook, offerNickname } from './ui.js';
+import { say, yesNo, choose, setNameHook, offerNickname, askName } from './ui.js';
 import { battle } from './battle.js';
 import { starterScreen, shopScreen, pcScreen, startMenu, checkEvolutions, partyScreen, townMapScreen, partnerScreen } from './screens.js';
 import { sfx, playMusic } from './audio.js';
@@ -548,6 +548,20 @@ const SCRIPTS = {
   },
   async shale() { await gymLeader('stone'); },
   async gym() { await gymLeader(world.map.gym); },
+  // Name Rater: rename any creature you caught or received yourself
+  async namerater() {
+    if (!(await yesNo('NAME RATER: Hello, hello! I am the Name Rater. Shall I rate the nickname of one of your creatures?'))) { await say('NAME RATER: Come back any time!'); return; }
+    const i = await partyScreen({ mode: 'pick', title: 'Rate which creature\'s name?' });
+    if (i < 0) { await say('NAME RATER: Come back any time!'); return; }
+    const m = G.party[i], sp = SPECIES[m.sp].name;
+    if (m.ot && m.ot !== G.name) { await say(`NAME RATER: ${name(m)}... a fine name its first trainer, ${m.ot}, gave it.`, 'It would be rude of me to change it!'); return; }
+    if (!(await yesNo(`NAME RATER: ${name(m)}, is it? A decent name. Shall I give it a better one?`))) { await say('NAME RATER: Then it shall stay as it is!'); return; }
+    const v = await askName(`New nickname for ${sp}`, name(m), { keepCase: true, max: 12 });
+    const before = name(m);
+    m.nick = v && v.toLowerCase() !== sp.toLowerCase() ? v : null;
+    if (name(m) === before) await say(`NAME RATER: That's the same as before! ${before} it stays.`);
+    else await say(`NAME RATER: From now on this creature shall be known as ${name(m)}!`, 'A fine name indeed. Take good care of it!');
+  },
   async trader() {
     if (flag('tradeDone')) { await say('WALTER: How\'s Rusty doing? I hope you two are getting along!'); return; }
     if (!(await yesNo('WALTER: I\'m looking for a Bunnip. Would you trade one for my Dunepup, Rusty?'))) { await say('WALTER: Oh, that\'s a shame.'); return; }

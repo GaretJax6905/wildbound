@@ -135,6 +135,7 @@ export function requestPersistentStorage() {
 
 // ----- helpers on state -----
 export function addToCollection(m) {
+  if (!m.ot) m.ot = G.name;
   G.dex.seen[m.sp] = true;
   G.dex.caught[m.sp] = true;
   if (G.party.length < 6) { G.party.push(m); return 'party'; }
