@@ -78,8 +78,12 @@ export function cursor(g, x, y) {
 const measure = document.createElement('canvas').getContext('2d');
 
 // ---------- text box ----------
+// Rival names the player chose replace "Kai" / "Juno" in all dialog.
+let nameHook = (str) => str;
+export function setNameHook(fn) { nameHook = fn; }
 export class TextBox {
   constructor(str, opts = {}) {
+    str = nameHook(String(str));
     const lines = wrap(measure, str, W - 26);
     this.pages = [];
     for (let i = 0; i < lines.length; i += 2) this.pages.push(lines.slice(i, i + 2));

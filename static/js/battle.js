@@ -5,6 +5,7 @@ import { creature, trainerPortrait, orb as orbSprite } from './art.js';
 import { MOVES, SPECIES, ITEMS, TYPE_COLORS, SPECIAL_TYPES, effectiveness, STATUS_NAMES } from './data.js';
 import { stats, maxHp, name, addExp, expYield, expForLevel, knows } from './mon.js';
 import { G, addToCollection, useItem } from './state.js';
+import { world } from './world.js';
 import { say, box, text, hpBar, bar, Menu, choose, yesNo, FONT_SMALL, menu } from './ui.js';
 import { sfx, playMusic } from './audio.js';
 import { partyScreen, bagScreen } from './screens.js';
@@ -16,7 +17,7 @@ function stageMult(s) { return s >= 0 ? (2 + s) / 2 : 2 / (2 - s); }
 
 class Slot {
   constructor(side, i) { this.side = side; this.i = i; this.mon = null; this.owner = null; this.reset(); }
-  reset() { this.st = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }; this.anim = { dx: 0, dy: 0, hide: false, blink: 0, scale: 1 }; this.seen = new Set(); this.disp = this.mon ? this.mon.hp : 0; }
+  reset() { this.lastAction = 0; this.st = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }; this.anim = { dx: 0, dy: 0, hide: false, blink: 0, scale: 1 }; this.seen = new Set(); this.disp = this.mon ? this.mon.hp : 0; }
   get alive() { return this.mon && this.mon.hp > 0; }
 }
 
@@ -45,15 +46,72 @@ function slotPos(s) {
   return dbl ? [[36, 114], [90, 114]][s.i] : [62, 114];
 }
 
+// ---------- painted battle backdrops (one per kind of area, cached) ----------
+const BG = {};
+function envFor() {
+  const m = world.map;
+  if (!m) return 'meadow';
+  if (m.cave || m.style === 'cave' || (m.interior && m.id.startsWith('e4')) || m.id === 'eclipsehq') return 'cave';
+  if (m.style === 'snow') return 'snow';
+  if (m.style === 'sea' || m.style === 'coast' || world.player.surf) return 'beach';
+  if (m.style === 'ash') return 'volcano';
+  if (m.interior) return 'indoor';
+  return 'meadow';
+}
+function backdrop(env) {
+  if (BG[env]) return BG[env];
+  const c = document.createElement('canvas'); c.width = W * 2; c.height = 112 * 2;
+  const g = c.getContext('2d'); g.scale(2, 2);
+  let r = 7; const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+  const P = {
+    meadow: { sky: ['#9cd4f4', '#e4f4f8'], hill: '#9ccc84', hill2: '#7cb468', ground: ['#b8e090', '#98cc70'], blade: '#78b058', plat: '#8cc070', rim: '#6a9a50', dirt: '#b89a68' },
+    beach: { sky: ['#88c8f0', '#e8f8fc'], hill: '#5aa8e0', hill2: '#3c8cd0', ground: ['#f4e4b0', '#e4cc90'], blade: '#d0b878', plat: '#e8d498', rim: '#c8ac70', dirt: '#b8985c' },
+    snow: { sky: ['#b8d0e8', '#f0f6fc'], hill: '#d8e4f0', hill2: '#b8c8dc', ground: ['#f4f8fc', '#d8e4f0'], blade: '#c0d0e0', plat: '#e8f0f8', rim: '#a8bcd0', dirt: '#8c9cb0' },
+    cave: { sky: ['#3a3040', '#5a4a48'], hill: '#4a3c38', hill2: '#3a2e2c', ground: ['#8a7460', '#6e5a48'], blade: '#5a4838', plat: '#9a8470', rim: '#6a5644', dirt: '#5a4636' },
+    volcano: { sky: ['#e08858', '#f8d0a0'], hill: '#6a4a40', hill2: '#4a3430', ground: ['#a89890', '#8a7a72'], blade: '#6a5a54', plat: '#b0a098', rim: '#7a6a62', dirt: '#5a4a44' },
+    indoor: { sky: ['#d8d0e8', '#f4f0f8'], hill: '#c8c0d8', hill2: '#b0a8c8', ground: ['#e0d8c8', '#c8bca8'], blade: '#b0a490', plat: '#d8ccb8', rim: '#a8987c', dirt: '#8a7a64' },
+  }[env];
+  const sky = g.createLinearGradient(0, 0, 0, 70); sky.addColorStop(0, P.sky[0]); sky.addColorStop(1, P.sky[1]);
+  g.fillStyle = sky; g.fillRect(0, 0, W, 112);
+  if (env === 'meadow' || env === 'beach' || env === 'snow') {
+    g.fillStyle = '#ffffffcc';
+    for (const [cx, cy, s2] of [[30, 14, 1], [120, 8, 0.8], [196, 20, 1.2], [80, 28, 0.6]]) for (let i = 0; i < 4; i++) { g.beginPath(); g.ellipse(cx + i * 7 * s2, cy + (i % 2) * 2, 9 * s2, 5 * s2, 0, 0, 7); g.fill(); }
+  }
+  if (env === 'cave') { g.fillStyle = '#2a2230'; for (let x = 0; x < W; x += 14) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 7, 10 + rnd() * 14); g.lineTo(x + 14, 0); g.fill(); } }
+  if (env === 'volcano') { g.fillStyle = '#5a3a34'; g.beginPath(); g.moveTo(150, 60); g.lineTo(185, 18); g.lineTo(198, 18); g.lineTo(235, 60); g.fill(); g.fillStyle = '#f06030'; g.fillRect(185, 16, 13, 3); }
+  // distant hills / waves
+  g.fillStyle = P.hill2; g.beginPath(); g.moveTo(0, 62); for (let x = 0; x <= W; x += 20) g.quadraticCurveTo(x + 10, 50 + rnd() * 8, x + 20, 60); g.lineTo(W, 72); g.lineTo(0, 72); g.fill();
+  g.fillStyle = P.hill; g.beginPath(); g.moveTo(0, 66); for (let x = 0; x <= W; x += 28) g.quadraticCurveTo(x + 14, 56 + rnd() * 8, x + 28, 66); g.lineTo(W, 74); g.lineTo(0, 74); g.fill();
+  // ground with depth
+  const gr = g.createLinearGradient(0, 70, 0, 112); gr.addColorStop(0, P.ground[0]); gr.addColorStop(1, P.ground[1]);
+  g.fillStyle = gr; g.fillRect(0, 70, W, 42);
+  g.fillStyle = P.blade;
+  for (let i = 0; i < 140; i++) { const x = rnd() * W, y = 72 + rnd() * 40, h = 1 + (y - 70) / 14; g.fillRect(x, y, 0.6, h); g.fillRect(x + 1, y + 0.5, 0.5, h * 0.7); }
+  BG[env] = c;
+  return c;
+}
+function platform(g, x, y, rx, env) {
+  const P = { meadow: ['#8cc070', '#6a9a50', '#b89a68'], beach: ['#e8d498', '#c8ac70', '#b8985c'], snow: ['#e8f0f8', '#a8bcd0', '#8c9cb0'], cave: ['#9a8470', '#6a5644', '#5a4636'], volcano: ['#b0a098', '#7a6a62', '#5a4a44'], indoor: ['#d8ccb8', '#a8987c', '#8a7a64'] }[env];
+  const ry = rx * 0.26;
+  g.fillStyle = P[2]; g.beginPath(); g.ellipse(x, y + 2, rx, ry + 1.5, 0, 0, 7); g.fill();
+  g.fillStyle = P[1]; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 7); g.fill();
+  g.fillStyle = P[0]; g.beginPath(); g.ellipse(x - 2, y - 1, rx - 4, ry - 2, 0, 0, 7); g.fill();
+  g.fillStyle = P[1];
+  for (let i = -rx + 6; i < rx - 6; i += 7) { g.fillRect(x + i, y - ry * 0.5 + Math.abs(i) * 0.08, 1, 2); g.fillRect(x + i + 2, y + ry * 0.3, 1, 2); }
+}
+
 function drawBattle(g) {
-  const grd = g.createLinearGradient(0, 0, 0, 112);
-  grd.addColorStop(0, '#d8f0f8'); grd.addColorStop(1, '#f0f8e0');
-  g.fillStyle = grd; g.fillRect(0, 0, W, 112);
-  g.fillStyle = '#c8e8a8'; g.fillRect(0, 70, W, 42);
-  g.fillStyle = '#b0d890'; for (let i = 0; i < 12; i++) g.fillRect((i * 37 + 11) % W, 76 + (i * 13) % 30, 6, 1);
-  // platforms
-  const plat = (x, y, rx) => { g.fillStyle = '#88b868'; g.beginPath(); g.ellipse(x, y, rx, rx * 0.28, 0, 0, 7); g.fill(); g.fillStyle = '#a0d080'; g.beginPath(); g.ellipse(x, y - 1, rx - 3, rx * 0.22, 0, 0, 7); g.fill(); };
-  if (B.double) { plat(176, 56, 58); plat(64, 112, 60); } else { plat(176, 58, 44); plat(62, 112, 52); }
+  const env = B.env || 'meadow';
+  g.drawImage(backdrop(env), 0, 0, W, 112);
+  if (B.double) { platform(g, 176, 56, 58, env); platform(g, 64, 112, 60, env); } else { platform(g, 176, 58, 46, env); platform(g, 62, 112, 54, env); }
+  // soft shadows under creatures
+  g.fillStyle = 'rgba(20, 30, 20, 0.22)';
+  for (const sl of [...B.e, ...B.p]) {
+    if (!sl.mon || sl.anim.hide) continue;
+    const [x, y] = slotPos(sl);
+    const w = (B.double ? 16 : sl.side === 'p' ? 24 : 20) * sl.anim.scale;
+    g.beginPath(); g.ellipse(x + sl.anim.dx, y - 1, w, w * 0.25, 0, 0, 7); g.fill();
+  }
   // trainer portraits during intro / outro
   if (B.portraits) B.portraits.forEach((pt) => g.drawImage(trainerPortrait(pt.look, 'ready'), pt.x - 4, pt.y, 56, 76));
   if (B.playerPortrait) g.drawImage(trainerPortrait('player', B.playerPortrait.pose || 'throw0'), B.playerPortrait.x - 4, 38, 56, 76);
@@ -158,6 +216,7 @@ function markSeen() {
 export async function battle(cfg) {
   const prevScene = getScene();
   B = {
+    env: envFor(),
     wild: !!cfg.wild, trainers: cfg.trainers || [], p: [], e: [], double: false, runs: 0,
     showInfo: false, portraits: null, result: null, cfg, lastAltIdx: -1,
   };
@@ -305,7 +364,8 @@ async function playerTurn() {
 async function chooseAction(s) {
   for (;;) {
     B.prompt = ['What will', name(s.mon) + ' do?'];
-    const r = await open(new Menu({ items: ['FIGHT', 'BAG', 'TEAM', B.wild ? 'RUN' : 'RUN'], cols: 2, x: 120, y: 112, w: 120, h: 48, cancel: false, lineH: 17 }));
+    const r = await open(new Menu({ items: ['FIGHT', 'BAG', 'TEAM', 'RUN'], cols: 2, x: 120, y: 112, w: 120, h: 48, cancel: false, lineH: 17, index: s.lastAction || 0 }));
+    s.lastAction = r;
     B.prompt = null;
     if (r === 0) {
       const usable = s.mon.moves.filter((m) => m.pp > 0);
@@ -361,7 +421,7 @@ function moveMenu(s) {
   const items = s.mon.moves.map((m) => ({ label: MOVES[m.id].name }));
   while (items.length < 4) items.push({ label: '-', disabled: true });
   const mm = new Menu({
-    items, cols: 2, x: 0, y: 112, w: 162, h: 48, lineH: 17,
+    items, cols: 2, x: 0, y: 112, w: 162, h: 48, lineH: 17, index: Math.min(s.mon.lastMove || 0, s.mon.moves.length - 1),
     extra: (g, i) => {
       box(g, 160, 112, 80, 48);
       const mv = s.mon.moves[i];
@@ -372,7 +432,7 @@ function moveMenu(s) {
       text(g, M.type.toUpperCase(), 200, 139, '#fff', '#00000055', FONT_SMALL, 'center');
     },
   });
-  return open(mm).then((r) => (r < 0 ? null : r));
+  return open(mm).then((r) => { if (r >= 0) s.mon.lastMove = r; return r < 0 ? null : r; });
 }
 
 function pickFoe(s) {

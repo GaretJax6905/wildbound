@@ -1,7 +1,7 @@
 // Full-screen menus: team, summary, bag, PC box, dex, shop, starter pick,
 // trainer card, options, title and the evolution scene.
 import { W, H, input, open, wait, frame, fx } from './engine.js';
-import { creature, silhouette, person, drawCreature } from './art.js';
+import { creature, silhouette, person, drawCreature, trainerPortrait } from './art.js';
 import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField } from './data.js';
 import { MAPS, LAYOUT } from './maps.js';
 import { stats, maxHp, name, expForLevel, evolve, movesAt, canEvolveByLevel } from './mon.js';
@@ -389,7 +389,7 @@ class Card {
     bg(g, '#3870c0');
     box(g, 10, 14, 220, 132);
     text(g, 'TRAINER CARD', 20, 22, '#383840', '#d0d0c8', FONT_BIG);
-    g.drawImage(person('player', 'down', 0), 178, 34, 40, 48);
+    g.drawImage(trainerPortrait('player', 'ready'), 170, 30, 56, 76);
     const t = Math.floor(G.time);
     const rows = [['NAME', G.name], ['MONEY', '$' + G.money], ['DEX', `${Object.keys(G.dex.caught).length} caught`], ['TIME', `${Math.floor(t / 3600)}:${String(Math.floor(t / 60) % 60).padStart(2, '0')}`], ['REGION', regionName(G.region)]];
     rows.forEach(([k, v], j) => { text(g, k, 22, 44 + j * 15, '#606068'); text(g, String(v), 84, 44 + j * 15); });
@@ -449,7 +449,7 @@ class Title {
     drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 20, 82, 40, 48);
     this.menu.draw(g);
-    text(g, 'v1.7', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v1.8', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }

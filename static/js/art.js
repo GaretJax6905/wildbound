@@ -418,6 +418,7 @@ const PLAN = {
     if (F.shell) p.ell(28, 37, 14, 8, C[1]);
     if (F.spikes) for (let i = 0; i < 4; i++) p.poly([[18 + i * 6, 32], [21 + i * 6, 25], [24 + i * 6, 32]], C[1]);
     pattern(p, F, C, (g) => g.ellipse(28, 40, 15, 10, 0, 0, 7), [13, 30, 30, 20]);
+    for (const [fx, fy] of [[17, 36], [21, 33], [36, 35], [39, 39], [16, 42], [34, 31]]) p.line([[fx, fy], [fx + 1.2, fy + 1.6]], shade(C[0], 0.78), 0.5);
     p.rect(20, 44, 5, 9, C[0]); p.rect(31, 44, 5, 9, C[0]);
     if (!back) { p.rect(20, 51, 5, 2, C[2]); p.rect(31, 51, 5, 2, C[2]); p.ell(28, 45, 7, 4, C[2]); for (const fx of [21.6, 23.4, 32.6, 34.4]) p.rect(fx, 51.2, 0.5, 1.6, shade(C[0], 0.5)); }
     if (F.mane) for (let i = 0; i < 10; i++) { const a = Math.PI * (0.85 + i * 0.145); p.poly([[28 + Math.cos(a) * 8, 25 + Math.sin(a) * 7], [28 + Math.cos(a) * 15, 25 + Math.sin(a) * 13], [28 + Math.cos(a + 0.25) * 8, 25 + Math.sin(a + 0.25) * 7]], C[1]); }
@@ -435,6 +436,7 @@ const PLAN = {
     drawTail(p, 36, 44, F, C);
     p.rect(21, 44, 5, 9, dark); p.rect(30, 44, 5, 9, dark);
     p.ell(28, 38, 10, 11, C[0]);
+    for (const [fx, fy] of [[21, 31], [35, 32], [20, 42], [36, 41]]) p.line([[fx, fy], [fx + 1, fy + 1.6]], shade(C[0], 0.78), 0.5);
     if (!back) p.ell(28, 40, 6, 7, C[2]);
     if (F.belt) p.rect(18, 42, 20, 3, C[1]);
     for (const s of [-1, 1]) {
@@ -785,6 +787,8 @@ export function trainerPortrait(lookId, pose = 'ready') {
   p.poly([[12, 32], [36, 32], [38, coatLen], [10, coatLen]], sh);
   p.poly([[29, 32], [36, 32], [38, coatLen], [31, coatLen]], shS);
   p.rect(12, 32, 24, 2, shade(sh, 1.15));
+  p.poly([[13, 34], [17, 34], [16, coatLen - 2], [12, coatLen - 2]], shade(sh, 1.08));
+  p.line([[12.5, coatLen - 1], [37.5, coatLen - 1]], shade(sh, 0.6), 0.8);
   if (!back) {
     if (L.coat) { p.poly([[21, 33], [24, 33], [24, coatLen], [21, coatLen]], shade(sh, 0.6)); p.poly([[19, 33], [22, 40], [21, 33]], '#f8f8f8'); }
     else { p.rect(12, 50, 24, 3, shade(pa, 0.9)); p.rect(22, 50, 4, 3, '#e0c050'); }
@@ -806,7 +810,8 @@ export function trainerPortrait(lookId, pose = 'ready') {
     // left fist on hip
     p.ell(9, 39, 3.6, 7, sh, 0.5); p.ell(12, 47, 3.2, 5, shS, -0.8); p.circ(15, 49, 3, sk);
     // right arm pointing at the foe
-    p.ell(40, 30, 3.8, 9, sh, -0.95); p.circ(47, 23, 3.4, sk); p.rect(48, 19, 3, 2, sk);
+    p.ell(40, 30, 3.8, 9, sh, -0.95); p.ell(43.5, 26.5, 2.4, 1.4, shade(sh, 0.7), -0.95); p.circ(47, 23, 3.4, sk); p.rect(48, 19, 3, 2, sk);
+    p.line([[45.5, 24.5], [48, 24.5]], shade(sk, 0.7), 0.5); p.line([[45.5, 22.5], [47.5, 22]], shade(sk, 0.7), 0.5);
   } else if (pose === 'throw0') {
     p.ell(9, 41, 4, 9, shS, 0.15);  p.circ(8, 50, 3.4, skS);
     p.ell(40, 26, 3.8, 9, sh, 0.5); p.circ(44, 17, 3.6, sk);
@@ -830,6 +835,8 @@ export function trainerPortrait(lookId, pose = 'ready') {
       p.poly([[12, 12], [14, 22], [17, 13]], hr); p.poly([[36, 12], [34, 22], [31, 13]], hr);
       p.poly([[17, 12], [21, 17], [24, 12], [27, 17], [31, 12]], hr);
       p.ell(20, 8, 4, 2, hrH);
+      for (const [x1, x2] of [[16, 19], [22, 23], [28, 27], [32, 30]]) p.line([[x1, 6], [x2, 15]], hrS, 0.6);
+      p.line([[18, 5], [21, 9]], hrH, 0.6);
       if (L.spiky) for (let i = 0; i < 5; i++) p.poly([[14 + i * 5, 8], [16 + i * 5, -1 + (i % 2) * 3], [19 + i * 5, 8]], hr);
     } else {
       p.ell(24, 10, 12, 7, L.hat); p.rect(12, 10, 24, 4, L.hat); p.ell(20, 7, 4, 2, shade(L.hat, 1.2));

@@ -6,7 +6,7 @@ import { G, flag, setFlag, save, addItem, addToCollection } from './state.js';
 import { SPECIES, SPECIES_LIST, ITEMS, BADGES } from './data.js';
 import { MAPS, GYMS } from './maps.js';
 import { makeMon, healFull, name } from './mon.js';
-import { say, yesNo, choose } from './ui.js';
+import { say, yesNo, choose, setNameHook } from './ui.js';
 import { battle } from './battle.js';
 import { starterScreen, shopScreen, pcScreen, startMenu, checkEvolutions, partyScreen, townMapScreen, partnerScreen } from './screens.js';
 import { sfx, playMusic } from './audio.js';
@@ -148,6 +148,15 @@ function rivalTrainer(who, lvl, extra) {
   return { name: who === 'kai' ? 'Kai' : 'Juno', look: who, party, money: 40, music: 'boss', potions: lvl > 30 ? 2 : 0 };
 }
 
+// the rival names the player picked (defaults Kai / Juno)
+export const rivalName = (who) => (G && G.rivalNames && G.rivalNames[who]) || (who === 'kai' ? 'Kai' : 'Juno');
+const title = (n) => n.charAt(0) + n.slice(1).toLowerCase();
+setNameHook((str) => {
+  if (!G || !G.rivalNames) return str;
+  const k = title(rivalName('kai')), j = title(rivalName('juno'));
+  return str.replace(/\bKAI\b/g, k.toUpperCase()).replace(/\bKai\b/g, k).replace(/\bJUNO\b/g, j.toUpperCase()).replace(/\bJuno\b/g, j);
+});
+
 function build(t) { return { ...t, party: t.party.map(([sp, l]) => makeMon(sp, l, { ot: t.name })) }; }
 
 // ---------- shared helpers ----------
@@ -233,7 +242,7 @@ export async function newGameIntro(askName) {
     if (scene.mon) g.drawImage(scene.mon, 150, 40, 56, 56);
   } };
   const art = await import('./art.js');
-  scene.portrait = art.trainerPortrait('maple');
+  scene.portrait = art.trainerPortrait('maple', 'ready');
   setScene(scene);
   playMusic('indoor');
   await fadeIn(20);
@@ -245,7 +254,16 @@ export async function newGameIntro(askName) {
   scene.mon = null;
   await say('Now, tell me. What is your name?');
   G.name = await askName('Your name?', 'TOM');
-  await say(`Right! So your name is ${G.name}!`, 'Your two friends from next door, Kai and Juno, have been waiting for this day too.', `${G.name}! Your very own journey is about to begin!`);
+  await say(`Right! So your name is ${G.name}!`);
+  scene.portrait = art.trainerPortrait('kai', 'ready');
+  await say('This boy lives right next door. He\'s been your rival since you were little. What was his name again?');
+  const kn = await askName('Rival\'s name?', 'KAI');
+  scene.portrait = art.trainerPortrait('juno', 'ready');
+  await say('And this girl is your other neighbor and rival. What\'s her name?');
+  const jn = await askName('Rival\'s name?', 'JUNO');
+  G.rivalNames = { kai: kn, juno: jn };
+  scene.portrait = art.trainerPortrait('maple', 'ready');
+  await say(`That's right! ${title(kn)} and ${title(jn)} have been waiting for this day too.`, `${G.name}! Your very own journey is about to begin!`);
   await fadeOut(20);
 }
 
