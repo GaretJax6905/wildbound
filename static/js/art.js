@@ -805,13 +805,19 @@ function srand(seed) { let s = seed * 9301 + 49297; return () => { s = (s * 9301
 const TILE_DRAW = {
   grass(px, r) {
     px(0, 0, 16, 16, '#88d070');
-    for (let i = 0; i < 5; i++) { const x = Math.floor(r() * 14), y = Math.floor(r() * 14); px(x, y, 1, 2, '#68b050'); px(x + 1, y + 1, 1, 1, '#68b050'); }
+    for (let i = 0; i < 4; i++) { const x = Math.floor(r() * 13) + 1, y = Math.floor(r() * 13) + 2; px(x, y, 1, 1, '#6cb85a'); px(x + 2, y, 1, 1, '#6cb85a'); px(x + 1, y + 1, 1, 1, '#6cb85a'); }
+    for (let i = 0; i < 2; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#a8e090');
   },
   tall(px) {
-    px(0, 0, 16, 16, '#58b048');
-    for (const [x, y] of [[1, 2], [6, 0], [11, 3], [3, 8], [9, 9], [13, 10]]) {
-      px(x, y + 2, 1, 5, '#2f7a2a'); px(x + 1, y, 1, 7, '#3c8c34'); px(x + 2, y + 2, 1, 5, '#2f7a2a'); px(x + 1, y, 1, 2, '#90d878');
-    }
+    px(0, 0, 16, 16, '#4ea640');
+    const tuft = (x, y) => {
+      px(x, y + 3, 5, 3, '#2f7a2a');
+      px(x, y + 1, 1, 3, '#3f9436'); px(x + 1, y, 1, 4, '#5cba4c'); px(x + 2, y + 2, 1, 2, '#3f9436');
+      px(x + 3, y - 1, 1, 5, '#5cba4c'); px(x + 4, y + 1, 1, 3, '#3f9436');
+      px(x + 1, y, 1, 1, '#a0e080'); px(x + 3, y - 1, 1, 1, '#a0e080');
+      px(x, y + 5, 5, 1, '#245e22');
+    };
+    tuft(0, 2); tuft(8, 1); tuft(4, 8); tuft(11, 9); tuft(-3, 9);
   },
   path(px, r) {
     px(0, 0, 16, 16, '#e8d098');
@@ -820,9 +826,15 @@ const TILE_DRAW = {
   sand(px, r) { px(0, 0, 16, 16, '#f0e0a8'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#d8c488'); },
   tree(px) {
     TILE_DRAW.grass(px, srand(3));
-    px(6, 11, 4, 5, '#7a5030'); px(7, 11, 1, 5, '#9a6840');
-    px(2, 3, 12, 9, '#2f8a3a'); px(1, 5, 14, 5, '#2f8a3a'); px(4, 1, 8, 2, '#2f8a3a');
-    px(3, 3, 6, 4, '#48a848'); px(4, 2, 4, 1, '#48a848'); px(4, 3, 2, 2, '#78c868'); px(9, 7, 4, 3, '#287830');
+    px(2, 13, 12, 3, '#5a9a48'); // ground shadow
+    px(6, 11, 4, 5, '#7a4e2a'); px(6, 11, 1, 5, '#9a6a3a'); px(9, 11, 1, 5, '#5a3818'); px(5, 15, 1, 1, '#5a3818'); px(10, 15, 1, 1, '#5a3818');
+    const rows = [[5, 10], [3, 12], [2, 13], [1, 14], [1, 14], [1, 14], [1, 14], [1, 14], [2, 13], [2, 13], [3, 12], [5, 10]];
+    rows.forEach(([a, b], y) => px(a, y, b - a + 1, 1, '#3d8f3c'));
+    rows.forEach(([a, b], y) => { if (y > 5) { px(b - 2, y, 3, 1, '#2a6e32'); } if (y > 8) px(a, y, b - a + 1, 1, '#2a6e32'); });
+    for (const [x, y] of [[3, 3], [7, 2], [10, 4], [4, 7], [8, 6], [11, 8], [6, 9]]) { px(x, y, 3, 2, '#55a948'); px(x, y, 1, 1, '#88cc66'); }
+    px(4, 2, 3, 1, '#9ad874'); px(3, 3, 1, 2, '#9ad874');
+    rows.forEach(([a, b], y) => { px(a, y, 1, 1, '#1e5228'); px(b, y, 1, 1, '#1e5228'); });
+    px(5, 0, 6, 1, '#1e5228'); px(5, 11, 6, 1, '#1e5228');
   },
   water(px, r, f) {
     px(0, 0, 16, 16, '#5898f0');
@@ -866,7 +878,19 @@ const TILE_DRAW = {
   statue(px) { TILE_DRAW.gymfloor(px); px(3, 12, 10, 4, '#787878'); px(4, 3, 8, 9, '#a0a0a0'); px(5, 2, 6, 1, '#a0a0a0'); px(5, 4, 3, 3, '#c8c8c8'); px(9, 8, 3, 4, '#787878'); },
   boulder(px) { TILE_DRAW.gymfloor(px); px(2, 4, 12, 10, '#8a8070'); px(3, 3, 9, 1, '#8a8070'); px(3, 5, 5, 3, '#b0a890'); px(8, 10, 6, 4, '#605848'); },
   void(px) { px(0, 0, 16, 16, '#101018'); },
-  bush(px) { TILE_DRAW.grass(px, srand(17)); px(2, 4, 12, 11, '#2f7a2a'); px(1, 6, 14, 7, '#2f7a2a'); px(3, 5, 4, 3, '#4aa040'); px(9, 8, 3, 2, '#4aa040'); for (const [x, y] of [[3, 3], [11, 4], [1, 9], [14, 10], [6, 13], [10, 14]]) px(x, y, 1, 2, '#e8e0c0'); },
+  bush(px) {
+    // a small, skinny sapling that can be cut with Slash
+    TILE_DRAW.grass(px, srand(17));
+    px(5, 14, 6, 2, '#5a9a48');
+    px(7, 10, 2, 5, '#8a5a30'); px(8, 10, 1, 5, '#5a3818');
+    const rows = [[7, 8], [6, 9], [5, 10], [5, 10], [4, 11], [4, 11], [4, 11], [5, 10], [5, 10], [6, 9]];
+    rows.forEach(([a, b], y) => px(a, y + 1, b - a + 1, 1, '#6cc05a'));
+    rows.forEach(([a, b], y) => { if (y > 3) px(b - 1, y + 1, 2, 1, '#3c8a3c'); });
+    for (const [x, y] of [[5, 3], [8, 5], [6, 7], [9, 8]]) { px(x, y, 2, 1, '#a0e080'); }
+    px(4, 6, 1, 1, '#3c8a3c'); px(11, 6, 1, 1, '#3c8a3c'); px(6, 4, 1, 1, '#3c8a3c'); px(9, 3, 1, 1, '#3c8a3c');
+    rows.forEach(([a, b], y) => { px(a, y + 1, 1, 1, '#245a28'); px(b, y + 1, 1, 1, '#245a28'); });
+    px(7, 0, 2, 1, '#245a28'); px(6, 11, 4, 1, '#245a28');
+  },
   crack(px) { TILE_DRAW.path(px, srand(19)); px(1, 2, 14, 13, '#8a8478'); px(2, 1, 11, 1, '#8a8478'); px(3, 3, 5, 3, '#aca698'); px(7, 2, 1, 5, '#504840'); px(8, 6, 4, 1, '#504840'); px(5, 8, 1, 5, '#504840'); px(10, 9, 3, 4, '#686258'); },
   cavefloor(px, r) { px(0, 0, 16, 16, '#9a8268'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#86705a'); },
   cavepath(px, r) { px(0, 0, 16, 16, '#a88e72'); for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#94806a'); },
