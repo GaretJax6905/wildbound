@@ -753,17 +753,28 @@ export function buildingSolid(m, x, y) {
   return m.buildings.some((b) => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h);
 }
 
-// ---------------- encounter tables from creature habitats ----------------
-for (const [sp, S] of Object.entries(SPECIES)) {
-  for (const tok of S.where.split(',').filter(Boolean)) {
-    const parts = tok.split(':');
-    if (parts[0] === 'static') continue;
-    const m = MAPS[parts[0]];
-    if (!m) { console.warn('unknown habitat', sp, tok); continue; }
-    const water = parts.includes('w'), rare = parts.includes('r');
-    const w = (S.stage === 1 ? 30 : S.stage === 2 ? 12 : 5) * (rare ? 0.25 : 1);
-    const lv = m.lv || [5, 8];
-    const key = water ? 'surfEnc' : 'encounters';
-    (m[key] = m[key] || []).push([sp, lv[0], lv[1], w]);
-  }
+// ---------------- wild encounter tables ----------------
+// Like the classic games, each area has its own 3-4 creatures (plus a few in the water).
+// [species, weight]. Levels come from the map's lv range. Evolved forms come from evolving.
+export const WILD = {
+  route1: { land: [['bunnip', 35], ['gustling', 30], ['squeakle', 25], ['twigling', 10]] },
+  route2: { land: [['wormlet', 30], ['grubling', 30], ['dunepup', 25], ['buzzlet', 15]] },
+  hollowgrove: { land: [['budlet', 46], ['sproutmole', 18], ['emberkit', 18], ['puddlefin', 18]] },
+  route3: { land: [['acornut', 35], ['fawnlet', 30], ['leafwing', 25], ['chubbin', 10]], surf: [['splashkoi', 100]] },
+  cindercave: { land: [['echobat', 35], ['pebbit', 30], ['digadillo', 25], ['ammonix', 10]] },
+  route4: { land: [['whiskit', 30], ['coilet', 30], ['puffpetal', 25], ['voltpup', 15]] },
+  route5: { land: [['sludgeon', 30], ['boltnut', 30], ['mindlet', 25], ['zapfinch', 15]], surf: [['croakle', 50], ['splashkoi', 50]] },
+  route6: { land: [['crabble', 60], ['gullwhip', 40]], surf: [['gullwhip', 35], ['shellby', 35], ['dreamray', 15], ['dragoneel', 15]] },
+  route7: { land: [['punchpup', 30], ['nightpip', 30], ['twinklet', 25], ['grapplex', 15]], surf: [['croakle', 40], ['shellby', 40], ['dragoneel', 20]] },
+  route8: { land: [['sandcroc', 30], ['pumpling', 30], ['cindersnail', 25], ['flarecolt', 15]] },
+  embertunnel: { land: [['wisplet', 35], ['ashpup', 30], ['cogling', 25], ['sneakit', 10]] },
+  route9: { land: [['frostpup', 30], ['snowmite', 30], ['beetank', 25], ['slumbear', 15]] },
+  route10: { land: [['ironhorn', 35], ['glacieroo', 30], ['frostseer', 20], ['drakelet', 15]], surf: [['clamorite', 50], ['kingpincer', 50]] },
+  victoryroad: { land: [['sonarwing', 35], ['bouldox', 30], ['mucklord', 20], ['pterrock', 15]], surf: [['torrentail', 50], ['krakammon', 50]] },
+};
+for (const [id, t] of Object.entries(WILD)) {
+  const m = MAPS[id];
+  const lv = m.lv || [5, 8];
+  if (t.land) m.encounters = t.land.map(([sp, w]) => [sp, lv[0], lv[1], w]);
+  if (t.surf) m.surfEnc = t.surf.map(([sp, w]) => [sp, lv[0], lv[1], w]);
 }

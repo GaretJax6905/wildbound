@@ -26,8 +26,22 @@ for (const m of Object.values(MAPS)) {
   for (const n of m.npcs) { const tt = m.tiles[n.y]?.[n.x]; if (SOLID.has(tt) && !(tt === 'water' && n.swim)) errors.push(`${m.id}: npc ${n.id} stands on ${tt}`); }
   for (const it of [...m.items, ...m.hidden]) if (!ITEMS[it.item]) errors.push(`${m.id}: unknown item ${it.item}`);
 }
+// obtainable = caught in the wild / special encounter, or evolved from something obtainable
+const obtainable = new Set(catchable);
+for (let changed = true; changed;) {
+  changed = false;
+  for (const [id, s] of Object.entries(SPECIES)) if (s.evo && obtainable.has(id) && !obtainable.has(s.evo.to)) { obtainable.add(s.evo.to); changed = true; }
+}
+for (const m of Object.values(MAPS)) {
+  for (const key of ['encounters', 'surfEnc']) {
+    const n = (m[key] || []).length;
+    if (n && (n > 4 || (key === 'encounters' && n < 2))) errors.push(`${m.id}: ${key} has ${n} creatures (want 3-4)`);
+  }
+}
+const homes = {};
+for (const m of Object.values(MAPS)) for (const [sp] of m.encounters || []) (homes[sp] = homes[sp] || []).push(m.id);
 for (const [id, s] of Object.entries(SPECIES)) {
-  if (!catchable.has(id)) errors.push(`${id} cannot be caught anywhere`);
+  if (!obtainable.has(id)) errors.push(`${id} cannot be obtained anywhere`);
   for (const [, mv] of s.learn) if (!MOVES[mv]) errors.push(`${id}: unknown move ${mv}`);
   if (s.evo) {
     if (!SPECIES[s.evo.to]) errors.push(`${id}: evolves into unknown ${s.evo.to}`);
@@ -37,4 +51,4 @@ for (const [id, s] of Object.entries(SPECIES)) {
 const gyms = Object.values(MAPS).filter((m) => m.gym).length + 1;
 const towns = Object.values(MAPS).filter((m) => m.town).length;
 if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
-console.log(`OK: ${SPECIES_LIST.length} creatures, all catchable; ${Object.keys(MAPS).length} maps; ${gyms} gyms; ${towns} templated towns.`);
+console.log(`OK: ${SPECIES_LIST.length} creatures, all obtainable (${catchable.size} wild or special, the rest by evolving); ${Object.keys(MAPS).length} maps; ${gyms} gyms; ${towns} templated towns.`);
