@@ -82,9 +82,9 @@ export class TextBox {
   get pageLen() { return this.pages[this.page].join('').length; }
   get typed() { return this.chars >= this.pageLen; }
   update() {
-    const speed = [1, 2, 4][settings.textSpeed ?? 1];
+    const speed = [0.35, 0.6, 1.1][settings.textSpeed ?? 1];
     if (!this.typed) {
-      this.chars += input.held('a') || input.held('b') ? speed * 2 : speed;
+      this.chars += input.held('b') ? Math.max(2, speed * 4) : speed; // only B / Backspace speeds text up
       if (frame % 4 === 0) sfx('blip');
       if (this.typed && this.opts.instantClose && this.page === this.pages.length - 1) this.close();
       return;
@@ -102,7 +102,7 @@ export class TextBox {
     box(g, 0, 112, W, 48);
     let left = this.chars;
     this.pages[this.page].forEach((ln, i) => {
-      const s = ln.slice(0, Math.max(0, left));
+      const s = ln.slice(0, Math.max(0, Math.floor(left)));
       left -= ln.length;
       text(g, s, 10, 120 + i * 15);
     });

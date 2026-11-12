@@ -254,7 +254,7 @@ class DexList extends ListScreen {
       const seen = G.dex.seen[sp], caught = G.dex.caught[sp];
       text(g, String(SPECIES[sp].no).padStart(3, '0'), 20, 10 + j * 16, '#606068');
       text(g, seen ? SPECIES[sp].name : '-----', 44, 10 + j * 16);
-      if (caught) { g.fillStyle = '#e03838'; g.fillRect(122, 13 + j * 16, 5, 3); g.fillStyle = '#f8f8f8'; g.fillRect(122, 16 + j * 16, 5, 2); }
+      if (caught) { g.fillStyle = '#2aa89a'; g.fillRect(122, 13 + j * 16, 5, 3); g.fillStyle = '#f0e6c8'; g.fillRect(122, 16 + j * 16, 5, 2); g.fillStyle = '#e0b030'; g.fillRect(124, 15 + j * 16, 1, 2); }
       if (i === this.index) cursor(g, 10, 11 + j * 16);
     });
     box(g, 134, 4, 102, 152);
@@ -389,7 +389,7 @@ class Card {
     bg(g, '#3870c0');
     box(g, 10, 14, 220, 132);
     text(g, 'TRAINER CARD', 20, 22, '#383840', '#d0d0c8', FONT_BIG);
-    g.drawImage(person('player', 'down', 0), 180, 30, 32, 48);
+    g.drawImage(person('player', 'down', 0), 180, 34, 32, 42);
     const t = Math.floor(G.time);
     const rows = [['NAME', G.name], ['MONEY', '$' + G.money], ['DEX', `${Object.keys(G.dex.caught).length} caught`], ['TIME', `${Math.floor(t / 3600)}:${String(Math.floor(t / 60) % 60).padStart(2, '0')}`], ['REGION', regionName(G.region)]];
     rows.forEach(([k, v], j) => { text(g, k, 22, 44 + j * 15, '#606068'); text(g, String(v), 84, 44 + j * 15); });
@@ -447,7 +447,7 @@ class Title {
     text(g, 'A creature journey across regions', W / 2, 46, '#f8f8f8', '#203060', FONT_SMALL, 'center');
     const sp = SPECIES_LIST[Math.floor(this.t / 150) % SPECIES_LIST.length];
     g.drawImage(creature(sp, 56), 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
-    g.drawImage(person('player', 'down', 0), 22, 80, 32, 48);
+    g.drawImage(person('player', 'down', 0), 22, 86, 32, 42);
     this.menu.draw(g);
     text(g, 'v1.0', 236, 150, '#ffffff99', null, FONT_SMALL, 'right');
   }

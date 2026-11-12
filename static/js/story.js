@@ -187,14 +187,40 @@ function freeNear(p) {
   }
   return { x: p.x, y: p.y - 1, d: 'up' };
 }
+// A character walks up to the player from a few tiles away (falls back to stepping in beside them).
 async function appear(id, look) {
   const p = world.player;
+  const D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  for (const d of ['up', 'left', 'right', 'down']) {
+    const [dx, dy] = D[d];
+    let ok = true;
+    for (let i = 1; i <= 3; i++) if (blocked(p.x + dx * i, p.y + dy * i)) { ok = false; break; }
+    if (!ok) continue;
+    const n = spawn({ id, look, x: p.x + dx * 3, y: p.y + dy * 3, dir: opposite[d] });
+    p.dir = d;
+    await showEmote(p, '!');
+    await walk(n, [opposite[d], opposite[d]], 1);
+    return n;
+  }
   const s = freeNear(p);
   const n = spawn({ id, look, x: s.x, y: s.y, dir: opposite[s.d] });
-  sfx('door'); fx.flash = 0.6; fx.flashColor = '#fff';
   p.dir = s.d;
   await wait(10);
   return n;
+}
+// a rival walks off at normal speed, then disappears
+async function walkAway(n) {
+  const p = world.player;
+  const D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  const away = n.x < p.x ? 'left' : n.x > p.x ? 'right' : n.y < p.y ? 'up' : 'down';
+  const order = [away, ...['up', 'down', 'left', 'right'].filter((d) => d !== away && d !== opposite[away])];
+  for (const d of order) {
+    const [dx, dy] = D[d];
+    let steps = 0;
+    while (steps < 4 && !blocked(n.x + dx * (steps + 1), n.y + dy * (steps + 1), n)) steps++;
+    if (steps >= 2) { await walk(n, Array(steps).fill(d), 1); break; }
+  }
+  despawn(n.id);
 }
 async function vanish(...ids) { fx.flash = 1; fx.flashColor = '#fff'; sfx('door'); ids.forEach(despawn); await wait(8); }
 const MOTTO = ['NYX: When daylight fades and stars descend...', 'CORVO: ...the shadow falls, the dark ascends!', 'NYX: Nyx!', 'CORVO: Corvo!', 'BOTH: Team Eclipse! We cover every region in shadow!'];
@@ -276,7 +302,7 @@ const TRIGGERS = {
     if (won) await say('JUNO: Wow, you\'re really good! Kai is going to be so mad.');
     await say('JUNO: Pebbleton is just ahead. There\'s a Gym there! See you!');
     setFlag('junoR1');
-    await walk(j, ['up', 'up'], 2); despawn(j.id);
+    await walkAway(j);
     return true;
   },
   async eclipse2() {
@@ -307,14 +333,14 @@ const TRIGGERS = {
     await say('JUNO: We heard you beat Shale! Before you move on, one more battle!', 'KAI: And this time, Juno and I are teaming up against you. Two on two!');
     if (G.party.filter((m) => m.hp > 0).length < 2) {
       await say('KAI: Wait, you only have one creature ready to fight? That\'s no fun.', 'JUNO: Catch another creature or heal up, then come back!');
-      await Promise.all([walk(kai, ['down', 'down'], 2), walk(juno, ['down', 'down'], 2)]); despawn('tmp_kai'); despawn('tmp_juno');
+      await Promise.all([walk(kai, ['down', 'down'], 1), walk(juno, ['down', 'down'], 1)]); despawn('tmp_kai'); despawn('tmp_juno');
       return true;
     }
     const won = await fight([rivalTrainer('kai', 14, [['gustling', 12]]), rivalTrainer('juno', 14, [['bunnip', 12]])], { double: true });
     if (!won) { despawn('tmp_kai'); despawn('tmp_juno'); return true; }
     await say('KAI: Even two against one... You\'re unbelievable.', 'JUNO: There are seven more Gyms in Aldermoor. Let\'s race to the League!', 'KAI: The Champion gets to take the ferry to a whole new region. That\'s gonna be me!');
     setFlag('tagDone');
-    await Promise.all([walk(kai, ['down', 'down', 'down'], 2), walk(juno, ['down', 'down', 'down'], 2)]); despawn('tmp_kai'); despawn('tmp_juno');
+    await Promise.all([walk(kai, ['down', 'down', 'down'], 1), walk(juno, ['down', 'down', 'down'], 1)]); despawn('tmp_kai'); despawn('tmp_juno');
     return true;
   },
   async kaiVoltara() {
@@ -324,7 +350,7 @@ const TRIGGERS = {
     await fight(rivalTrainer('kai', 25));
     await say('KAI: Hmph. Leader Jolt uses Electric types. Bring something that can dig in!');
     setFlag('kaiVoltara');
-    await walk(k, ['up', 'up', 'up'], 2); despawn(k.id);
+    await walkAway(k);
     return true;
   },
   async junoCoralport() {
@@ -334,7 +360,7 @@ const TRIGGERS = {
     await fight(rivalTrainer('juno', 30));
     await say('JUNO: Leader Marina is tough. Grass and Electric moves will help!', 'JUNO: Oh, and I found out Team Eclipse is hiding in Lumen City, across the sea. Be careful!');
     setFlag('junoCoral');
-    await walk(j, ['right', 'right', 'right'], 2); despawn(j.id);
+    await walkAway(j);
     return true;
   },
   async hqDuo() {
@@ -361,7 +387,8 @@ const TRIGGERS = {
     if (won) await say('KAI: ...We\'ll catch up. Just you wait.');
     await say('JUNO: Ember Tunnel ahead is pitch black. Make sure a creature knows Glow!');
     setFlag('rivalsLumen');
-    await vanish('tmp_kai', 'tmp_juno');
+    const jn = npcById('tmp_juno');
+    await Promise.all([walkAway(kai), jn ? walkAway(jn) : null]);
     return true;
   },
   async eclipseFinal() {
@@ -387,7 +414,7 @@ const TRIGGERS = {
     await fight(rivalTrainer('juno', 50));
     await say('JUNO: Kai went ahead already. He looked really serious...', 'JUNO: Go get him!');
     setFlag('junoVR');
-    await vanish(j.id);
+    await walkAway(j);
     return true;
   },
   async badgeGate() {
@@ -434,8 +461,8 @@ async function starterSequence() {
   G.party.forEach(healFull);
   await say('KAI: I\'m heading to Pebbleton! Juno, you\'re next!', 'JUNO: I\'ll be training on Route 1. Bye!');
   setFlag('gotStarter');
-  if (kai) { await walk(kai, ['down', 'down', 'down', 'down', 'right', 'right', 'down'], 2); despawn(kai.id); }
-  if (juno) { await walk(juno, ['down', 'down', 'down', 'down', 'left', 'left', 'down'], 2); despawn(juno.id); }
+  if (kai) { await walk(kai, ['down', 'down', 'down', 'down', 'right', 'right', 'down'], 1); despawn(kai.id); }
+  if (juno) { await walk(juno, ['down', 'down', 'down', 'down', 'left', 'left', 'down'], 1); despawn(juno.id); }
   setFlag('labRivals', false);
   refreshNpcs();
   await say('MAPLE: Route 1 is north of town. There are eight Gyms in Aldermoor. Collect all the badges and the League awaits!', 'Good luck out there!');
