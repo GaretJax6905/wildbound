@@ -100,7 +100,7 @@ class Summary {
     const S = SPECIES[m.sp], st = stats(m);
     bg(g, '#e8d8a8');
     box(g, 2, 2, 92, 92);
-    g.drawImage(creature(m.sp, 56), 20, 8);
+    g.drawImage(creature(m.sp, 64), 16, 2);
     text(g, name(m), 8, 66);
     text(g, 'Lv' + m.level, 88, 66, '#383840', '#d0d0c8', FONT, 'right');
     S.types.forEach((t, k) => typeTag(g, t, 8 + k * 40, 80));
@@ -275,7 +275,7 @@ class DexEntry {
     const S = SPECIES[this.sp];
     bg(g, '#c04848');
     box(g, 4, 4, 232, 152);
-    g.drawImage(creature(this.sp, 56), 14, 12);
+    g.drawImage(creature(this.sp, 64), 10, 8);
     text(g, `No.${String(S.no).padStart(3, '0')}  ${S.name}`, 78, 14, '#383840', '#d0d0c8', FONT_BIG);
     S.types.forEach((t, k) => typeTag(g, t, 78 + k * 40, 34));
     const evo = S.evo ? `Evolves into ${SPECIES[S.evo.to].name} ${S.evo.level ? 'at Lv. ' + S.evo.level : 'with a ' + ITEMS[S.evo.item].name}.` : '';

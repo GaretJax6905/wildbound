@@ -41,7 +41,7 @@ const battleScene = {
 
 function slotPos(s) {
   const dbl = B.double;
-  if (s.side === 'e') return dbl ? [[150, 58], [202, 54]][s.i] : [176, 60];
+  if (s.side === 'e') return dbl ? [[150, 58], [202, 54]][s.i] : [176, 64];
   return dbl ? [[36, 114], [90, 114]][s.i] : [62, 114];
 }
 
@@ -60,7 +60,7 @@ function drawBattle(g) {
   const draw = (s, back) => {
     if (!s.mon || s.anim.hide) return;
     if (s.anim.blink > 0 && (s.anim.blink >> 1) % 2) return;
-    const size = B.double ? 48 : back ? 64 : 56;
+    const size = B.double ? 52 : back ? 72 : 64;
     const img = creature(s.mon.sp, size, back);
     const [x, y] = slotPos(s);
     const sc = s.anim.scale;

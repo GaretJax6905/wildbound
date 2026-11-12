@@ -34,9 +34,10 @@ function pixelize(c, palette, outline = '#1c1c2c', volume = false) {
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       if (!src[i + 3]) continue;
-      const lit = !solidAt(x - 1, y) || !solidAt(x, y - 1);
-      const dark = !solidAt(x + 1, y) || !solidAt(x, y + 1) || !solidAt(x + 2, y) || !solidAt(x, y + 2);
-      const k = lit ? 1.16 : dark ? 0.8 : 1;
+      const lit = !solidAt(x - 1, y) || !solidAt(x, y - 1) || !solidAt(x - 1, y - 1);
+      const dark = !solidAt(x + 1, y) || !solidAt(x, y + 1) || !solidAt(x + 1, y + 1);
+      const dark2 = !dark && (!solidAt(x + 2, y + 1) || !solidAt(x + 1, y + 2));
+      const k = lit ? 1.14 : dark ? 0.76 : dark2 ? 0.88 : 1;
       if (k !== 1) for (let c2 = 0; c2 < 3; c2++) d[i + c2] = Math.max(0, Math.min(255, Math.round(src[i + c2] * k)));
     }
   }
@@ -63,7 +64,15 @@ function painter(g) {
   const u = (c) => { used.add(c); return c; };
   return {
     used,
-    ell(x, y, rx, ry, col, rot = 0) { g.fillStyle = u(col); g.beginPath(); g.ellipse(x, y, Math.max(0.5, rx), Math.max(0.5, ry), rot, 0, Math.PI * 2); g.fill(); },
+    shaded: false,
+    ell(x, y, rx, ry, col, rot = 0) {
+      const E = (cx, cy, a, b2, c) => { g.fillStyle = u(c); g.beginPath(); g.ellipse(cx, cy, Math.max(0.5, a), Math.max(0.5, b2), rot, 0, Math.PI * 2); g.fill(); };
+      const lum = (() => { const [r, gg, bb] = hex(col); return r * 0.3 + gg * 0.59 + bb * 0.11; })();
+      if (!this.shaded || Math.min(rx, ry) < 3.2 || lum < 50) { E(x, y, rx, ry, col); return; }
+      E(x, y, rx, ry, shade(col, 0.78));
+      E(x - rx * 0.1, y - ry * 0.13, rx * 0.88, ry * 0.86, col);
+      E(x - rx * 0.38, y - ry * 0.42, rx * 0.3, ry * 0.24, shade(col, 1.17));
+    },
     circ(x, y, r, col) { this.ell(x, y, r, r, col); },
     rect(x, y, w, h, col) { g.fillStyle = u(col); g.fillRect(x, y, w, h); },
     poly(pts, col) { g.fillStyle = u(col); g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill(); },
@@ -575,6 +584,7 @@ export function creature(sp, size = 56, back = false) {
   const g = c.getContext('2d');
   g.scale(size / 56, size / 56);
   const p = painter(g);
+  p.shaded = size >= 40;
   if (s.family === 'plan') {
     const k = s.art.stage === 1 ? 0.8 : s.art.stage === 2 ? 0.92 : 1;
     g.translate(28, 54); g.scale(k, k); g.translate(-28, -54);
