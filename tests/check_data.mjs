@@ -38,6 +38,10 @@ for (const m of Object.values(MAPS)) {
     if (n && (n > 4 || (key === 'encounters' && n < 2))) errors.push(`${m.id}: ${key} has ${n} creatures (want 3-4)`);
   }
 }
+for (const m of Object.values(MAPS)) {
+  if (!(m.encounters || []).length || m.cave) continue;
+  if (!m.tiles.some((row) => row.some((t) => t === 'tall' || t === 'snowgrass'))) errors.push(`${m.id}: has land creatures but no tall grass to find them in`);
+}
 const homes = {};
 for (const m of Object.values(MAPS)) for (const [sp] of m.encounters || []) (homes[sp] = homes[sp] || []).push(m.id);
 for (const [id, s] of Object.entries(SPECIES)) {

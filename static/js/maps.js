@@ -371,7 +371,8 @@ function genRoute(id, o) {
     for (let n = 0; n < (o.islands ?? 4); n++) {
       const w = ri(R, 3, 6), h = ri(R, 3, 5), x = ri(R, 1, o.w - w - 1), y = ri(R, 1, o.h - h - 1);
       stamp(x, y, w, h, 'sand', (i, j) => !nearP(i, j, 1));
-      if (w > 3 && h > 3) stamp(x + 1, y + 1, 1, 1, 'tree', (i, j) => !nearP(i, j, 1));
+      stamp(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, h - 2), 'tall', (i, j) => !nearP(i, j, 1) && m.tiles[j][i] === 'sand');
+      if (w > 4 && h > 3) stamp(x + w - 2, y + 1, 1, 1, 'tree', (i, j) => !nearP(i, j, 1));
     }
   } else {
     if (st.tall) for (let n = 0; n < Math.round(area / (o.style === 'forest' ? 200 : 55)); n++) {
