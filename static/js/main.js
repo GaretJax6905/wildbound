@@ -5,11 +5,13 @@ import { titleScreen, optionsScreen } from './screens.js';
 import { enterWorld } from './world.js';
 import { say, yesNo, askName } from './ui.js';
 import { newGameIntro } from './story.js';
+import { loadCustomArt } from './art.js';
 
 const blank = { draw(g) { g.fillStyle = '#101828'; g.fillRect(0, 0, 240, 160); } };
 
 async function boot() {
   try { await Promise.race([document.fonts.load('10px Pixelify'), new Promise((r) => setTimeout(r, 2500))]); } catch (e) { /* fallback font */ }
+  loadCustomArt();
   bindTouchPad();
   setFirstInputHandler(unlockAudio);
   requestPersistentStorage();

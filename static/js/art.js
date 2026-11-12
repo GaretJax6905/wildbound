@@ -585,10 +585,37 @@ const PLAN = {
 
 // Battle / DEX sized sprites (48px+) are rendered at 2x resolution for extra detail:
 // draw them with an explicit width and height (drawCreature does this).
+// Hand-drawn concept art: static/art/creatures/<id>_front.webp and <id>_back.webp,
+// listed in static/art/creatures/index.json. Creatures without art keep the
+// procedural sprite. Big sizes (battle, Dex) use it; small icons stay pixel art.
+const CUSTOM = {};
+export function loadCustomArt() {
+  return fetch('/static/art/creatures/index.json').then((r) => (r.ok ? r.json() : [])).then((list) => Promise.all(list.map((id) =>
+    Promise.all(['front', 'back'].map((side) => new Promise((done) => {
+      const im = new Image();
+      im.onload = () => { (CUSTOM[id] ||= {})[side] = im; for (const k of [...cache.keys()]) if (k.split(':')[1] === id) cache.delete(k); done(); };
+      im.onerror = done;
+      im.src = `/static/art/creatures/${id}_${side}.webp`;
+    })))))).catch(() => {});
+}
+export const hasCustomArt = (sp) => !!CUSTOM[sp];
 export function creature(sp, size = 56, back = false) {
   const key = `c:${sp}:${size}:${back}`;
   if (cache.has(key)) return cache.get(key);
   const s = SPECIES[sp];
+  const art = size >= 40 && CUSTOM[sp] && (CUSTOM[sp][back ? 'back' : 'front'] || CUSTOM[sp].front);
+  if (art) {
+    const R = 6, n = size * R;
+    const c = mk(n, n); const g = c.getContext('2d');
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    const st = (s.art && s.art.stage) || s.stage || 1;
+    const k = st === 1 ? 0.82 : st === 2 ? 0.92 : 1;
+    const d = n * k;
+    g.drawImage(art, (n - d) / 2, n - d, d, d);
+    c.hd = true;
+    cache.set(key, c);
+    return c;
+  }
   const res = size >= 48 ? 2 : 1;
   const c = mk(size * res, size * res);
   const g = c.getContext('2d');
@@ -606,8 +633,16 @@ export function creature(sp, size = 56, back = false) {
   cache.set(key, c);
   return c;
 }
+// draw a creature canvas; hand-drawn art is smoothed, pixel art stays crisp
+export function blit(g, img, x, y, w, h) {
+  const prev = g.imageSmoothingEnabled;
+  g.imageSmoothingEnabled = !!img.hd;
+  if (img.hd) g.imageSmoothingQuality = 'high';
+  g.drawImage(img, x, y, w, h);
+  g.imageSmoothingEnabled = prev;
+}
 export function drawCreature(g, sp, size, x, y, back = false) {
-  g.drawImage(creature(sp, size, back), Math.round(x), Math.round(y), size, size);
+  blit(g, creature(sp, size, back), Math.round(x), Math.round(y), size, size);
 }
 // grow the dark outline by one more pixel so hi-res sprites keep a bold edge
 function thickenOutline(c, outline) {
@@ -631,6 +666,7 @@ export function silhouette(sp, size = 56, col = '#ffffff') {
   const src = creature(sp, size);
   const c = mk(src.width, src.height); const g = c.getContext('2d');
   g.drawImage(src, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, src.width, src.height);
+  c.hd = src.hd;
   cache.set(key, c);
   return c;
 }

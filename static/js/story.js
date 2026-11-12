@@ -239,7 +239,7 @@ export async function newGameIntro(askName) {
   const scene = { draw(g) {
     g.fillStyle = '#101828'; g.fillRect(0, 0, 240, 160);
     if (scene.show) { g.imageSmoothingEnabled = false; g.drawImage(scene.portrait, 92, 8, 56, 76); }
-    if (scene.mon) g.drawImage(scene.mon, 150, 40, 56, 56);
+    if (scene.mon) art.blit(g, scene.mon, 150, 40, 56, 56);
   } };
   const art = await import('./art.js');
   scene.portrait = art.trainerPortrait('maple', 'ready');

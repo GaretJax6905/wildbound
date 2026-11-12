@@ -1,7 +1,7 @@
 // Turn-based battles: wild, trainer, double (2v2 tag battles) and
 // "alternating" two-trainer battles when you only have one creature.
 import { W, H, wait, setScene, getScene, frame, rand, chance, pick, fx, input, open } from './engine.js';
-import { creature, trainerPortrait, orb as orbSprite } from './art.js';
+import { creature, trainerPortrait, orb as orbSprite, blit } from './art.js';
 import { MOVES, SPECIES, ITEMS, TYPE_COLORS, SPECIAL_TYPES, effectiveness, STATUS_NAMES } from './data.js';
 import { stats, maxHp, name, addExp, expYield, expForLevel, knows } from './mon.js';
 import { G, addToCollection, useItem } from './state.js';
@@ -126,7 +126,7 @@ function drawBattle(g) {
     const dy = s.anim.dy;
     g.save();
     g.beginPath(); g.rect(0, 0, W, y + 2); g.clip();
-    g.drawImage(img, Math.round(x - w / 2 + s.anim.dx), Math.round(y - h + dy), w, h);
+    blit(g, img, Math.round(x - w / 2 + s.anim.dx), Math.round(y - h + dy), w, h);
     g.restore();
   };
   B.e.forEach((s) => draw(s, false));

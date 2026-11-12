@@ -1,7 +1,7 @@
 // Full-screen menus: team, summary, bag, PC box, dex, shop, starter pick,
 // trainer card, options, title and the evolution scene.
 import { W, H, input, open, wait, frame, fx } from './engine.js';
-import { creature, silhouette, person, drawCreature, trainerPortrait } from './art.js';
+import { creature, silhouette, person, drawCreature, trainerPortrait, blit } from './art.js';
 import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField } from './data.js';
 import { MAPS, LAYOUT } from './maps.js';
 import { stats, maxHp, name, expForLevel, evolve, movesAt, canEvolveByLevel } from './mon.js';
@@ -260,7 +260,7 @@ class DexList extends ListScreen {
     box(g, 134, 4, 102, 152);
     const sp = SPECIES_LIST[this.index];
     if (G.dex.seen[sp]) drawCreature(g, sp, 56, 157, 12);
-    else g.drawImage(silhouette(sp, 56, '#303040'), 157, 12, 56, 56);
+    else blit(g, silhouette(sp, 56, '#303040'), 157, 12, 56, 56);
     if (G.dex.seen[sp]) SPECIES[sp].types.forEach((t, k) => typeTag(g, t, 145 + k * 40, 72));
     const s = Object.keys(G.dex.seen).length, c = Object.keys(G.dex.caught).length;
     text(g, `SEEN ${s}`, 144, 90); text(g, `CAUGHT ${c}`, 144, 104);
@@ -449,7 +449,7 @@ class Title {
     drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 20, 82, 40, 48);
     this.menu.draw(g);
-    text(g, 'v1.8', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v1.9', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }
@@ -463,7 +463,7 @@ class EvoScene {
     for (let i = 0; i < 20; i++) { const a = (i / 20) * Math.PI * 2 + this.t / 30; g.fillStyle = '#f8f0a0'; g.fillRect(W / 2 + Math.cos(a) * (40 + (this.t % 40)), 56 + Math.sin(a) * (30 + (this.t % 30)), 2, 2); }
     const sp = this.showNew ? this.to : this.from;
     const img = this.phase === 1 ? silhouette(sp, 56, '#f8f8f8') : creature(sp, 56);
-    g.drawImage(img, W / 2 - 28, 28, 56, 56);
+    blit(g, img, W / 2 - 28, 28, 56, 56);
   }
 }
 export async function evolutionScene(m, to, fromItem = false) {
