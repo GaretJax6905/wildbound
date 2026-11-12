@@ -681,92 +681,80 @@ export const LOOKS = {
   tamer: { skin: '#e8b890', hair: '#383838', shirt: '#a03838', pants: '#383838', coat: true },
 };
 
-// Overworld people: 16x21, chibi proportions. The body fills one tile and only
-// the top of the head pokes above it (drawn 5px above the tile).
+// Overworld people: small GBA-scale sprites (about 12x17 inside a 16x19 canvas). The body
+// sits inside the tile and only the very top of the head pokes above it (drawn 3px up).
 export function person(lookId, dir = 'down', step = 0) {
   const key = `p:${lookId}:${dir}:${step}`;
   if (cache.has(key)) return cache.get(key);
   const L = LOOKS[lookId] || LOOKS.boy;
-  const c = mk(16, 21); const g = c.getContext('2d');
+  const c = mk(16, 19); const g = c.getContext('2d');
   const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
   const sk = L.skin, skS = shade(sk, 0.82), hr = L.hair, hrS = shade(hr, 0.72), hrH = shade(hr, 1.3);
   const sh = L.shirt, shS = shade(sh, 0.75), shH = shade(sh, 1.18), pa = L.pants, paS = shade(pa, 0.72);
-  const shoe = '#3a3040', shoeH = '#6a6070', sole = '#201828';
+  const shoe = '#3a3040', sole = '#201828';
   const side = dir === 'left' || dir === 'right';
-  const by = step ? -1 : 0; // body bobs up on step frames
-  const hy = 2 + by;        // top of head
-  const tTop = hy + 9;      // top of torso
+  const by = step ? -1 : 0;
+  const hy = 2 + by;          // top of head
+  const tTop = hy + 8;        // top of torso
   // ---- legs & shoes ----
   if (side) {
     const st2 = step === 1 ? -1 : step === 2 ? 1 : 0;
-    px(6 - st2, 16, 2, 2, paS); px(8 + st2, 16, 2, 2, pa);
-    px(5 - st2, 18, 3, 2, shoe); px(8 + st2, 18, 3, 2, shoe);
-    px(5 - st2, 19, 3, 1, sole); px(8 + st2, 19, 3, 1, sole);
-    px(dir === 'left' ? 5 - st2 : 9 + st2, 18, 1, 1, shoeH);
+    px(6 - st2, 14, 2, 2, paS); px(8 + st2, 14, 2, 2, pa);
+    px(5 - st2, 16, 3, 1, shoe); px(8 + st2, 16, 3, 1, shoe); px(5 - st2, 17, 3, 1, sole); px(8 + st2, 17, 3, 1, sole);
   } else {
     const lu = step === 1 ? 1 : 0, ru = step === 2 ? 1 : 0;
-    px(5, 16, 3, 2 - lu, pa); px(8, 16, 3, 2 - ru, pa);
-    px(7, 16, 1, 2 - lu, paS); px(10, 16, 1, 2 - ru, paS);
-    px(4, 18 - lu, 4, 2, shoe); px(8, 18 - ru, 4, 2, shoe);
-    px(5, 18 - lu, 2, 1, shoeH); px(9, 18 - ru, 2, 1, shoeH);
-    px(4, 19 - lu, 4, 1, sole); px(8, 19 - ru, 4, 1, sole);
+    px(5, 14, 3, 2 - lu, pa); px(8, 14, 3, 2 - ru, pa); px(7, 14, 1, 2 - lu, paS); px(10, 14, 1, 2 - ru, paS);
+    px(5, 16 - lu, 3, 1, shoe); px(8, 16 - ru, 3, 1, shoe); px(5, 17 - lu, 3, 1, sole); px(8, 17 - ru, 3, 1, sole);
   }
-  // ---- long hair behind shoulders ----
-  if (L.long && dir !== 'up') { if (side) px(8, hy + 7, 4, 5, hrS); else { px(3, hy + 6, 2, 6, hrS); px(11, hy + 6, 2, 6, hrS); } }
+  // ---- long hair behind ----
+  if (L.long && dir !== 'up') { if (side) px(8, hy + 5, 3, 5, hrS); else { px(4, hy + 5, 1, 5, hrS); px(11, hy + 5, 1, 5, hrS); } }
   // ---- torso ----
-  const tH = L.coat ? 5 : 4;
-  if (side) {
-    px(6, tTop, 4, tH, sh); px(dir === 'left' ? 9 : 6, tTop, 1, tH, shS); px(6, tTop, 4, 1, shH);
-    if (!L.coat) px(6, tTop + tH, 4, 1, shade(pa, 0.8));
-  } else {
-    px(5, tTop, 6, tH, sh); px(5, tTop, 1, tH, shH); px(10, tTop, 1, tH, shS); px(5, tTop + tH - 1, 6, 1, shS);
-    if (dir === 'down') { px(7, tTop, 2, 1, skS); px(6, tTop, 1, 1, shH); px(9, tTop, 1, 1, shH); }
-    if (L.coat && dir === 'down') { px(7, tTop + 1, 2, tH - 1, shade(sh, 0.62)); px(6, tTop + 1, 1, 2, '#f8f8f8'); px(9, tTop + 1, 1, 2, '#f8f8f8'); }
-    if (L.emblem && dir === 'down') { px(7, tTop + 1, 2, 2, '#f8d030'); px(7, tTop + 1, 1, 1, '#fff8b0'); }
-    if (!L.coat) { px(5, tTop + tH, 6, 1, shade(pa, 0.8)); if (dir === 'down') px(7, tTop + tH, 2, 1, '#e0c050'); }
+  const tH = L.coat ? 4 : 3;
+  if (side) { px(6, tTop, 4, tH, sh); px(dir === 'left' ? 9 : 6, tTop, 1, tH, shS); }
+  else {
+    px(5, tTop, 6, tH, sh); px(5, tTop, 1, tH, shH); px(10, tTop, 1, tH, shS);
+    if (dir === 'down') px(7, tTop, 2, 1, skS);
+    if (L.coat && dir === 'down') px(7, tTop + 1, 2, tH - 1, shade(sh, 0.62));
+    if (L.emblem && dir === 'down') px(7, tTop + 1, 2, 1, '#f8d030');
   }
+  if (!L.coat) px(side ? 6 : 5, tTop + tH, side ? 4 : 6, 1, shade(pa, 0.8));
   // ---- arms ----
   if (side) {
     const sw = step === 1 ? 1 : step === 2 ? -1 : 0;
-    const ax = dir === 'left' ? 7 + sw : 7 - sw;
-    px(ax, tTop, 2, 2, shS); px(ax, tTop + 2, 2, 1, sk); px(ax, tTop + 3, 2, 1, skS);
+    const ax = (dir === 'left' ? 7 : 8) + (dir === 'left' ? sw : -sw);
+    px(ax, tTop, 1, 2, shS); px(ax, tTop + 2, 1, 1, sk);
   } else {
     const sw = step === 1 ? -1 : step === 2 ? 1 : 0;
     const la = tTop + Math.max(0, sw), ra = tTop + Math.max(0, -sw);
-    px(3, la, 2, 2, sh); px(3, la, 1, 2, shS); px(3, la + 2, 2, 1, sk); px(3, la + 3, 2, 1, skS);
-    px(11, ra, 2, 2, sh); px(12, ra, 1, 2, shS); px(11, ra + 2, 2, 1, sk); px(11, ra + 3, 2, 1, skS);
+    px(4, la, 1, 1, sh); px(4, la + 1, 1, 2, sk); px(11, ra, 1, 1, sh); px(11, ra + 1, 1, 2, sk);
   }
-  // ---- head (9 tall) ----
-  const head = (col) => { px(5, hy, 6, 1, col); px(4, hy + 1, 8, 1, col); px(3, hy + 2, 10, 5, col); px(4, hy + 7, 8, 1, col); px(5, hy + 8, 6, 1, col); };
+  // ---- head (8 x 8) ----
+  const head = (col) => { px(6, hy, 4, 1, col); px(5, hy + 1, 6, 1, col); px(4, hy + 2, 8, 4, col); px(5, hy + 6, 6, 1, col); px(6, hy + 7, 4, 1, col); };
   head(sk);
-  px(4, hy + 7, 8, 1, skS);
+  px(5, hy + 6, 6, 1, skS);
   if (dir === 'up') {
-    head(hr); px(5, hy + 1, 4, 1, hrH); px(3, hy + 5, 10, 2, hrS);
-    if (L.long) px(3, hy + 7, 10, 3, hr);
+    head(hr); px(6, hy + 1, 3, 1, hrH); px(4, hy + 5, 8, 1, hrS);
+    if (L.long) px(4, hy + 6, 8, 3, hr);
   } else if (side) {
     const f = dir === 'left';
-    px(4, hy, 8, 1, hr); px(3, hy + 1, 10, 2, hr); px(f ? 8 : 3, hy + 3, 5, 3, hr); px(f ? 9 : 3, hy + 6, 4, 2, hrS);
-    px(5, hy + 1, 3, 1, hrH); px(f ? 3 : 11, hy + 3, 2, 1, hr);
-    px(f ? 4 : 11, hy + 4, 1, 2, '#202030');
-    px(f ? 2 : 13, hy + 5, 1, 1, sk);
-    if (!L.long) px(f ? 9 : 6, hy + 4, 1, 2, skS);
-    if (L.beard) px(f ? 3 : 7, hy + 5, 6, 3, hr);
+    px(6, hy, 4, 1, hr); px(5, hy + 1, 6, 1, hr); px(4, hy + 2, 8, 1, hr); px(f ? 8 : 4, hy + 3, 4, 3, hr); px(f ? 9 : 4, hy + 6, 3, 1, hrS);
+    px(6, hy + 1, 2, 1, hrH);
+    px(f ? 5 : 10, hy + 4, 1, 2, '#202030');
+    px(f ? 3 : 12, hy + 5, 1, 1, sk);
+    if (L.beard) px(f ? 4 : 8, hy + 5, 4, 2, hr);
   } else {
-    px(4, hy, 8, 1, hr); px(3, hy + 1, 10, 2, hr); px(3, hy + 3, 2, 2, hr); px(11, hy + 3, 2, 2, hr);
-    px(5, hy + 3, 2, 1, hr); px(9, hy + 3, 1, 1, hr); px(5, hy + 1, 3, 1, hrH);
-    px(5, hy + 4, 2, 2, '#202030'); px(9, hy + 4, 2, 2, '#202030');
-    px(5, hy + 4, 1, 1, '#ffffff'); px(9, hy + 4, 1, 1, '#ffffff');
-    px(4, hy + 6, 1, 1, '#f0a0a0'); px(11, hy + 6, 1, 1, '#f0a0a0');
-    px(7, hy + 6, 2, 1, shade(sk, 0.72));
-    if (!L.long) { px(2, hy + 4, 1, 2, skS); px(13, hy + 4, 1, 2, skS); }
-    if (L.beard) { px(4, hy + 6, 8, 2, hr); px(6, hy + 6, 4, 1, shade(sk, 0.72)); }
+    px(6, hy, 4, 1, hr); px(5, hy + 1, 6, 1, hr); px(4, hy + 2, 8, 1, hr); px(4, hy + 3, 1, 2, hr); px(11, hy + 3, 1, 2, hr);
+    px(5, hy + 3, 2, 1, hr); px(9, hy + 3, 1, 1, hr); px(6, hy + 1, 2, 1, hrH);
+    px(6, hy + 4, 1, 2, '#202030'); px(9, hy + 4, 1, 2, '#202030');
+    px(5, hy + 5, 1, 1, '#f0a8a0'); px(10, hy + 5, 1, 1, '#f0a8a0');
+    if (L.beard) px(5, hy + 5, 6, 2, hr);
   }
-  if (L.spiky && !L.hat) { px(4, hy - 1, 2, 1, hr); px(7, hy - 2, 2, 2, hr); px(10, hy - 1, 2, 1, hr); px(7, hy - 2, 1, 1, hrH); }
+  if (L.spiky && !L.hat) { px(5, hy - 1, 1, 1, hr); px(7, hy - 1, 2, 1, hr); px(10, hy - 1, 1, 1, hr); }
   if (L.hat) {
     const hc = L.hat, hcS = shade(hc, 0.75), hb = L.hatB || hcS;
-    px(4, hy - 1, 8, 1, hc); px(3, hy, 10, 3, hc); px(4, hy, 3, 1, shade(hc, 1.2)); px(3, hy + 2, 10, 1, hcS);
-    if (dir === 'down') { px(3, hy + 3, 10, 1, hb); px(7, hy, 2, 2, hb); }
-    else if (side) px(dir === 'left' ? 0 : 9, hy + 3, 7, 1, hb);
+    px(5, hy - 1, 6, 1, hc); px(4, hy, 8, 2, hc); px(5, hy, 2, 1, shade(hc, 1.2)); px(4, hy + 2, 8, 1, hcS);
+    if (dir === 'down') { px(4, hy + 3, 8, 1, hb); px(7, hy, 2, 1, hb); }
+    else if (side) px(dir === 'left' ? 2 : 8, hy + 3, 6, 1, hb);
   }
   pixelize(c, [], '#202030');
   cache.set(key, c);
@@ -781,9 +769,10 @@ export function trainerPortrait(lookId, pose = 'ready') {
   if (cache.has(key)) return cache.get(key);
   const L = LOOKS[lookId] || LOOKS.boy;
   const back = pose !== 'ready';
-  const c = mk(56, 76); const g = c.getContext('2d');
-  g.translate(4, 2);
+  const c = mk(112, 152); const g = c.getContext('2d');
+  g.scale(2, 2); g.translate(4, 2);
   const p = painter(g);
+  p.shaded = true; p.res = 2;
   const sk = L.skin, skS = shade(sk, 0.85), hr = L.hair, sh = L.shirt, shS = shade(sh, 0.78), pa = L.pants, paS = shade(pa, 0.8);
   const hrS = shade(hr, 0.75), hrH = shade(hr, 1.3);
   // legs in a wide stance
@@ -801,6 +790,17 @@ export function trainerPortrait(lookId, pose = 'ready') {
     else { p.rect(12, 50, 24, 3, shade(pa, 0.9)); p.rect(22, 50, 4, 3, '#e0c050'); }
     if (L.emblem) { p.circ(19, 40, 3, '#f8d030'); p.circ(20, 39, 1.5, '#282838'); }
   } else if (!L.coat) p.rect(12, 50, 24, 3, shade(pa, 0.9));
+  // clothing details: folds, seams, shoe laces
+  p.line([[16, 56], [18, 64]], shade(pa, 0.7), 0.6); p.line([[34, 56], [33, 63]], shade(pa, 0.6), 0.6);
+  p.line([[15, 38], [19, 44]], shade(sh, 0.72), 0.6); p.line([[33, 37], [30, 45]], shade(sh, 0.66), 0.6);
+  p.rect(10, 66.5, 3, 0.6, '#d8d0e0'); p.rect(34, 66.5, 3, 0.6, '#d8d0e0');
+  if (back && lookId === 'player') {
+    p.poly([[14, 35], [34, 35], [35, 52], [13, 52]], '#c8743a'); p.poly([[14, 35], [34, 35], [33, 41], [15, 41]], '#e0904a');
+    p.rect(22, 40, 4, 3, '#f0d040'); p.rect(15, 46, 18, 1, '#9a5420');
+    p.rect(15, 32, 2, 6, '#9a5420'); p.rect(31, 32, 2, 6, '#9a5420');
+  } else if (!back && lookId === 'player') {
+    p.rect(13, 33, 2, 16, '#9a5420'); p.rect(33, 33, 2, 16, '#9a5420');
+  }
   // arms
   if (pose === 'ready') {
     // left fist on hip
@@ -838,13 +838,20 @@ export function trainerPortrait(lookId, pose = 'ready') {
     }
     if (L.long) { p.ell(13, 24, 3, 9, hr); p.ell(35, 24, 3, 9, hrS); }
     // determined battle face
-    p.ell(19, 19.5, 2, 2.4, '#202030'); p.ell(29, 19.5, 2, 2.4, '#202030');
-    p.rect(18, 18, 1, 1, '#ffffff'); p.rect(28, 18, 1, 1, '#ffffff');
+    for (const ex of [19, 29]) {
+      p.ell(ex, 19.5, 2.4, 2.7, '#ffffff');
+      p.ell(ex + (ex < 24 ? 0.4 : -0.4), 19.8, 1.7, 2.3, L.eyes || '#3a4a78');
+      p.ell(ex + (ex < 24 ? 0.4 : -0.4), 20, 0.9, 1.3, '#141420');
+      p.rect(ex - 0.6, 18.2, 0.8, 0.8, '#ffffff');
+      p.line([[ex - 2.6, 17], [ex + 2.6, 17]], '#202030', 0.8);
+    }
+    p.line([[23.6, 21], [23.2, 23], [24.2, 23.2]], shade(sk, 0.7), 0.6);
     p.line([[16, 15.5], [21.5, 16.8]], hrS, 1.2); p.line([[26.5, 16.8], [32, 15.5]], hrS, 1.2);
     if (L.beard) { p.poly([[15, 22], [33, 22], [30, 30], [24, 32], [18, 30]], hr); p.rect(21, 25, 6, 1, shade(sk, 0.6)); }
     else { p.line([[21.5, 25], [24, 26.2], [26.5, 25]], shade(sk, 0.5), 1.1); }
   }
   pixelize(c, [...p.used], '#202030');
+  thickenOutline(c, '#202030');
   cache.set(key, c);
   return c;
 }

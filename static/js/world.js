@@ -404,11 +404,11 @@ export const worldScene = {
       if (a.isPlayer && p.surf) {
         g.fillStyle = '#3870c8'; g.beginPath(); g.ellipse(ax + 8, ay + 12, 9, 5, 0, 0, 7); g.fill();
         g.fillStyle = '#88c0f8'; g.fillRect(ax + 2, ay + 9, 12, 2);
-        g.drawImage(person(a.look, a.dir, 0), ax, ay - 9);
+        g.drawImage(person(a.look, a.dir, 0), ax, ay - 7);
         continue;
       }
       const stepF = a.moving && a.off > 3 && a.off < 13 ? (a.walkPhase % 2 ? 1 : 2) : 0;
-      g.drawImage(person(a.look, a.dir, stepF), ax, ay - 5);
+      g.drawImage(person(a.look, a.dir, stepF), ax, ay - 3);
       const tx = a.moving && a.off > 8 ? a.tx : a.x, ty = a.moving && a.off > 8 ? a.ty : a.y;
       const under = tileAt(tx, ty);
       if (GRASSY.has(under) && !(a.moving && a.off <= 8 && !GRASSY.has(tileAt(a.x, a.y)))) {
@@ -416,8 +416,8 @@ export const worldScene = {
       }
       if (under === 'water') g.drawImage(tile('water', 0, af), 0, 8, 16, 8, tx * T - cx, ty * T - cy + 8, 16, 8);
       if (world.emote && world.emote.a === a) {
-        box(g, ax + 1, ay - 21, 14, 15);
-        text(g, world.emote.kind, ax + 8, ay - 18, '#e03030', null, '600 10px Pixelify, monospace', 'center');
+        box(g, ax + 1, ay - 19, 14, 15);
+        text(g, world.emote.kind, ax + 8, ay - 16, '#e03030', null, '600 10px Pixelify, monospace', 'center');
       }
     }
     if (m.dark) {

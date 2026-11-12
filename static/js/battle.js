@@ -55,8 +55,8 @@ function drawBattle(g) {
   const plat = (x, y, rx) => { g.fillStyle = '#88b868'; g.beginPath(); g.ellipse(x, y, rx, rx * 0.28, 0, 0, 7); g.fill(); g.fillStyle = '#a0d080'; g.beginPath(); g.ellipse(x, y - 1, rx - 3, rx * 0.22, 0, 0, 7); g.fill(); };
   if (B.double) { plat(176, 56, 58); plat(64, 112, 60); } else { plat(176, 58, 44); plat(62, 112, 52); }
   // trainer portraits during intro / outro
-  if (B.portraits) B.portraits.forEach((pt) => g.drawImage(trainerPortrait(pt.look, 'ready'), pt.x - 4, pt.y));
-  if (B.playerPortrait) g.drawImage(trainerPortrait('player', B.playerPortrait.pose || 'throw0'), B.playerPortrait.x - 4, 38);
+  if (B.portraits) B.portraits.forEach((pt) => g.drawImage(trainerPortrait(pt.look, 'ready'), pt.x - 4, pt.y, 56, 76));
+  if (B.playerPortrait) g.drawImage(trainerPortrait('player', B.playerPortrait.pose || 'throw0'), B.playerPortrait.x - 4, 38, 56, 76);
   const draw = (s, back) => {
     if (!s.mon || s.anim.hide) return;
     if (s.anim.blink > 0 && (s.anim.blink >> 1) % 2) return;
