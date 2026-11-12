@@ -36,6 +36,8 @@ export function newGame(playerName) {
     lastHeal: { map: 'house_player', x: 4, y: 4, dir: 'down' },
     time: 0,
     steps: 0,
+    visited: { brookhollow: true },
+    repel: 0,
     savedAt: 0,
   };
   return G;

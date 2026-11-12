@@ -93,7 +93,7 @@ function infoBox(g, s, x, y, mine) {
   box(g, x, y, w, h);
   text(g, name(m), x + 7, y + 4, '#383840', '#d0d0c8', FONT_SMALL);
   text(g, 'Lv' + m.level, x + w - 8, y + 4, '#383840', '#d0d0c8', FONT_SMALL, 'right');
-  if (m.status) { g.fillStyle = m.status === 'burn' ? '#e06030' : m.status === 'par' ? '#d0b020' : '#8888a0'; g.fillRect(x + 7, y + 14, 15, 7); text(g, STATUS_NAMES[m.status], x + 8, y + 14, '#fff', null, '6px Pixelify, monospace'); }
+  if (m.status) { g.fillStyle = m.status === 'burn' ? '#e06030' : m.status === 'par' ? '#d0b020' : m.status === 'poison' ? '#a040a0' : '#8888a0'; g.fillRect(x + 7, y + 14, 15, 7); text(g, STATUS_NAMES[m.status], x + 8, y + 14, '#fff', null, '6px Pixelify, monospace'); }
   text(g, 'HP', x + 25, y + 14, '#f8a030', null, '600 6px Pixelify, monospace');
   if (mine && B.double) {
     hpBar(g, x + 36, y + 16, w - 70, s.disp / maxHp(m));
@@ -395,7 +395,7 @@ function enemyAction(s) {
         sc = M.power * eff * stab * (M.acc || 100) / 100;
       } else {
         sc = 30;
-        if ((M.sleep || M.par) && target && target.mon.status) sc = 0;
+        if ((M.sleep || M.par || M.poison || M.burn) && target && target.mon.status) sc = 0;
         if (M.stat && M.stat.target === 'self' && s.st[M.stat.stat] >= 2) sc = 5;
         if (M.stat && M.stat.target === 'foe' && target && target.st[M.stat.stat] <= -2) sc = 5;
       }
@@ -428,10 +428,11 @@ async function runTurn(acts) {
   }
   // end of turn: burn
   for (const s of [...B.p, ...B.e]) {
-    if (!s.alive || s.mon.status !== 'burn') continue;
-    s.mon.hp = Math.max(0, s.mon.hp - Math.max(1, Math.floor(maxHp(s.mon) / 16)));
+    if (!s.alive || (s.mon.status !== 'burn' && s.mon.status !== 'poison')) continue;
+    const psn = s.mon.status === 'poison';
+    s.mon.hp = Math.max(0, s.mon.hp - Math.max(1, Math.floor(maxHp(s.mon) / (psn ? 8 : 16))));
     s.anim.blink = 12;
-    await msg(`${Label(s)} is hurt by its burn!`);
+    await msg(psn ? `${Label(s)} is hurt by poison!` : `${Label(s)} is hurt by its burn!`);
     await waitHp();
     if (s.mon.hp <= 0) await faint(s);
   }
@@ -497,6 +498,7 @@ async function doMove(a) {
     else {
       if (M.burn && chance(M.burn / 100)) await inflict(t, 'burn');
       if (M.par && chance(M.par / 100)) await inflict(t, 'par');
+      if (M.poison && chance(M.poison / 100)) await inflict(t, 'poison');
       if (M.stat && M.stat.chance && chance(M.stat.chance / 100)) await changeStat(t, M.stat.stat, M.stat.n);
     }
     if (m.hp <= 0) await faint(s);
@@ -504,8 +506,8 @@ async function doMove(a) {
   }
   // status moves
   if (!selfMove && effectiveness(M.type, tTypes) === 0) { await msg(`It doesn't affect ${label(t)}...`); return; }
-  if (M.sleep || M.par) {
-    const st = M.sleep ? 'sleep' : 'par';
+  if (M.sleep || M.par || M.burn || M.poison) {
+    const st = M.sleep ? 'sleep' : M.par ? 'par' : M.burn ? 'burn' : 'poison';
     if (t.mon.status) { await msg('But it failed!'); return; }
     await burst(t, M.type);
     await inflict(t, st);
@@ -522,10 +524,11 @@ async function inflict(t, st) {
   if (t.mon.status) return;
   if (st === 'burn' && types.includes('Fire')) return;
   if (st === 'par' && types.includes('Electric')) return;
+  if (st === 'poison' && (types.includes('Toxic') || types.includes('Metal'))) return;
   t.mon.status = st;
   if (st === 'sleep') t.mon.sleep = rand(2, 4);
   sfx('hit');
-  await msg(st === 'burn' ? `${Label(t)} was burned!` : st === 'par' ? `${Label(t)} is paralyzed! It may be unable to move!` : `${Label(t)} fell asleep!`);
+  await msg(st === 'burn' ? `${Label(t)} was burned!` : st === 'par' ? `${Label(t)} is paralyzed! It may be unable to move!` : st === 'poison' ? `${Label(t)} was poisoned!` : `${Label(t)} fell asleep!`);
 }
 
 async function changeStat(t, stat, n) {
@@ -603,6 +606,21 @@ export async function applyItem(it, mon, inBattle) {
     mon.hp = Math.floor(maxHp(mon) / 2);
     useItem(it); sfx('heal');
     await say(`${name(mon)} was revived!`);
+    return true;
+  }
+  if (I.kind === 'pp') {
+    if (mon.moves.every((x) => x.pp >= MOVES[x.id].pp)) { await say('It won\'t have any effect.'); return false; }
+    mon.moves.forEach((x) => { x.pp = Math.min(MOVES[x.id].pp, x.pp + 10); });
+    useItem(it); sfx('heal');
+    await say(`${name(mon)}'s PP was restored.`);
+    return true;
+  }
+  if (I.kind === 'level') {
+    if (mon.level >= 100) { await say('It won\'t have any effect.'); return false; }
+    useItem(it);
+    const gains = addExp(mon, expForLevel(mon.level + 1) - mon.exp);
+    sfx('levelup');
+    for (const g of gains) { await say(`${name(mon)} grew to Lv. ${g.level}!`); for (const mv of g.newMoves) await learnMove(mon, mv); }
     return true;
   }
   if (I.kind === 'cure') {

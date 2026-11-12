@@ -2,7 +2,8 @@
 // trainer card, options, title and the evolution scene.
 import { W, H, input, open, wait, frame, fx } from './engine.js';
 import { creature, silhouette, person } from './art.js';
-import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES } from './data.js';
+import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField } from './data.js';
+import { MAPS, LAYOUT } from './maps.js';
 import { stats, maxHp, name, expForLevel, evolve, movesAt, canEvolveByLevel } from './mon.js';
 import { G, settings, saveSettings, save, exportSave, importSaveFile, useItem, addItem } from './state.js';
 import { box, text, hpBar, bar, cursor, say, menu, choose, yesNo, Menu, QtyPicker, wrap, FONT, FONT_SMALL, FONT_BIG } from './ui.js';
@@ -123,7 +124,7 @@ export function summaryScreen(i) { return open(new Summary(i)); }
 
 // ---------------- BAG ----------------
 class BagList extends ListScreen {
-  itemsFn() { return Object.keys(G.bag).filter((k) => G.bag[k] > 0 && (!this.battle || ITEMS[k].battle)); }
+  itemsFn() { return Object.keys(G.bag).filter((k) => G.bag[k] > 0 && ITEMS[k] && (!this.battle || ITEMS[k].battle)).sort((a, b) => (ITEMS[a].key ? 1 : 0) - (ITEMS[b].key ? 1 : 0)); }
   draw(g) {
     bg(g, '#c88848');
     box(g, 4, 4, 232, 106);
@@ -133,7 +134,7 @@ class BagList extends ListScreen {
     items.slice(top, top + 6).forEach((k, j) => {
       const i = top + j;
       text(g, ITEMS[k].name, 22, 12 + j * 15);
-      text(g, 'x' + G.bag[k], 224, 12 + j * 15, '#383840', '#d0d0c8', FONT, 'right');
+      if (!ITEMS[k].key) text(g, 'x' + G.bag[k], 224, 12 + j * 15, '#383840', '#d0d0c8', FONT, 'right');
       if (i === this.index) cursor(g, 12, 13 + j * 15);
     });
     box(g, 4, 112, 232, 44);
@@ -150,13 +151,17 @@ export async function bagScreen(o = {}) {
     if (!id) return undefined;
     if (o.battle) return id;
     const I = ITEMS[id];
-    const r = await menu({ items: ['USE', 'TOSS', 'CANCEL'], x: 150, y: 50, w: 86 });
+    const r = await menu({ items: I.key ? ['USE', 'CANCEL'] : ['USE', 'TOSS', 'CANCEL'], x: 150, y: 50, w: 86 });
+    if (I.key && r === 1) return undefined;
     if (r === 1) {
       if (await yesNo(`Throw away one ${I.name}?`)) { useItem(id); await say(`Threw away one ${I.name}.`); }
       return undefined;
     }
     if (r !== 0) return undefined;
     if (I.kind === 'orb') { await say('You can only use that in a battle with a wild creature.'); return undefined; }
+    if (I.kind === 'map') { await townMapScreen(); return undefined; }
+    if (I.kind === 'repel') { useItem(id); G.repel = I.steps; sfx('item'); await say(`${G.name} used a ${I.name}. Weaker wild creatures will stay away.`); return undefined; }
+    if (I.kind === 'td') { await teachTD(I.move); return undefined; }
     const pi = await partyScreen({ mode: 'item', title: `Use ${I.name} on which creature?` });
     if (pi < 0) return undefined;
     const m = G.party[pi];
@@ -168,6 +173,7 @@ export async function bagScreen(o = {}) {
       return undefined;
     }
     await applyItem(id, m, false);
+    if (I.kind === 'level') await checkEvolutions();
     return undefined;
   };
   const r = await open(w);
@@ -388,9 +394,8 @@ class Card {
     const rows = [['NAME', G.name], ['MONEY', '$' + G.money], ['DEX', `${Object.keys(G.dex.caught).length} caught`], ['TIME', `${Math.floor(t / 3600)}:${String(Math.floor(t / 60) % 60).padStart(2, '0')}`], ['REGION', regionName(G.region)]];
     rows.forEach(([k, v], j) => { text(g, k, 22, 44 + j * 15, '#606068'); text(g, String(v), 84, 44 + j * 15); });
     text(g, 'BADGES', 22, 124, '#606068');
-    const all = [['stone', '#a08060']];
-    all.forEach(([b, c], j) => {
-      const x = 84 + j * 18;
+    BADGES.forEach(([b, , c], j) => {
+      const x = 84 + j * 17;
       g.fillStyle = G.badges.includes(b) ? c : '#c8c8d0';
       g.beginPath(); g.moveTo(x + 6, 122); g.lineTo(x + 12, 128); g.lineTo(x + 6, 134); g.lineTo(x, 128); g.closePath(); g.fill();
     });
@@ -521,15 +526,20 @@ export async function startMenu(hooks) {
     const items = [];
     if (G.flags.gotDex) items.push('DEX');
     if (G.party.length) items.push('TEAM');
-    items.push('BAG', G.name.toUpperCase(), 'SAVE', 'OPTIONS', 'EXIT');
+    items.push('BAG');
+    if (G.bag.townmap) items.push('MAP');
+    if (soarUser()) items.push('SOAR');
+    items.push(G.name.toUpperCase(), 'SAVE', 'OPTIONS', 'EXIT');
     sfx('select');
-    const r = await menu({ items, x: 164, y: 2, w: 74, index: idx });
+    const r = await menu({ items, x: 164, y: 2, w: 74, index: Math.min(idx, items.length - 1), lineH: 13 });
     if (r < 0 || items[r] === 'EXIT') return;
     idx = r;
     const k = items[r];
     if (k === 'DEX') await dexScreen();
     if (k === 'TEAM') await partyScreen({});
     if (k === 'BAG') await bagScreen({});
+    if (k === 'MAP') await townMapScreen();
+    if (k === 'SOAR') { if (await soar()) return; }
     if (k === G.name.toUpperCase()) await trainerCard();
     if (k === 'SAVE') {
       const ok = save();
@@ -539,4 +549,115 @@ export async function startMenu(hooks) {
     if (k === 'OPTIONS') await optionsScreen();
     if (hooks && hooks.after) await hooks.after();
   }
+}
+
+// ---------------- TRAIL DISCS (field moves) ----------------
+async function teachTD(move) {
+  const label = MOVES[move].name;
+  const i = await partyScreen({ mode: 'pick', title: `Teach ${label} to which creature?` });
+  if (i < 0) return;
+  const m = G.party[i];
+  if (m.moves.some((x) => x.id === move)) { await say(`${name(m)} already knows ${label}.`); return; }
+  if (!canLearnField(m.sp, move)) { await say(`${name(m)} can't learn ${label}.`); return; }
+  await learnMove(m, move);
+}
+
+// ---------------- SOAR ----------------
+function soarUser() {
+  if (G.badges.length < FIELD.soar.badges) return null;
+  return G.party.find((m) => m.moves.some((mv) => mv.id === 'soar')) || null;
+}
+async function soar() {
+  const towns = Object.keys(G.visited || {}).filter((t) => MAPS[t] && MAPS[t].fly);
+  if (!towns.length) { await say('There\'s nowhere to fly to yet.'); return false; }
+  const r = await menu({ items: towns.map((t) => MAPS[t].name), x: 110, y: 4, w: 126, lineH: 13 });
+  if (r < 0) return false;
+  const u = soarUser();
+  await say(`${name(u)} used Soar!`);
+  const f = MAPS[towns[r]].fly;
+  const { warp } = await import('./world.js');
+  await warp(towns[r], f.x, f.y, f.dir);
+  return true;
+}
+
+// ---------------- TOWN MAP ----------------
+class TownMap {
+  constructor() {
+    const ids = Object.keys(LAYOUT).filter((id) => LAYOUT[id][2] === 'town');
+    this.ids = ids;
+    const here = this.hereId();
+    this.i = Math.max(0, ids.indexOf(here));
+  }
+  hereId() {
+    let id = G.pos.map;
+    const m = MAPS[id];
+    if (m && m.interior && m.exitTo) id = m.exitTo.map;
+    if (!LAYOUT[id]) { for (const k of Object.keys(LAYOUT)) if (id.startsWith(k) || id.endsWith(k)) return k; }
+    return id;
+  }
+  update() {
+    if (input.repeat('right') || input.repeat('down')) { this.i = (this.i + 1) % this.ids.length; sfx('move'); }
+    if (input.repeat('left') || input.repeat('up')) { this.i = (this.i - 1 + this.ids.length) % this.ids.length; sfx('move'); }
+    if (input.pressed('b') || input.pressed('a') || input.pressed('select')) { sfx('back'); this.close(); }
+  }
+  draw(g) {
+    const CX = (x) => 14 + x * 7.6, CY = (y) => 14 + y * 6.6;
+    g.fillStyle = '#3870b8'; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#4880c8'; for (let y = 0; y < H; y += 6) g.fillRect(0, y, W, 1);
+    // land mass
+    g.fillStyle = '#88c070';
+    g.fillRect(CX(1), CY(10), CX(10) - CX(1), CY(19.5) - CY(10));
+    g.fillRect(CX(7), CY(1.5), CX(17) - CX(7), CY(13.5) - CY(1.5));
+    g.fillRect(CX(13.5), CY(9.5), CX(27) - CX(13.5), CY(13) - CY(9.5));
+    g.fillRect(CX(19), CY(-1), CX(27) - CX(19), CY(13) - CY(-1));
+    g.fillStyle = '#c8b890'; g.fillRect(CX(19), CY(3.5), CX(27) - CX(19), CY(6.5) - CY(3.5));
+    g.fillStyle = '#e8f0f8'; g.fillRect(CX(22.5), CY(-1), CX(27) - CX(22.5), CY(6.5) - CY(-1));
+    // routes
+    for (const [id, L] of Object.entries(LAYOUT)) {
+      if (L[2] === 'route' || L[2] === 'sea') {
+        g.strokeStyle = L[2] === 'sea' ? '#a0d0f8' : '#f0d890'; g.lineWidth = 3;
+        if (L[2] === 'sea') g.setLineDash([3, 3]);
+        g.beginPath(); g.moveTo(CX(L[3]), CY(L[4])); g.lineTo(CX(L[5]), CY(L[6])); g.stroke(); g.setLineDash([]);
+      }
+    }
+    const here = this.hereId();
+    for (const [id, L] of Object.entries(LAYOUT)) {
+      const x = CX(L[0]), y = CY(L[1]);
+      if (L[2] === 'town') {
+        const seen = G.visited && G.visited[id];
+        g.fillStyle = '#202838'; g.fillRect(x - 4, y - 4, 9, 9);
+        g.fillStyle = seen ? '#e84838' : '#a0a0a8'; g.fillRect(x - 3, y - 3, 7, 7);
+      } else if (L[2] === 'cave' || L[2] === 'forest') {
+        g.fillStyle = L[2] === 'forest' ? '#2f7a2a' : '#6a5440'; g.beginPath(); g.arc(x, y, 3.5, 0, 7); g.fill();
+      }
+      if (id === here && (frame >> 4) % 2) { g.fillStyle = '#f8e040'; g.beginPath(); g.arc(x, y - 1, 4, 0, 7); g.fill(); g.fillStyle = '#e04030'; g.fillRect(x - 1, y - 2, 3, 3); }
+    }
+    const sel = this.ids[this.i];
+    const L = LAYOUT[sel];
+    g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.strokeRect(CX(L[0]) - 6.5, CY(L[1]) - 6.5, 13, 13);
+    box(g, 4, 128, 232, 30);
+    const seen = G.visited && G.visited[sel];
+    const hereName = MAPS[here] ? MAPS[here].name : '';
+    text(g, seen ? MAPS[sel].name : '???', 12, 133);
+    text(g, `You are in: ${hereName}`, 12, 145, '#606068', null, FONT_SMALL);
+    text(g, 'ALDERMOOR', 230, 133, '#3870b8', null, FONT_SMALL, 'right');
+  }
+}
+export function townMapScreen() { return open(new TownMap()); }
+
+// ---------------- PARTNERS (who travels to the next region) ----------------
+export async function partnerScreen() {
+  const chosen = [];
+  for (;;) {
+    const i = await partyScreen({ mode: 'pick', title: chosen.length ? `Pick a 2nd partner (B = done).` : 'Pick your traveling partner.' });
+    if (i < 0) break;
+    const m = G.party[i];
+    if (chosen.includes(m)) { chosen.splice(chosen.indexOf(m), 1); await say(`${name(m)} will stay behind.`); continue; }
+    chosen.push(m);
+    await say(`${name(m)} will travel with you!`);
+    if (chosen.length >= 2) break;
+  }
+  if (!chosen.length) return null;
+  if (!(await yesNo(`Travel with ${chosen.map(name).join(' and ')}? Everyone else stays in Aldermoor with Professor Maple.`))) return null;
+  return chosen;
 }

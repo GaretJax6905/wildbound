@@ -108,6 +108,16 @@ const TRACKS = {
     lead: seq('C5:2 E5:2 G5:2 E5:2 F5:2 A5:2 G5:4 E5:2 C5:2 D5:2 E5:2 D5:8 C5:2 E5:2 G5:2 C6:2 B5:2 G5:2 A5:4 G5:2 F5:2 E5:2 D5:2 C5:8'),
     bass: seq('C3:8 F2:8 C3:8 G2:8 C3:8 G2:8 F2:8 C3:8'),
   },
+  cave: {
+    bpm: 96,
+    lead: seq('E4:4 G4:2 F#4:2 E4:4 B3:4 C4:4 D4:2 E4:2 B3:8 E4:4 G4:2 A4:2 B4:4 A4:2 G4:2 F#4:4 D4:4 E4:8'),
+    bass: seq('E2:8 E2:8 C2:8 B1:8 E2:8 A1:8 B1:8 E2:8'),
+  },
+  sea: {
+    bpm: 108,
+    lead: seq('G4:2 B4:2 D5:4 B4:2 D5:2 G5:4 F#5:2 E5:2 D5:4 B4:4 C5:2 E5:2 G5:4 E5:2 C5:2 A4:4 B4:2 C5:2 D5:8'),
+    bass: seq('G2:4 D3:4 G2:4 D3:4 C3:4 G3:4 D3:4 D3:4'),
+  },
   victory: {
     bpm: 140,
     lead: seq('C5:2 E5:2 G5:2 C6:6 A5:2 B5:2 C6:2 D6:6 E6:2 D6:2 C6:2 B5:2 C6:8'),

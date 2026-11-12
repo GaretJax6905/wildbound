@@ -8,7 +8,7 @@ const cache = new Map();
 function mk(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 
-function pixelize(c, palette, outline = '#1c1c2c') {
+function pixelize(c, palette, outline = '#1c1c2c', volume = false) {
   const g = c.getContext('2d');
   const { width: w, height: h } = c;
   const img = g.getImageData(0, 0, w, h);
@@ -25,6 +25,19 @@ function pixelize(c, palette, outline = '#1c1c2c') {
         if (dd < bd) { bd = dd; best = p; }
       }
       d[i] = pal[best][0]; d[i + 1] = pal[best][1]; d[i + 2] = pal[best][2];
+    }
+  }
+  if (volume) {
+    // GBA-style volume: light from the upper left, shadow on the lower right
+    const src = new Uint8ClampedArray(d);
+    const solidAt = (x, y) => x >= 0 && y >= 0 && x < w && y < h && src[(y * w + x) * 4 + 3] > 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (!src[i + 3]) continue;
+      const lit = !solidAt(x - 1, y) || !solidAt(x, y - 1);
+      const dark = !solidAt(x + 1, y) || !solidAt(x, y + 1) || !solidAt(x + 2, y) || !solidAt(x, y + 2);
+      const k = lit ? 1.16 : dark ? 0.8 : 1;
+      if (k !== 1) for (let c2 = 0; c2 < 3; c2++) d[i + c2] = Math.max(0, Math.min(255, Math.round(src[i + c2] * k)));
     }
   }
   if (outline) {
@@ -69,8 +82,9 @@ function painter(g) {
 const mirror = (pts) => pts.map(([x, y]) => [56 - x, y]);
 const FAM = {
   mole(p, st, back) {
-    const big = st === 2;
-    const body = big ? '#7c6a48' : '#a68459', belly = '#f0dcb0', leaf = '#58b848', leafD = '#3a8a3a';
+    const big = st >= 2, third = st === 3;
+    const body = third ? '#5e5038' : big ? '#7c6a48' : '#a68459', belly = '#f0dcb0', leaf = '#58b848', leafD = third ? '#2a7a3a' : '#3a8a3a';
+    if (third) { p.ell(10, 20, 6, 10, '#2f8a3a', -0.4); p.ell(46, 20, 6, 10, '#2f8a3a', 0.4); p.circ(10, 14, 3, '#f0d040'); p.circ(46, 14, 3, '#f088b8'); }
     if (big) {
       for (let i = 0; i < 7; i++) {
         const a = Math.PI * (0.15 + i * 0.117);
@@ -99,8 +113,8 @@ const FAM = {
     if (big) { p.circ(28, top - 9, 3.5, '#f088b8'); p.circ(28, top - 9, 1.5, '#f8e060'); }
   },
   fox(p, st, back) {
-    const big = st === 2;
-    const o = '#f08838', oD = '#c85a20', cream = '#fff0d8', fy = '#f8d030', fr = '#e04020';
+    const big = st >= 2, third = st === 3;
+    const o = third ? '#403048' : '#f08838', oD = third ? '#281c30' : '#c85a20', cream = third ? '#b8a0c8' : '#fff0d8', fy = third ? '#f070f0' : '#f8d030', fr = third ? '#8030c0' : '#e04020';
     // tail + flame
     p.ell(big ? 43 : 41, big ? 40 : 40, big ? 10 : 8, 4, o, -0.6);
     p.ell(big ? 50 : 47, big ? 28 : 31, big ? 6 : 4.5, big ? 9 : 6.5, fr);
@@ -138,8 +152,9 @@ const FAM = {
     }
   },
   axolotl(p, st, back) {
-    const big = st === 2;
-    const b = big ? '#3a78d0' : '#68a8f0', bl = big ? '#6aa0e8' : '#a0d0f8', belly = '#d8f0ff', gill = '#f0a0c8';
+    const big = st >= 2, third = st === 3;
+    const b = third ? '#284890' : big ? '#3a78d0' : '#68a8f0', bl = third ? '#5078c8' : big ? '#6aa0e8' : '#a0d0f8', belly = '#d8f0ff', gill = third ? '#f0d040' : '#f0a0c8';
+    if (third) { p.poly([[10, 30], [4, 14], [14, 24]], '#f0d040'); p.poly(mirror([[10, 30], [4, 14], [14, 24]]), '#f0d040'); }
     p.ell(big ? 42 : 40, 45, big ? 13 : 10, big ? 6 : 5, b, -0.2);
     p.ell(big ? 46 : 43, 44, big ? 9 : 7, big ? 3 : 2.5, bl, -0.2);
     if (big) {
@@ -180,8 +195,9 @@ const FAM = {
     }
   },
   bird(p, st, back) {
-    const big = st === 2;
-    const br = big ? '#8a5a30' : '#b88858', brD = big ? '#5a3818' : '#8a6038', cream = '#f8e8c8', beak = '#f8c030';
+    const big = st >= 2, third = st === 3;
+    const br = third ? '#58607a' : big ? '#8a5a30' : '#b88858', brD = third ? '#363c50' : big ? '#5a3818' : '#8a6038', cream = third ? '#e0e8f8' : '#f8e8c8', beak = '#f8c030';
+    if (third) { p.poly([[30, 0], [26, 8], [30, 8], [27, 14], [34, 5], [30, 5]], '#f8e040'); }
     if (big) {
       p.poly([[22, 26], [2, 14], [4, 22], [1, 28], [8, 32], [4, 38], [20, 40]], brD);
       p.poly(mirror([[22, 26], [2, 14], [4, 22], [1, 28], [8, 32], [4, 38], [20, 40]]), brD);
@@ -256,8 +272,9 @@ const FAM = {
     }
   },
   rock(p, st, back) {
-    const big = st === 2;
-    const r = big ? '#8a8070' : '#9a9a9a', rl = big ? '#b0a890' : '#c0c0c0', rd = big ? '#605848' : '#6a6a6a';
+    const big = st >= 2, third = st === 3;
+    const r = third ? '#6c7060' : big ? '#8a8070' : '#9a9a9a', rl = third ? '#90a080' : big ? '#b0a890' : '#c0c0c0', rd = big ? '#605848' : '#6a6a6a';
+    if (third) { p.rect(25, 0, 3, 8, '#7a5030'); p.circ(26, 2, 5, '#3a9a3a'); p.circ(32, 4, 4, '#48b048'); p.circ(20, 4, 3, '#48b048'); }
     if (big) {
       p.rect(12, 44, 7, 9, rd); p.rect(37, 44, 7, 9, rd);
       p.ell(28, 40, 21, 12, r);
@@ -299,6 +316,257 @@ const FAM = {
   },
 };
 
+
+// ---------------- generated body plans ----------------
+// spec: {plan, c:[main, accent, belly], f:'ears=pointy tail=flame eyes=mean mane ...'}
+function feats(f) {
+  const o = {};
+  for (const t of (f || '').split(/\s+/).filter(Boolean)) { const [k, v] = t.split('='); o[k] = v ?? true; }
+  return o;
+}
+function shade(hexc, k) {
+  const [r, g, b] = hex(hexc);
+  const f = (x) => Math.max(0, Math.min(255, Math.round(x * k))).toString(16).padStart(2, '0');
+  return '#' + f(r) + f(g) + f(b);
+}
+function drawEyes(p, x1, x2, y, F, r = 2.3) {
+  const style = F.eyes || 'cute';
+  if (style === 'one') { p.ell((x1 + x2) / 2, y, r * 1.6, r * 1.6, '#f8f8f8'); p.circ((x1 + x2) / 2, y, r * 0.9, '#202028'); return; }
+  for (const x of [x1, x2]) {
+    if (style === 'sleepy') { p.line([[x - r, y], [x + r, y + 0.5]], '#202028', 1.3); continue; }
+    if (style === 'big') { p.ell(x, y, r * 1.2, r * 1.5, '#202028'); p.rect(Math.round(x - r * 0.6), Math.round(y - r), 2, 2, '#ffffff'); continue; }
+    p.eye(x, y, r, style === 'mean');
+  }
+}
+function drawEars(p, cx, cy, R, F, C) {
+  const k = F.ears; if (!k) return;
+  const inner = shade(C[0], 0.7);
+  if (k === 'pointy') { for (const s of [-1, 1]) { p.poly([[cx + s * R * 0.35, cy - R * 0.6], [cx + s * R * 0.95, cy - R * 1.55], [cx + s * R * 0.95, cy - R * 0.35]], C[0]); p.poly([[cx + s * R * 0.55, cy - R * 0.65], [cx + s * R * 0.88, cy - R * 1.25], [cx + s * R * 0.88, cy - R * 0.6]], inner); } }
+  if (k === 'round') for (const s of [-1, 1]) { p.circ(cx + s * R * 0.8, cy - R * 0.8, R * 0.42, C[0]); p.circ(cx + s * R * 0.8, cy - R * 0.8, R * 0.22, inner); }
+  if (k === 'long') for (const s of [-1, 1]) { p.ell(cx + s * R * 0.45, cy - R * 1.4, R * 0.28, R * 0.85, C[0], s * 0.15); p.ell(cx + s * R * 0.45, cy - R * 1.35, R * 0.13, R * 0.6, inner, s * 0.15); }
+  if (k === 'floppy') for (const s of [-1, 1]) p.ell(cx + s * R * 1.0, cy - R * 0.1, R * 0.35, R * 0.7, inner, s * -0.4);
+}
+function drawHorns(p, cx, top, F, col) {
+  const k = F.horn; if (!k) return;
+  if (k === 'one') p.poly([[cx - 3, top + 3], [cx, top - 9], [cx + 3, top + 3]], col);
+  if (k === 'two') for (const s of [-1, 1]) p.poly([[cx + s * 4, top + 3], [cx + s * 9, top - 7], [cx + s * 8, top + 4]], col);
+  if (k === 'antler') for (const s of [-1, 1]) { p.line([[cx + s * 4, top + 2], [cx + s * 10, top - 8], [cx + s * 16, top - 12]], col, 2); p.line([[cx + s * 8, top - 5], [cx + s * 7, top - 13]], col, 2); p.line([[cx + s * 12, top - 10], [cx + s * 15, top - 17]], col, 2); }
+}
+function drawTail(p, x, y, F, C) {
+  const k = F.tail; if (!k) return;
+  if (k === 'thin') p.line([[x, y], [x + 8, y - 4], [x + 11, y - 12], [x + 9, y - 16]], shade(C[0], 0.85), 2);
+  if (k === 'fluffy') p.ell(x + 7, y - 6, 6, 9, C[2], -0.5);
+  if (k === 'flame') { p.ell(x + 7, y - 7, 5, 8, '#e04020', -0.3); p.ell(x + 7, y - 5, 3, 5, '#f8d030', -0.3); }
+  if (k === 'spike') p.poly([[x, y], [x + 6, y - 10], [x + 4, y - 4], [x + 12, y - 8], [x + 5, y + 2]], C[1]);
+  if (k === 'leaf') p.ell(x + 7, y - 6, 4, 8, '#58b848', -0.6);
+}
+function drawWings(p, F, C, cy = 30) {
+  const k = F.wings; if (!k) return;
+  const w = shade(C[1], 1.1);
+  if (k === 'small') for (const s of [-1, 1]) p.ell(28 + s * 13, cy, 7, 5, w, s * 0.5);
+  if (k === 'big' || k === 'spread') for (const s of [-1, 1]) p.poly([[28 + s * 6, cy - 2], [28 + s * 27, cy - 14], [28 + s * 25, cy], [28 + s * 27, cy + 8], [28 + s * 8, cy + 8]].map(([x, y2]) => [x, y2]), w);
+  if (k === 'bat') for (const s of [-1, 1]) p.poly([[28 + s * 6, cy - 4], [28 + s * 26, cy - 12], [28 + s * 23, cy + 2], [28 + s * 18, cy - 2], [28 + s * 15, cy + 6], [28 + s * 10, cy + 2]], w);
+}
+function drawExtrasHead(p, cx, top, F, C, back) {
+  if (F.crest) p.poly([[cx - 5, top + 3], [cx - 3, top - 6], [cx, top + 1], [cx + 2, top - 8], [cx + 4, top + 1], [cx + 7, top - 5], [cx + 6, top + 4]], C[1]);
+  if (F.crown) { p.poly([[cx - 7, top + 1], [cx - 7, top - 6], [cx - 3, top - 2], [cx, top - 8], [cx + 3, top - 2], [cx + 7, top - 6], [cx + 7, top + 1]], '#f0c830'); }
+  if (F.tuft) p.line([[cx, top + 2], [cx - 1, top - 4], [cx + 4, top - 6], [cx + 3, top - 2]], C[1], 2);
+  if (F.cap) { p.ell(cx, top + 3, 12, 6, shade(C[0], 0.65)); p.line([[cx, top - 2], [cx + 2, top - 7]], '#6a4020', 2); }
+  if (F.leaves) { p.ell(cx - 6, top, 6, 4, C[1], -0.5); p.ell(cx + 6, top, 6, 4, C[1], 0.5); p.ell(cx, top - 3, 5, 4, C[1]); }
+  if (F.petals) for (let i = 0; i < 6; i++) { const a = Math.PI + (i / 5) * Math.PI; p.ell(cx + Math.cos(a) * 9, top + 4 + Math.sin(a) * 6, 4, 6, C[1], a + Math.PI / 2); }
+  if (F.star) p.poly([[cx, top - 8], [cx + 2, top - 3], [cx + 7, top - 3], [cx + 3, top], [cx + 5, top + 5], [cx, top + 2], [cx - 5, top + 5], [cx - 3, top], [cx - 7, top - 3], [cx - 2, top - 3]], '#f8e040');
+  if (F.antenna) for (const s of [-1, 1]) { p.line([[cx + s * 3, top + 2], [cx + s * 7, top - 7]], '#302828', 1.3); p.circ(cx + s * 7, top - 7, 1.8, C[1]); }
+  if (F.stem) p.rect(cx - 1, top - 6, 3, 7, '#58a040');
+}
+function drawFace(p, cx, cy, R, F, C, back) {
+  if (back) return;
+  drawEyes(p, cx - R * 0.42, cx + R * 0.42, cy - R * 0.05, F, Math.max(1.8, R * 0.22));
+  if (F.fangs) { p.poly([[cx - 3, cy + R * 0.4], [cx - 1.5, cy + R * 0.75], [cx - 0.5, cy + R * 0.4]], '#ffffff'); p.poly([[cx + 0.5, cy + R * 0.4], [cx + 1.5, cy + R * 0.75], [cx + 3, cy + R * 0.4]], '#ffffff'); }
+  else p.line([[cx - 2, cy + R * 0.42], [cx, cy + R * 0.52], [cx + 2, cy + R * 0.42]], shade(C[0], 0.45), 1.1);
+}
+function pattern(p, F, C, shapeFn, box) {
+  if (!F.pat) return;
+  const [x, y, w, h] = box;
+  const col = shade(C[0], 0.72);
+  p.clip(() => {
+    if (F.pat === 'spots') for (let i = 0; i < 5; i++) p.circ(x + ((i * 37) % w), y + ((i * 23) % h), 2.2, col);
+    if (F.pat === 'stripes') for (let i = 0; i < w; i += 6) p.rect(x + i, y, 2, h, col);
+  }, shapeFn);
+}
+
+const PLAN = {
+  quad(p, C, F, back) {
+    const dark = shade(C[0], 0.75);
+    if (F.glow) for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; p.rect(28 + Math.cos(a) * 26, 32 + Math.sin(a) * 22, 2, 2, C[1]); }
+    drawTail(p, 40, 38, F, C);
+    p.rect(15, 42, 5, 10, dark); p.rect(36, 42, 5, 10, dark);
+    p.ell(28, 40, 15, 10, C[0]);
+    if (F.shell) p.ell(28, 37, 14, 8, C[1]);
+    if (F.spikes) for (let i = 0; i < 4; i++) p.poly([[18 + i * 6, 32], [21 + i * 6, 25], [24 + i * 6, 32]], C[1]);
+    pattern(p, F, C, (g) => g.ellipse(28, 40, 15, 10, 0, 0, 7), [13, 30, 30, 20]);
+    p.rect(20, 44, 5, 9, C[0]); p.rect(31, 44, 5, 9, C[0]);
+    if (!back) { p.rect(20, 51, 5, 2, C[2]); p.rect(31, 51, 5, 2, C[2]); p.ell(28, 45, 7, 4, C[2]); }
+    if (F.mane) for (let i = 0; i < 10; i++) { const a = Math.PI * (0.85 + i * 0.145); p.poly([[28 + Math.cos(a) * 8, 25 + Math.sin(a) * 7], [28 + Math.cos(a) * 15, 25 + Math.sin(a) * 13], [28 + Math.cos(a + 0.25) * 8, 25 + Math.sin(a + 0.25) * 7]], C[1]); }
+    drawEars(p, 28, 24, 10, F, C);
+    drawHorns(p, 28, 15, F, F.horn === 'antler' ? '#c8a070' : C[2]);
+    p.circ(28, 25, 10, C[0]);
+    if (!back) p.ell(28, 29, 5.5, 3.5, C[2]);
+    drawExtrasHead(p, 28, 15, F, C, back);
+    drawFace(p, 28, 24, 10, F, C, back);
+  },
+  biped(p, C, F, back) {
+    const dark = shade(C[0], 0.75);
+    if (F.glow) for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; p.rect(28 + Math.cos(a) * 25, 30 + Math.sin(a) * 24, 2, 2, C[1]); }
+    drawWings(p, F, C, 30);
+    drawTail(p, 36, 44, F, C);
+    p.rect(21, 44, 5, 9, dark); p.rect(30, 44, 5, 9, dark);
+    p.ell(28, 38, 10, 11, C[0]);
+    if (!back) p.ell(28, 40, 6, 7, C[2]);
+    if (F.belt) p.rect(18, 42, 20, 3, C[1]);
+    for (const s of [-1, 1]) {
+      p.ell(28 + s * 12, 37, 3.5, 7, C[0], s * -0.4);
+      if (F.gloves) p.circ(28 + s * 14, 43, 4, C[1]);
+      if (F.claws) p.poly([[28 + s * 13, 42], [28 + s * 17, 47], [28 + s * 12, 45]], '#f8f8f8');
+    }
+    if (F.mane) for (let i = 0; i < 10; i++) { const a = Math.PI * (0.85 + i * 0.145); p.poly([[28 + Math.cos(a) * 8, 20 + Math.sin(a) * 7], [28 + Math.cos(a) * 15, 20 + Math.sin(a) * 13], [28 + Math.cos(a + 0.25) * 8, 20 + Math.sin(a + 0.25) * 7]], C[1]); }
+    drawEars(p, 28, 19, 10, F, C);
+    drawHorns(p, 28, 10, F, C[2]);
+    if (F.petals) drawExtrasHead(p, 28, 12, { petals: true }, C, back);
+    p.circ(28, 20, 10, C[0]);
+    drawExtrasHead(p, 28, 10, { ...F, petals: false }, C, back);
+    drawFace(p, 28, 20, 10, F, C, back);
+  },
+  bird(p, C, F, back) {
+    const wingC = shade(C[0], 0.72);
+    if (F.wings === 'spread' || F.wings === 'big') for (const s of [-1, 1]) p.poly([[28 + s * 6, 28], [28 + s * 27, 14], [28 + s * 25, 26], [28 + s * 27, 34], [28 + s * 8, 40]], wingC);
+    else if (F.wings === 'bat') drawWings(p, F, [C[0], wingC, C[2]], 30);
+    else { p.ell(15, 38, 5, 9, wingC, 0.3); p.ell(41, 38, 5, 9, wingC, -0.3); }
+    drawTail(p, 36, 48, F, C);
+    p.circ(28, 36, 12, C[0]);
+    if (F.crown) drawExtrasHead(p, 28, 25, { crown: true }, C, back);
+    if (F.crest) p.poly([[25, 25], [24, 16], [28, 22], [32, 15], [31, 25]], C[1]);
+    drawEars(p, 28, 33, 11, F, C);
+    if (!back) {
+      p.ell(28, 41, 7.5, 7, C[2]);
+      drawEyes(p, 23, 33, 32, F, 2.2);
+      if (F.beak === 'long') p.poly([[25, 35], [31, 35], [28, 46]], '#f8b030');
+      else p.poly([[25, 35], [31, 35], [28, 40]], '#f8c030');
+      if (F.fangs) { p.rect(25, 38, 1, 2, '#fff'); p.rect(31, 38, 1, 2, '#fff'); }
+    }
+    p.line([[24, 47], [24, 52]], '#f8a030', 1.8); p.line([[32, 47], [32, 52]], '#f8a030', 1.8);
+  },
+  fish(p, C, F, back) {
+    p.poly([[40, 32], [53, 22], [50, 32], [53, 44]], C[1]);
+    if (F.fin) p.poly([[20, 24], [30, 14], [34, 25]], C[1]); else p.poly([[22, 24], [28, 18], [32, 24]], C[1]);
+    p.ell(26, 33, 17, 11, C[0]);
+    pattern(p, F, C, (g) => g.ellipse(26, 33, 17, 11, 0, 0, 7), [10, 22, 34, 22]);
+    if (!back) {
+      p.ell(24, 38, 11, 4, C[2]);
+      drawEyes(p, 15, 15, 30, { eyes: F.eyes === 'mean' ? 'mean' : F.eyes === 'big' ? 'big' : 'cute' }, 2.4);
+      p.line([[9, 35], [12, 36]], shade(C[0], 0.5), 1.2);
+    }
+    p.poly([[24, 42], [28, 50], [32, 42]], C[1]);
+  },
+  serpent(p, C, F, back) {
+    if (F.glow) for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; p.rect(28 + Math.cos(a) * 26, 32 + Math.sin(a) * 22, 2, 2, C[1]); }
+    const pts = [[44, 50], [36, 51], [27, 50], [20, 46], [18, 39], [23, 33], [29, 29]];
+    pts.forEach(([x, y], i) => {
+      const r = 5 + i * 0.6;
+      if (F.fin && i > 1) p.poly([[x - 2, y - r + 1], [x + 1, y - r - 5], [x + 3, y - r + 1]], C[1]);
+      if (F.spikes && i > 1) p.poly([[x - 2, y - r + 1], [x, y - r - 4], [x + 2, y - r + 1]], C[1]);
+      p.circ(x, y, r, C[0]);
+      if (!back && i > 0) p.circ(x - 1, y + 1, r * 0.55, C[2]);
+      if (F.pat === 'spots' && i % 2) p.circ(x + 1, y - r * 0.4, 1.8, shade(C[0], 0.7));
+      if (F.pat === 'stripes') p.rect(x - 1, y - r, 2, r * 2, shade(C[0], 0.72));
+    });
+    p.ell(30, 19, 10, 8.5, C[0]);
+    drawEars(p, 30, 19, 9, F, C);
+    drawHorns(p, 30, 11, F, C[2]);
+    drawExtrasHead(p, 30, 11, F, C, back);
+    if (!back) { p.ell(30, 23, 6, 3.5, C[2]); }
+    drawFace(p, 30, 18, 9, F, C, back);
+  },
+  bug(p, C, F, back) {
+    const dark = '#302828';
+    if (F.wings === 'big') for (const s of [-1, 1]) { p.ell(28 + s * 15, 24, 11, 9, C[1], s * 0.5); p.ell(28 + s * 13, 38, 8, 6, shade(C[1], 0.85), s * -0.4); }
+    else drawWings(p, F, [C[0], '#d8f0ff', C[2]], 28);
+    for (const s of [-1, 1]) for (let i = 0; i < 3; i++) p.line([[28 + s * 5, 34 + i * 5], [28 + s * 13, 38 + i * 6], [28 + s * 15, 44 + i * 4]], dark, 1.4);
+    if (F.claws) for (const s of [-1, 1]) { p.line([[28 + s * 6, 30], [28 + s * 14, 26]], C[0], 3); p.ell(28 + s * 17, 22, 6, 5, C[0], s * 0.4); p.poly([[28 + s * 17, 18], [28 + s * 22, 14], [28 + s * 20, 21]], C[2]); }
+    if (F.stinger) p.poly([[25, 50], [28, 56], [31, 50]], dark);
+    p.ell(28, 42, 9, 9, C[0]);
+    if (F.shell) { p.ell(28, 40, 10, 10, C[1]); p.line([[28, 31], [28, 50]], dark, 1); }
+    if (F.pat === 'stripes') p.clip(() => { p.rect(18, 39, 22, 3, dark); p.rect(18, 45, 22, 3, dark); }, (g) => g.ellipse(28, 42, 9, 9, 0, 0, 7));
+    p.ell(28, 31, 7, 6, shade(C[0], 0.85));
+    drawHorns(p, 28, 17, F, C[1]);
+    drawExtrasHead(p, 28, 18, F, C, back);
+    p.circ(28, 23, 7.5, C[0]);
+    if (!back) drawEyes(p, 25, 31, 23, F, 2.2);
+  },
+  blob(p, C, F, back) {
+    if (F.shell) { p.circ(40, 30, 11, C[1]); p.line([[40, 30], [44, 30], [44, 25], [37, 24], [34, 31], [40, 37], [48, 33]], shade(C[1], 0.6), 1.3); }
+    if (F.tentacles) for (let i = 0; i < 4; i++) p.line([[18 + i * 7, 46], [16 + i * 7, 53]], C[0], 3);
+    if (F.drips) for (const x of [14, 26, 40]) p.ell(x, 51, 2.5, 3.5, C[1]);
+    if (F.spikes) for (let i = 0; i < 5; i++) p.poly([[14 + i * 7, 28], [17 + i * 7, 18], [20 + i * 7, 28]], C[1]);
+    drawEars(p, 28, 34, 14, F, C);
+    if (F.petals) drawExtrasHead(p, 28, 22, { petals: true }, C, back);
+    p.ell(28, 38, 16, 14, C[0]);
+    if (!back) p.ell(28, 43, 10, 7, C[2]);
+    if (F.feet) { p.ell(18, 51, 6, 3, C[1]); p.ell(38, 51, 6, 3, C[1]); } else { p.ell(20, 51, 4, 2.5, shade(C[0], 0.75)); p.ell(36, 51, 4, 2.5, shade(C[0], 0.75)); }
+    drawExtrasHead(p, 28, 24, { ...F, petals: false, spikes: false }, C, back);
+    drawFace(p, 28, 36, 12, F, C, back);
+  },
+  plant(p, C, F, back) {
+    for (const s of [-1, 1]) p.ell(28 + s * 15, 40, 9, 4.5, C[0], s * 0.5);
+    if (F.spikes) for (const s of [-1, 1]) p.poly([[28 + s * 10, 30], [28 + s * 18, 22], [28 + s * 14, 32]], C[1]);
+    p.ell(28, 40, 13, 12, F.stem ? C[0] : C[1]);
+    if (F.stem) for (let i = -2; i <= 2; i++) p.line([[28 + i * 5, 30], [28 + i * 5.5, 50]], shade(C[0], 0.8), 1);
+    if (!F.stem) p.ell(28, 43, 9, 7, C[0]);
+    if (F.petals) for (let i = 0; i < 7; i++) { const a = Math.PI + (i / 6) * Math.PI; p.ell(28 + Math.cos(a) * 11, 28 + Math.sin(a) * 8, 4.5, 7, C[1], a + Math.PI / 2); }
+    else if (!F.stem) { p.ell(22, 24, 4, 8, C[0], -0.4); p.ell(34, 24, 4, 8, C[0], 0.4); }
+    if (F.stem) drawExtrasHead(p, 28, 28, { stem: true }, C, back);
+    p.ell(22, 51, 4, 2, shade(C[0], 0.7)); p.ell(34, 51, 4, 2, shade(C[0], 0.7));
+    drawFace(p, 28, 39, 11, F, C, back);
+  },
+  golem(p, C, F, back) {
+    const dark = shade(C[0], 0.7);
+    p.rect(17, 44, 8, 9, dark); p.rect(31, 44, 8, 9, dark);
+    for (const s of [-1, 1]) p.rect(s < 0 ? 6 : 42, 26, 8, 16, C[0]);
+    if (F.spikes) for (const s of [-1, 1]) p.poly([[28 + s * 14, 26], [28 + s * 20, 18], [28 + s * 18, 28]], C[1]);
+    p.poly([[14, 26], [42, 26], [44, 46], [12, 46]], C[0]);
+    if (F.gear && !back) { p.circ(28, 36, 7, C[1]); for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; p.rect(27 + Math.cos(a) * 8, 35 + Math.sin(a) * 8, 3, 3, C[1]); } p.circ(28, 36, 2.5, dark); }
+    else if (!back) p.rect(20, 32, 16, 10, C[2]);
+    if (F.leaves) { p.circ(28, 8, 8, C[1]); p.circ(20, 11, 6, C[1]); p.circ(36, 11, 6, C[1]); }
+    p.rect(19, 12, 18, 14, C[0]); p.rect(20, 11, 16, 1, C[0]);
+    drawExtrasHead(p, 28, 11, { crown: F.crown }, C, back);
+    if (!back) drawEyes(p, 24, 32, 19, F, 2.2);
+  },
+  floater(p, C, F, back) {
+    if (F.glow) for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; p.rect(28 + Math.cos(a) * 25, 30 + Math.sin(a) * 23, 2, 2, C[1]); }
+    drawWings(p, F, C, 28);
+    if (F.spikes) for (let i = 0; i < 7; i++) { const a = Math.PI * (1 + i / 6); p.poly([[28 + Math.cos(a) * 11, 26 + Math.sin(a) * 11], [28 + Math.cos(a + 0.2) * 19, 26 + Math.sin(a + 0.2) * 19], [28 + Math.cos(a + 0.4) * 11, 26 + Math.sin(a + 0.4) * 11]], C[1]); }
+    p.circ(28, 26, 13, C[0]);
+    p.poly([[15, 26], [41, 26], [41, 44], [37, 40], [33, 46], [28, 41], [23, 46], [19, 40], [15, 44]], C[0]);
+    for (const s of [-1, 1]) p.ell(28 + s * 15, 32, 3, 5, C[0], s * 0.6);
+    if (!back) p.ell(28, 34, 7, 6, C[2]);
+    drawExtrasHead(p, 28, 13, F, C, back);
+    if (!back) { drawEyes(p, 23, 33, 24, F, 2.6); p.line([[25, 30], [28, 32], [31, 30]], shade(C[0], 0.5), 1.1); }
+  },
+  dragon(p, C, F, back) {
+    if (F.glow) for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; p.rect(28 + Math.cos(a) * 26, 30 + Math.sin(a) * 24, 2, 2, C[1]); }
+    drawWings(p, F, C, 28);
+    p.line([[36, 46], [46, 48], [52, 42]], C[0], 5); p.poly([[50, 38], [56, 40], [52, 45]], C[1]);
+    p.rect(19, 44, 6, 9, shade(C[0], 0.75)); p.rect(31, 44, 6, 9, shade(C[0], 0.75));
+    p.ell(28, 39, 11, 11, C[0]);
+    if (!back) p.ell(28, 41, 6, 8, C[2]);
+    for (const s of [-1, 1]) p.ell(28 + s * 11, 36, 3, 5, C[0], s * -0.5);
+    drawHorns(p, 28, 11, F, C[2]);
+    if (F.crest) p.poly([[24, 13], [28, 4], [32, 13]], C[1]);
+    p.ell(28, 20, 11, 9, C[0]);
+    if (!back) p.ell(28, 24, 6, 4, C[2]);
+    drawFace(p, 28, 19, 9, F, C, back);
+  },
+};
+
 export function creature(sp, size = 56, back = false) {
   const key = `c:${sp}:${size}:${back}`;
   if (cache.has(key)) return cache.get(key);
@@ -307,8 +575,12 @@ export function creature(sp, size = 56, back = false) {
   const g = c.getContext('2d');
   g.scale(size / 56, size / 56);
   const p = painter(g);
-  FAM[s.family](p, s.stage, back);
-  pixelize(c, [...p.used], '#1c1c2c');
+  if (s.family === 'plan') {
+    const k = s.art.stage === 1 ? 0.8 : s.art.stage === 2 ? 0.92 : 1;
+    g.translate(28, 54); g.scale(k, k); g.translate(-28, -54);
+    PLAN[s.art.plan](p, s.art.c, feats(s.art.f), back);
+  } else FAM[s.family](p, s.stage, back);
+  pixelize(c, [...p.used], '#1c1c2c', size >= 40);
   cache.set(key, c);
   return c;
 }
@@ -326,12 +598,12 @@ export function silhouette(sp, size = 56, col = '#ffffff') {
 
 // ---------------- people (16x24) ----------------
 export const LOOKS = {
-  player: { skin: '#f8d0a8', hair: '#503018', shirt: '#d84838', pants: '#384870', hat: '#d84838', hatB: '#f8f8f8' },
+  player: { skin: '#f8d0a8', hair: '#503018', shirt: '#f09030', pants: '#384870', hat: '#3a7ac8', hatB: '#f8f8f8' },
   kai: { skin: '#f0c8a0', hair: '#283858', shirt: '#3870c8', pants: '#303040', spiky: true },
   juno: { skin: '#e8b890', hair: '#e07830', shirt: '#38a868', pants: '#584038', long: true },
   maple: { skin: '#f8d8b8', hair: '#a07850', shirt: '#f8f8f0', pants: '#787890', coat: true, long: true },
   mom: { skin: '#f8d0a8', hair: '#704020', shirt: '#e890a0', pants: '#6070a0', long: true },
-  nurse: { skin: '#f8d8c0', hair: '#f090b0', shirt: '#f8f8f8', pants: '#f8f8f8', long: true, hat: '#f8f8f8', hatB: '#f06080' },
+  nurse: { skin: '#f8d8c0', hair: '#5a9ad8', shirt: '#f8f8f8', pants: '#88c8a8', long: true, hat: '#f8f8f8', hatB: '#48b080' },
   clerk: { skin: '#e8c098', hair: '#302820', shirt: '#4878d0', pants: '#384050' },
   bugkid: { skin: '#f8d0a8', hair: '#906030', shirt: '#e8d040', pants: '#507838', hat: '#58a040', hatB: '#407828' },
   lass: { skin: '#f8d8b8', hair: '#c05868', shirt: '#f8a8c0', pants: '#f8f8f8', long: true },
@@ -347,6 +619,29 @@ export const LOOKS = {
   boy: { skin: '#d8a078', hair: '#382010', shirt: '#f09030', pants: '#405068' },
   guide: { skin: '#f0c8a0', hair: '#583018', shirt: '#f8f8f8', pants: '#383848', hat: '#f05050', hatB: '#c03030' },
   aide: { skin: '#f8d8b8', hair: '#383838', shirt: '#f8f8f0', pants: '#606880', coat: true },
+  briar: { skin: '#e8c098', hair: '#3a8a3a', shirt: '#88c048', pants: '#5a4030', long: true },
+  jolt: { skin: '#f0c8a0', hair: '#f0d030', shirt: '#303848', pants: '#202830', spiky: true },
+  marina: { skin: '#d8a078', hair: '#2858a8', shirt: '#58b0e8', pants: '#f8f8f8', long: true },
+  kenta: { skin: '#c88858', hair: '#202020', shirt: '#f8f8f8', pants: '#f8f8f8', beard: true },
+  sable: { skin: '#f8e0d0', hair: '#202030', shirt: '#c04080', pants: '#402040', long: true },
+  ignis: { skin: '#d89068', hair: '#e04020', shirt: '#583020', pants: '#302020', spiky: true },
+  vesper: { skin: '#e8c8b0', hair: '#6040c0', shirt: '#3828a0', pants: '#201850', long: true, coat: true },
+  frida: { skin: '#f8e8e0', hair: '#c8e8f8', shirt: '#78c8d8', pants: '#f8f8f8', long: true },
+  morrow: { skin: '#d8d0e0', hair: '#583878', shirt: '#382848', pants: '#201828', coat: true },
+  raze: { skin: '#c89070', hair: '#181818', shirt: '#481818', pants: '#202020', spiky: true },
+  ferrum: { skin: '#e0b090', hair: '#909098', shirt: '#7880a0', pants: '#404858', beard: true },
+  vex: { skin: '#f0d8c8', hair: '#f8f8f8', shirt: '#181828', pants: '#181828', coat: true, emblem: true },
+  scientist: { skin: '#f0c8a0', hair: '#606060', shirt: '#f8f8f8', pants: '#5878a8', coat: true },
+  swimmer: { skin: '#e0a878', hair: '#f0c040', shirt: '#3870e0', pants: '#3870e0' },
+  blackbelt: { skin: '#d09060', hair: '#202020', shirt: '#f8f8f8', pants: '#f8f8f8', hat: '#202020', hatB: '#202020' },
+  psychic: { skin: '#f8d8c8', hair: '#a050a0', shirt: '#6030a0', pants: '#301850', long: true },
+  acetrainer: { skin: '#f0c8a0', hair: '#5a3018', shirt: '#2858c0', pants: '#f8f8f8', hat: '#f8f8f8', hatB: '#2858c0' },
+  fisher: { skin: '#d8a070', hair: '#504030', shirt: '#80a050', pants: '#405068', hat: '#e0c060', hatB: '#a08040' },
+  skier: { skin: '#f8d8c0', hair: '#e07040', shirt: '#e04060', pants: '#284080', hat: '#f8f8f8', hatB: '#e04060' },
+  beauty: { skin: '#f8d8c0', hair: '#e8b040', shirt: '#f070a0', pants: '#f070a0', long: true },
+  mystic: { skin: '#e0d8e8', hair: '#383050', shirt: '#4a3a70', pants: '#2a2040', long: true, coat: true },
+  biker: { skin: '#d8a070', hair: '#c03030', shirt: '#303030', pants: '#405068', spiky: true },
+  tamer: { skin: '#e8b890', hair: '#383838', shirt: '#a03838', pants: '#383838', coat: true },
 };
 
 export function person(lookId, dir = 'down', step = 0) {
@@ -355,58 +650,138 @@ export function person(lookId, dir = 'down', step = 0) {
   const L = LOOKS[lookId] || LOOKS.boy;
   const c = mk(16, 24); const g = c.getContext('2d');
   const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+  const sk = L.skin, skS = shade(sk, 0.82), hr = L.hair, hrS = shade(hr, 0.72), hrH = shade(hr, 1.3);
+  const sh = L.shirt, shS = shade(sh, 0.75), shH = shade(sh, 1.18), pa = L.pants, paS = shade(pa, 0.72);
+  const shoe = '#3a3040', shoeH = '#6a6070';
   const side = dir === 'left' || dir === 'right';
-  const shoe = '#383838';
-  // legs
-  const lu = step === 1 ? 1 : 0, ru = step === 2 ? 1 : 0;
+  const bob = step ? 1 : 0; // body rises on step frames
+  const by = -bob;
+  // ---- legs & shoes ----
   if (side) {
-    const off = step ? 1 : 0;
-    px(6 - off, 18, 2, 4, L.pants); px(8 + off, 18, 2, 4, L.pants);
-    px(6 - off, 21, 2, 2, shoe); px(8 + off, 21, 2, 2, shoe);
+    const s1 = step === 1 ? -2 : step === 2 ? 2 : 0;
+    px(6 + Math.min(0, s1), 18, 3, 3, paS); px(7 + Math.max(0, s1) - 1, 18, 3, 3, pa);
+    px(5 + Math.min(0, s1), 21, 4, 2, shoe); px(7 + Math.max(0, s1), 21, 4, 2, shoe);
+    px(5 + Math.min(0, s1), 21, 1, 1, shoeH);
   } else {
-    px(5, 18, 2, 4 - lu, L.pants); px(9, 18, 2, 4 - ru, L.pants);
-    px(5, 21 - lu, 3, 2, shoe); px(8, 21 - ru, 3, 2, shoe);
+    const lu = step === 1 ? 1 : 0, ru = step === 2 ? 1 : 0;
+    px(4, 18 + by, 4, 3 - lu, pa); px(8, 18 + by, 4, 3 - ru, pa);
+    px(7, 18 + by, 1, 3, paS); px(11, 18 + by, 1, 3, paS);
+    px(4, 21 - lu, 4, 2, shoe); px(8, 21 - ru, 4, 2, shoe);
+    px(4, 21 - lu, 2, 1, shoeH); px(8, 21 - ru, 2, 1, shoeH);
   }
-  // body
-  px(4, 12, 8, 7, L.shirt);
-  if (L.coat) { px(3, 12, 10, 8, L.shirt); px(7, 12, 2, 7, '#c8c8d0'); }
-  if (L.emblem && dir !== 'up') { px(7, 14, 2, 2, '#f8d030'); px(6, 15, 1, 1, '#f8d030'); }
-  // arms
-  if (side) { px(7, 13, 2, 4, L.shirt); px(7, 17, 2, 1, L.skin); } else {
+  // ---- long hair behind shoulders ----
+  if (L.long && dir !== 'up') { if (side) px(8, 9 + by, 4, 6, hrS); else { px(2, 8 + by, 2, 7, hrS); px(12, 8 + by, 2, 7, hrS); } }
+  // ---- torso ----
+  const tTop = 12 + by, tH = L.coat ? 8 : 6;
+  if (side) {
+    px(5, tTop, 6, tH, sh); px(dir === 'left' ? 10 : 5, tTop, 1, tH, shS); px(5, tTop, 6, 1, shH);
+  } else {
+    px(4, tTop, 8, tH, sh); px(4, tTop, 8, 1, shH); px(11, tTop, 1, tH, shS); px(4, tTop + tH - 1, 8, 1, shS);
+    if (L.coat && dir === 'down') { px(7, tTop + 1, 2, tH - 1, shade(sh, 0.6)); px(6, tTop, 1, 3, '#f8f8f8'); px(9, tTop, 1, 3, '#f8f8f8'); }
+    if (L.emblem && dir === 'down') { px(7, tTop + 2, 2, 2, '#f8d030'); px(7, tTop + 2, 1, 1, '#fff8b0'); }
+    if (!L.coat) { px(4, tTop + tH - 1, 8, 1, shade(pa, 0.9)); px(7, tTop + tH - 1, 2, 1, '#d8c060'); }
+  }
+  // ---- arms ----
+  if (side) {
+    const sw = step === 1 ? 1 : step === 2 ? -1 : 0;
+    const ax = dir === 'left' ? 7 + sw : 7 - sw;
+    px(ax, tTop + 1, 2, 4, shS); px(ax, tTop + 5, 2, 1, sk);
+  } else {
     const sw = step === 1 ? -1 : step === 2 ? 1 : 0;
-    px(3, 12 + Math.max(0, sw), 1, 5, L.shirt); px(12, 12 + Math.max(0, -sw), 1, 5, L.shirt);
-    px(3, 17 + Math.max(0, sw), 1, 1, L.skin); px(12, 17 + Math.max(0, -sw), 1, 1, L.skin);
+    px(2, tTop + Math.max(0, sw), 2, 4, sh); px(12, tTop + Math.max(0, -sw), 2, 4, sh);
+    px(2, tTop + Math.max(0, sw), 1, 4, shS); px(13, tTop + Math.max(0, -sw), 1, 4, shS);
+    px(2, tTop + 4 + Math.max(0, sw), 2, 2, sk); px(12, tTop + 4 + Math.max(0, -sw), 2, 2, sk);
   }
-  // head
-  px(4, 3, 8, 9, L.skin); px(5, 2, 6, 1, L.skin);
-  // hair
+  // ---- head ----
+  const hy = 2 + by;
+  const head = (col) => { px(5, hy, 6, 1, col); px(4, hy + 1, 8, 1, col); px(3, hy + 2, 10, 6, col); px(4, hy + 8, 8, 1, col); px(5, hy + 9, 6, 1, col); };
+  head(sk);
+  px(3, hy + 7, 10, 1, skS); px(5, hy + 9, 6, 1, skS);
   if (dir === 'up') {
-    px(4, 2, 8, 9, L.hair); px(5, 1, 6, 1, L.hair);
-    if (L.long) px(4, 10, 8, 3, L.hair);
+    head(hr); px(5, hy + 1, 4, 2, hrH); px(3, hy + 6, 10, 2, hrS);
+    if (L.long) px(3, hy + 8, 10, 3, hr);
   } else if (side) {
-    px(4, 2, 8, 3, L.hair); px(5, 1, 6, 1, L.hair); px(8, 5, 4, 5, L.hair);
-    if (L.long) px(8, 5, 4, 8, L.hair);
-    px(5, 7, 1, 2, '#202030');
-    if (L.beard) px(4, 9, 4, 3, L.hair);
+    const f = dir === 'left';
+    // hair cap + back of head
+    px(4, hy, 8, 1, hr); px(3, hy + 1, 10, 2, hr); px(f ? 8 : 3, hy + 3, 5, 4, hr); px(f ? 9 : 3, hy + 7, 4, 2, hrS);
+    px(5, hy + 1, 3, 1, hrH);
+    px(f ? 3 : 4, hy + 3, 2, 1, hr);
+    const ex = f ? 4 : 11;
+    px(ex, hy + 4, 1, 2, '#202030'); px(f ? 2 : 13, hy + 5, 1, 1, sk);
+    px(f ? 5 : 10, hy + 7, 1, 1, shade(sk, 0.7));
+    if (L.beard) px(f ? 3 : 7, hy + 6, 6, 3, hr);
   } else {
-    px(4, 2, 8, 3, L.hair); px(5, 1, 6, 1, L.hair); px(4, 5, 1, 3, L.hair); px(11, 5, 1, 3, L.hair);
-    if (L.long) { px(3, 5, 2, 8, L.hair); px(11, 5, 2, 8, L.hair); }
-    px(6, 7, 1, 2, '#202030'); px(9, 7, 1, 2, '#202030');
-    if (L.beard) px(5, 9, 6, 3, L.hair);
+    // hair cap with bangs
+    px(4, hy, 8, 1, hr); px(3, hy + 1, 10, 2, hr); px(3, hy + 3, 2, 3, hr); px(11, hy + 3, 2, 3, hr);
+    px(5, hy + 3, 2, 1, hr); px(9, hy + 3, 1, 1, hr);
+    px(5, hy + 1, 3, 1, hrH); px(3, hy + 5, 1, 1, hrS); px(12, hy + 5, 1, 1, hrS);
+    // eyes
+    px(5, hy + 4, 2, 3, '#202030'); px(9, hy + 4, 2, 3, '#202030');
+    px(5, hy + 4, 1, 1, '#ffffff'); px(9, hy + 4, 1, 1, '#ffffff');
+    px(4, hy + 6, 1, 1, '#f0a0a0'); px(11, hy + 6, 1, 1, '#f0a0a0');
+    if (L.beard) { px(4, hy + 7, 8, 3, hr); px(6, hy + 7, 4, 1, sk); }
   }
-  if (L.spiky) { px(4, 0, 2, 2, L.hair); px(7, 0, 2, 1, L.hair); px(10, 0, 2, 2, L.hair); }
+  if (L.spiky && !L.hat) { px(4, hy - 2, 2, 2, hr); px(7, hy - 3, 2, 3, hr); px(10, hy - 2, 2, 2, hr); px(7, hy - 3, 1, 1, hrH); }
   if (L.hat) {
-    px(4, 1, 8, 3, L.hat); px(5, 0, 6, 1, L.hat);
-    if (dir === 'down') px(4, 4, 8, 1, L.hatB);
-    else if (side) px(1, 4, 6, 1, L.hatB);
-    if (L.hatB && dir !== 'up' && !side) px(7, 2, 2, 1, L.hatB);
-  }
-  if (dir === 'right') {
-    const t = mk(16, 24); const tg = t.getContext('2d');
-    tg.translate(16, 0); tg.scale(-1, 1); tg.drawImage(c, 0, 0);
-    g.clearRect(0, 0, 16, 24); g.drawImage(t, 0, 0);
+    const hc = L.hat, hcS = shade(hc, 0.75), hb = L.hatB || hcS;
+    px(4, hy - 1, 8, 1, hc); px(3, hy, 10, 3, hc); px(4, hy, 3, 1, shade(hc, 1.2)); px(3, hy + 2, 10, 1, hcS);
+    if (dir === 'down') { px(3, hy + 3, 10, 1, hb); px(7, hy, 2, 2, hb); }
+    else if (side) px(dir === 'left' ? 0 : 9, hy + 3, 7, 1, hb);
   }
   pixelize(c, [], '#202030');
+  cache.set(key, c);
+  return c;
+}
+
+// Battle portraits: a bigger, shaded trainer drawn with shapes and then pixelized.
+export function trainerPortrait(lookId) {
+  const key = 'tp:' + lookId;
+  if (cache.has(key)) return cache.get(key);
+  const L = LOOKS[lookId] || LOOKS.boy;
+  const c = mk(48, 72); const g = c.getContext('2d');
+  const p = painter(g);
+  const sk = L.skin, hr = L.hair, sh = L.shirt, pa = L.pants;
+  // legs
+  p.rect(15, 52, 8, 16, pa); p.rect(25, 52, 8, 16, shade(pa, 0.85)); p.rect(23, 52, 2, 14, shade(pa, 0.6));
+  p.rect(13, 66, 11, 5, '#3a3040'); p.rect(24, 66, 11, 5, '#3a3040'); p.rect(14, 66, 4, 1, '#7a7080'); p.rect(26, 66, 4, 1, '#7a7080');
+  if (L.long) p.ell(24, 30, 15, 18, shade(hr, 0.8));
+  // torso
+  const coatLen = L.coat ? 62 : 54;
+  p.poly([[12, 32], [36, 32], [38, coatLen], [10, coatLen]], sh);
+  p.poly([[30, 32], [36, 32], [38, coatLen], [32, coatLen]], shade(sh, 0.8));
+  p.rect(12, 32, 24, 2, shade(sh, 1.15));
+  if (L.coat) { p.poly([[21, 33], [24, 33], [24, coatLen], [21, coatLen]], shade(sh, 0.6)); p.poly([[19, 33], [22, 40], [21, 33]], '#f8f8f8'); }
+  else { p.rect(12, 50, 24, 3, shade(pa, 0.9)); p.rect(22, 50, 4, 3, '#e0c050'); }
+  if (L.emblem) { p.circ(19, 40, 3, '#f8d030'); p.circ(20, 39, 1.5, '#282838'); }
+  // arms
+  p.ell(9, 41, 4, 10, sh, 0.15); p.ell(39, 41, 4, 10, shade(sh, 0.8), -0.15);
+  p.circ(8, 51, 3.5, sk); p.circ(40, 51, 3.5, shade(sk, 0.9));
+  // neck + head
+  p.rect(20, 27, 8, 6, shade(sk, 0.85));
+  p.ell(24, 18, 11, 12, sk);
+  p.ell(14, 19, 2, 3, shade(sk, 0.9)); p.ell(34, 19, 2, 3, shade(sk, 0.9));
+  // hair
+  const hrS = shade(hr, 0.75), hrH = shade(hr, 1.3);
+  if (!L.hat) {
+    p.ell(24, 11, 12, 8, hr);
+    p.poly([[12, 12], [14, 22], [17, 13]], hr); p.poly([[36, 12], [34, 22], [31, 13]], hr);
+    p.poly([[17, 12], [21, 17], [24, 12], [27, 17], [31, 12]], hr);
+    p.ell(20, 8, 4, 2, hrH);
+    if (L.spiky) for (let i = 0; i < 5; i++) p.poly([[14 + i * 5, 8], [16 + i * 5, -1 + (i % 2) * 3], [19 + i * 5, 8]], hr);
+  } else {
+    p.ell(24, 10, 12, 7, L.hat); p.rect(12, 10, 24, 4, L.hat); p.ell(20, 7, 4, 2, shade(L.hat, 1.2));
+    p.ell(24, 14, 15, 2.5, L.hatB || shade(L.hat, 0.7));
+    p.poly([[13, 14], [15, 20], [18, 15]], hr); p.poly([[35, 14], [33, 20], [30, 15]], hr);
+  }
+  if (L.long) { p.ell(13, 24, 3, 9, hr); p.ell(35, 24, 3, 9, hrS); }
+  // face
+  p.ell(19, 19, 2, 2.6, '#202030'); p.ell(29, 19, 2, 2.6, '#202030');
+  p.rect(18, 17, 1, 1, '#ffffff'); p.rect(28, 17, 1, 1, '#ffffff');
+  p.line([[16.5, 14.5], [21, 15]], hrS, 1); p.line([[27, 15], [31.5, 14.5]], hrS, 1);
+  p.ell(16, 23, 2, 1, '#f0a8a8'); p.ell(32, 23, 2, 1, '#f0a8a8');
+  if (L.beard) { p.poly([[15, 22], [33, 22], [30, 30], [24, 32], [18, 30]], hr); p.rect(21, 25, 6, 1, shade(sk, 0.6)); }
+  else p.line([[22, 25], [24, 26], [26, 25]], shade(sk, 0.55), 1);
+  pixelize(c, [...p.used], '#202030');
   cache.set(key, c);
   return c;
 }
@@ -478,14 +853,29 @@ const TILE_DRAW = {
   statue(px) { TILE_DRAW.gymfloor(px); px(3, 12, 10, 4, '#787878'); px(4, 3, 8, 9, '#a0a0a0'); px(5, 2, 6, 1, '#a0a0a0'); px(5, 4, 3, 3, '#c8c8c8'); px(9, 8, 3, 4, '#787878'); },
   boulder(px) { TILE_DRAW.gymfloor(px); px(2, 4, 12, 10, '#8a8070'); px(3, 3, 9, 1, '#8a8070'); px(3, 5, 5, 3, '#b0a890'); px(8, 10, 6, 4, '#605848'); },
   void(px) { px(0, 0, 16, 16, '#101018'); },
+  bush(px) { TILE_DRAW.grass(px, srand(17)); px(2, 4, 12, 11, '#2f7a2a'); px(1, 6, 14, 7, '#2f7a2a'); px(3, 5, 4, 3, '#4aa040'); px(9, 8, 3, 2, '#4aa040'); for (const [x, y] of [[3, 3], [11, 4], [1, 9], [14, 10], [6, 13], [10, 14]]) px(x, y, 1, 2, '#e8e0c0'); },
+  crack(px) { TILE_DRAW.path(px, srand(19)); px(1, 2, 14, 13, '#8a8478'); px(2, 1, 11, 1, '#8a8478'); px(3, 3, 5, 3, '#aca698'); px(7, 2, 1, 5, '#504840'); px(8, 6, 4, 1, '#504840'); px(5, 8, 1, 5, '#504840'); px(10, 9, 3, 4, '#686258'); },
+  cavefloor(px, r) { px(0, 0, 16, 16, '#9a8268'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#86705a'); },
+  cavepath(px, r) { px(0, 0, 16, 16, '#a88e72'); for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#94806a'); },
+  cavewall(px) { px(0, 0, 16, 16, '#5a4838'); px(0, 0, 16, 3, '#6e5a46'); px(2, 5, 5, 3, '#6e5a46'); px(9, 9, 5, 3, '#6e5a46'); px(0, 14, 16, 2, '#3e3026'); px(7, 4, 1, 5, '#3e3026'); },
+  snow(px, r) { px(0, 0, 16, 16, '#eef4fa'); for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#d4e0ec'); },
+  snowpath(px, r) { px(0, 0, 16, 16, '#d8e2ea'); for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#b8c6d4'); },
+  snowgrass(px) { px(0, 0, 16, 16, '#d8ecf4'); for (const [x, y] of [[1, 2], [6, 0], [11, 3], [3, 8], [9, 9], [13, 10]]) { px(x, y + 2, 1, 5, '#5a8a78'); px(x + 1, y, 1, 7, '#6a9a88'); px(x + 2, y + 2, 1, 5, '#5a8a78'); px(x + 1, y, 1, 1, '#ffffff'); } },
+  pine(px) { TILE_DRAW.snow(px, srand(21)); px(7, 12, 2, 4, '#6a4a2a'); px(6, 1, 4, 3, '#2a6a4a'); px(4, 4, 8, 4, '#2a6a4a'); px(2, 8, 12, 4, '#2a6a4a'); px(6, 1, 2, 1, '#ffffff'); px(4, 4, 3, 1, '#ffffff'); px(2, 8, 4, 1, '#ffffff'); },
+  ash(px, r) { px(0, 0, 16, 16, '#9a9090'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#7a7070'); },
+  lava(px, r, f) { px(0, 0, 16, 16, '#e04818'); const o = f % 2 ? 3 : 0; px((3 + o) % 14, 3, 4, 2, '#f8a030'); px((9 + o) % 14, 9, 5, 2, '#f8d040'); px((1 + o) % 14, 12, 3, 1, '#f8a030'); },
+  console(px) { px(0, 0, 16, 16, '#383848'); px(1, 2, 14, 8, '#202028'); px(2, 3, 12, 6, '#30a070'); px(3, 4, 5, 1, '#70f0b0'); px(3, 6, 8, 1, '#70f0b0'); px(1, 11, 14, 4, '#585868'); px(3, 12, 2, 2, '#e04040'); px(7, 12, 2, 2, '#f0d040'); },
+  dkfloor(px) { px(0, 0, 16, 16, '#404058'); px(0, 0, 16, 1, '#50506a'); px(0, 0, 1, 16, '#50506a'); px(7, 7, 2, 2, '#58587a'); },
+  icefloor(px) { px(0, 0, 16, 16, '#c8e8f8'); px(0, 0, 16, 1, '#a8d0e8'); px(0, 0, 1, 16, '#a8d0e8'); px(3, 4, 4, 1, '#ffffff'); px(9, 11, 3, 1, '#ffffff'); },
+  pushrock(px) { px(2, 3, 12, 12, '#7a6e5e'); px(3, 2, 10, 1, '#7a6e5e'); px(1, 5, 14, 8, '#7a6e5e'); px(3, 4, 5, 4, '#a09482'); px(9, 10, 4, 3, '#584e40'); px(2, 14, 12, 1, '#3e3628'); },
   ledge(px) { TILE_DRAW.grass(px, srand(13)); px(0, 10, 16, 3, '#609848'); px(0, 13, 16, 1, '#407030'); },
 };
-export const TILE_FRAMES = { water: 2, flower: 2 };
+export const TILE_FRAMES = { water: 2, flower: 2, lava: 2 };
 
 export function tile(name, variant = 0, f = 0) {
   const frames = TILE_FRAMES[name] || 1;
   const ff = f % frames;
-  const v = name === 'grass' || name === 'path' || name === 'sand' ? variant % 4 : 0;
+  const v = ['grass', 'path', 'sand', 'cavefloor', 'cavepath', 'snow', 'snowpath', 'ash'].includes(name) ? variant % 4 : 0;
   const key = `t:${name}:${v}:${ff}`;
   if (cache.has(key)) return cache.get(key);
   const c = mk(16, 16); const g = c.getContext('2d');
@@ -503,6 +893,8 @@ const BUILD = {
   center: { roof: '#e05050', roofD: '#a83030', wall: '#f8f0f0', label: 'HEAL' },
   mart: { roof: '#4080e0', roofD: '#2858a8', wall: '#f0f0f8', label: 'MART' },
   gym: { roof: '#a07840', roofD: '#705020', wall: '#c8c0b0', label: 'GYM' },
+  tower: { roof: '#383850', roofD: '#202030', wall: '#686880', label: 'TOWER' },
+  league: { roof: '#c8a030', roofD: '#8a6a18', wall: '#f0e8d8', label: 'LEAGUE' },
 };
 export function building(kind, w, h, doorX) {
   const key = `b:${kind}:${w}:${h}:${doorX}`;
@@ -563,13 +955,3 @@ export function orb(kind = 'orb') {
   return c;
 }
 
-// Big trainer portrait for battle intros: person sprite scaled 3x.
-export function trainerPortrait(look) {
-  const key = 'tp:' + look;
-  if (cache.has(key)) return cache.get(key);
-  const c = mk(48, 72); const g = c.getContext('2d');
-  g.imageSmoothingEnabled = false;
-  g.drawImage(person(look, 'down', 0), 0, 0, 48, 72);
-  cache.set(key, c);
-  return c;
-}

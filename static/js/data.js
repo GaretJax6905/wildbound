@@ -1,177 +1,213 @@
-// Game data: types, moves, creatures, items. Everything here is original.
-// To add a creature: add an entry to SPECIES (and a drawer in art.js under
-// the same "family"), then put it in an encounter table in maps.js.
+// Game data: types, moves, items, and the creature list (built from species.js).
+// Everything here is original.
+import { RAW_SPECIES, HAND_LEARNSETS } from './species.js';
 
-export const TYPES = ['Normal', 'Fire', 'Water', 'Grass', 'Electric', 'Bug', 'Flying', 'Rock', 'Ground'];
+export const TYPES = ['Normal', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Brawl', 'Toxic', 'Ground', 'Flying', 'Mind', 'Bug', 'Rock', 'Spirit', 'Dragon', 'Shadow', 'Metal', 'Fae'];
 export const TYPE_COLORS = {
-  Normal: '#a8a878', Fire: '#f08030', Water: '#6890f0', Grass: '#78c850', Electric: '#f8d030',
-  Bug: '#a8b820', Flying: '#a890f0', Rock: '#b8a038', Ground: '#e0c068',
+  Normal: '#a8a878', Fire: '#f08030', Water: '#6890f0', Grass: '#78c850', Electric: '#e8c020', Ice: '#78c8d8',
+  Brawl: '#c03028', Toxic: '#a040a0', Ground: '#d8b058', Flying: '#a890f0', Mind: '#f85888', Bug: '#a8b820',
+  Rock: '#b8a038', Spirit: '#705898', Dragon: '#7038f8', Shadow: '#705848', Metal: '#9898b8', Fae: '#e890c8',
 };
 // Physical vs special is decided by the move's type, like the classic games.
-export const SPECIAL_TYPES = new Set(['Fire', 'Water', 'Grass', 'Electric']);
+export const SPECIAL_TYPES = new Set(['Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Mind', 'Dragon', 'Shadow', 'Fae']);
 
 const CHART = {
-  Normal: { Rock: 0.5 },
-  Fire: { Fire: 0.5, Water: 0.5, Grass: 2, Bug: 2, Rock: 0.5 },
-  Water: { Fire: 2, Water: 0.5, Grass: 0.5, Rock: 2, Ground: 2 },
-  Grass: { Fire: 0.5, Water: 2, Grass: 0.5, Bug: 0.5, Flying: 0.5, Rock: 2, Ground: 2 },
-  Electric: { Water: 2, Grass: 0.5, Electric: 0.5, Flying: 2, Ground: 0 },
-  Bug: { Fire: 0.5, Grass: 2, Flying: 0.5 },
-  Flying: { Grass: 2, Electric: 0.5, Bug: 2, Rock: 0.5 },
-  Rock: { Fire: 2, Bug: 2, Flying: 2, Ground: 0.5 },
-  Ground: { Fire: 2, Grass: 0.5, Electric: 2, Bug: 0.5, Flying: 0, Rock: 2 },
+  Normal: { Rock: 0.5, Spirit: 0, Metal: 0.5 },
+  Fire: { Fire: 0.5, Water: 0.5, Grass: 2, Ice: 2, Bug: 2, Rock: 0.5, Dragon: 0.5, Metal: 2 },
+  Water: { Fire: 2, Water: 0.5, Grass: 0.5, Ground: 2, Rock: 2, Dragon: 0.5 },
+  Grass: { Fire: 0.5, Water: 2, Grass: 0.5, Toxic: 0.5, Ground: 2, Flying: 0.5, Bug: 0.5, Rock: 2, Dragon: 0.5, Metal: 0.5 },
+  Electric: { Water: 2, Grass: 0.5, Electric: 0.5, Ground: 0, Flying: 2, Dragon: 0.5 },
+  Ice: { Fire: 0.5, Water: 0.5, Grass: 2, Ice: 0.5, Ground: 2, Flying: 2, Dragon: 2, Metal: 0.5 },
+  Brawl: { Normal: 2, Ice: 2, Toxic: 0.5, Flying: 0.5, Mind: 0.5, Bug: 0.5, Rock: 2, Spirit: 0, Shadow: 2, Metal: 2, Fae: 0.5 },
+  Toxic: { Grass: 2, Toxic: 0.5, Ground: 0.5, Rock: 0.5, Spirit: 0.5, Metal: 0, Fae: 2 },
+  Ground: { Fire: 2, Grass: 0.5, Electric: 2, Toxic: 2, Flying: 0, Bug: 0.5, Rock: 2, Metal: 2 },
+  Flying: { Grass: 2, Electric: 0.5, Brawl: 2, Bug: 2, Rock: 0.5, Metal: 0.5 },
+  Mind: { Brawl: 2, Toxic: 2, Mind: 0.5, Shadow: 0, Metal: 0.5 },
+  Bug: { Fire: 0.5, Grass: 2, Brawl: 0.5, Toxic: 0.5, Flying: 0.5, Mind: 2, Spirit: 0.5, Shadow: 2, Metal: 0.5, Fae: 0.5 },
+  Rock: { Fire: 2, Ice: 2, Brawl: 0.5, Ground: 0.5, Flying: 2, Bug: 2, Metal: 0.5 },
+  Spirit: { Normal: 0, Mind: 2, Spirit: 2, Shadow: 0.5 },
+  Dragon: { Dragon: 2, Metal: 0.5, Fae: 0 },
+  Shadow: { Brawl: 0.5, Mind: 2, Spirit: 2, Shadow: 0.5, Fae: 0.5 },
+  Metal: { Fire: 0.5, Water: 0.5, Electric: 0.5, Ice: 2, Rock: 2, Metal: 0.5, Fae: 2 },
+  Fae: { Fire: 0.5, Brawl: 2, Toxic: 0.5, Dragon: 2, Shadow: 2, Metal: 0.5 },
 };
 export function effectiveness(moveType, defTypes) {
   return defTypes.reduce((m, t) => m * (CHART[moveType][t] ?? 1), 1);
 }
 
-// effect keys: burn/par/sleep (chance %), stat changes {target:'foe'|'self', stat, n}, drain, priority
+// effect keys: burn/par/sleep/poison (chance %), stat {target:'foe'|'self', stat, n, chance}, drain %, recoil, priority
+const M = (name, type, power, acc, pp, extra = {}) => ({ name, type, power, acc, pp, ...extra });
 export const MOVES = {
-  tackle: { name: 'Tackle', type: 'Normal', power: 40, acc: 100, pp: 35 },
-  scratch: { name: 'Scratch', type: 'Normal', power: 40, acc: 100, pp: 35 },
-  quickjab: { name: 'Quick Jab', type: 'Normal', power: 40, acc: 100, pp: 30, priority: 1 },
-  chomp: { name: 'Chomp', type: 'Normal', power: 60, acc: 100, pp: 25 },
-  headbutt: { name: 'Headbutt', type: 'Normal', power: 70, acc: 100, pp: 15 },
-  bodyslam: { name: 'Body Slam', type: 'Normal', power: 85, acc: 100, pp: 15, par: 30 },
-  growl: { name: 'Growl', type: 'Normal', power: 0, acc: 100, pp: 40, stat: { target: 'foe', stat: 'atk', n: -1 } },
-  tailwag: { name: 'Tail Wag', type: 'Normal', power: 0, acc: 100, pp: 30, stat: { target: 'foe', stat: 'def', n: -1 } },
-  harden: { name: 'Harden', type: 'Normal', power: 0, acc: 0, pp: 30, stat: { target: 'self', stat: 'def', n: 1 } },
-  powerup: { name: 'Power Up', type: 'Normal', power: 0, acc: 0, pp: 30, stat: { target: 'self', stat: 'atk', n: 1 } },
-  quickstep: { name: 'Quick Step', type: 'Normal', power: 0, acc: 0, pp: 30, stat: { target: 'self', stat: 'spe', n: 2 } },
-  lullaby: { name: 'Lullaby', type: 'Normal', power: 0, acc: 55, pp: 15, sleep: 100 },
-  ember: { name: 'Ember', type: 'Fire', power: 40, acc: 100, pp: 25, burn: 10 },
-  flamefang: { name: 'Flame Fang', type: 'Fire', power: 65, acc: 95, pp: 15, burn: 10 },
-  blazerush: { name: 'Blaze Rush', type: 'Fire', power: 85, acc: 100, pp: 15, burn: 10 },
-  waterjet: { name: 'Water Jet', type: 'Water', power: 40, acc: 100, pp: 25 },
-  bubbleburst: { name: 'Bubble Burst', type: 'Water', power: 65, acc: 100, pp: 20, stat: { target: 'foe', stat: 'spe', n: -1, chance: 10 } },
-  tidecrash: { name: 'Tide Crash', type: 'Water', power: 85, acc: 100, pp: 10 },
-  leafflick: { name: 'Leaf Flick', type: 'Grass', power: 40, acc: 100, pp: 25 },
-  vinelash: { name: 'Vine Lash', type: 'Grass', power: 55, acc: 100, pp: 20 },
-  seeddrain: { name: 'Seed Drain', type: 'Grass', power: 50, acc: 100, pp: 15, drain: 50 },
-  sporepuff: { name: 'Spore Puff', type: 'Grass', power: 0, acc: 75, pp: 15, sleep: 100 },
-  bramble: { name: 'Bramble Burst', type: 'Grass', power: 85, acc: 100, pp: 10 },
-  spark: { name: 'Spark', type: 'Electric', power: 40, acc: 100, pp: 30, par: 10 },
-  zapbolt: { name: 'Zap Bolt', type: 'Electric', power: 65, acc: 100, pp: 15, par: 10 },
-  staticwave: { name: 'Static Wave', type: 'Electric', power: 0, acc: 90, pp: 20, par: 100 },
-  voltdive: { name: 'Volt Dive', type: 'Electric', power: 90, acc: 100, pp: 10, par: 10 },
-  bugnip: { name: 'Bug Nip', type: 'Bug', power: 40, acc: 100, pp: 30 },
-  silkshot: { name: 'Silk Shot', type: 'Bug', power: 0, acc: 95, pp: 40, stat: { target: 'foe', stat: 'spe', n: -2 } },
-  crossslash: { name: 'Cross Slash', type: 'Bug', power: 70, acc: 100, pp: 15 },
-  peck: { name: 'Peck', type: 'Flying', power: 35, acc: 100, pp: 35 },
-  gust: { name: 'Gust', type: 'Flying', power: 40, acc: 100, pp: 35 },
-  wingstrike: { name: 'Wing Strike', type: 'Flying', power: 60, acc: 100, pp: 20 },
-  skydive: { name: 'Sky Dive', type: 'Flying', power: 85, acc: 95, pp: 10 },
-  rocktoss: { name: 'Rock Toss', type: 'Rock', power: 50, acc: 90, pp: 15 },
-  rockslam: { name: 'Rock Slam', type: 'Rock', power: 75, acc: 90, pp: 10 },
-  sandtoss: { name: 'Sand Toss', type: 'Ground', power: 0, acc: 100, pp: 15, stat: { target: 'foe', stat: 'acc', n: -1 } },
-  mudslap: { name: 'Mud Slap', type: 'Ground', power: 20, acc: 100, pp: 10, stat: { target: 'foe', stat: 'acc', n: -1, chance: 100 } },
-  digclaw: { name: 'Dig Claw', type: 'Ground', power: 60, acc: 100, pp: 20 },
-  tremor: { name: 'Tremor', type: 'Ground', power: 80, acc: 100, pp: 10 },
+  // Normal
+  tackle: M('Tackle', 'Normal', 40, 100, 35), scratch: M('Scratch', 'Normal', 40, 100, 35),
+  quickjab: M('Quick Jab', 'Normal', 40, 100, 30, { priority: 1 }), chomp: M('Chomp', 'Normal', 60, 100, 25),
+  headbutt: M('Headbutt', 'Normal', 70, 100, 15), bodyslam: M('Body Slam', 'Normal', 85, 100, 15, { par: 30 }),
+  megaimpact: M('Mega Impact', 'Normal', 120, 90, 5, { recoil: 4 }),
+  growl: M('Growl', 'Normal', 0, 100, 40, { stat: { target: 'foe', stat: 'atk', n: -1 } }),
+  tailwag: M('Tail Wag', 'Normal', 0, 100, 30, { stat: { target: 'foe', stat: 'def', n: -1 } }),
+  harden: M('Harden', 'Normal', 0, 0, 30, { stat: { target: 'self', stat: 'def', n: 1 } }),
+  powerup: M('Power Up', 'Normal', 0, 0, 30, { stat: { target: 'self', stat: 'atk', n: 1 } }),
+  quickstep: M('Quick Step', 'Normal', 0, 0, 30, { stat: { target: 'self', stat: 'spe', n: 2 } }),
+  lullaby: M('Lullaby', 'Normal', 0, 55, 15, { sleep: 100 }),
+  // field moves (taught by Trail Discs)
+  slash: M('Slash', 'Normal', 70, 100, 20), glow: M('Glow', 'Normal', 0, 100, 20, { stat: { target: 'foe', stat: 'acc', n: -1 } }),
+  waveride: M('Wave Ride', 'Water', 90, 100, 15), heave: M('Heave', 'Brawl', 80, 100, 15),
+  shatter: M('Shatter', 'Brawl', 40, 100, 15, { stat: { target: 'foe', stat: 'def', n: -1, chance: 50 } }), soar: M('Soar', 'Flying', 90, 95, 15),
+  // Fire
+  ember: M('Ember', 'Fire', 40, 100, 25, { burn: 10 }), flamefang: M('Flame Fang', 'Fire', 65, 95, 15, { burn: 10 }),
+  blazerush: M('Blaze Rush', 'Fire', 85, 100, 15, { burn: 10 }), inferno: M('Inferno Burst', 'Fire', 110, 85, 5, { burn: 30 }),
+  scorchhaze: M('Scorch Haze', 'Fire', 0, 85, 15, { burn: 100 }),
+  // Water
+  waterjet: M('Water Jet', 'Water', 40, 100, 25), bubbleburst: M('Bubble Burst', 'Water', 65, 100, 20, { stat: { target: 'foe', stat: 'spe', n: -1, chance: 10 } }),
+  tidecrash: M('Tide Crash', 'Water', 85, 100, 10), torrent: M('Torrent Blast', 'Water', 110, 80, 5),
+  // Grass
+  leafflick: M('Leaf Flick', 'Grass', 40, 100, 25), vinelash: M('Vine Lash', 'Grass', 55, 100, 20), seeddrain: M('Seed Drain', 'Grass', 50, 100, 15, { drain: 50 }),
+  bramble: M('Bramble Burst', 'Grass', 85, 100, 10), solarlance: M('Solar Lance', 'Grass', 110, 90, 5),
+  sporepuff: M('Spore Puff', 'Grass', 0, 75, 15, { sleep: 100 }), stunpollen: M('Stun Pollen', 'Grass', 0, 75, 20, { par: 100 }),
+  // Electric
+  spark: M('Spark', 'Electric', 40, 100, 30, { par: 10 }), zapbolt: M('Zap Bolt', 'Electric', 65, 100, 15, { par: 10 }),
+  voltdive: M('Volt Dive', 'Electric', 90, 100, 10, { par: 10 }), thundercrash: M('Thunder Crash', 'Electric', 110, 70, 5, { par: 30 }),
+  staticwave: M('Static Wave', 'Electric', 0, 90, 20, { par: 100 }),
+  // Ice
+  frostnip: M('Frost Nip', 'Ice', 40, 100, 25), icicleshot: M('Icicle Shot', 'Ice', 60, 100, 20),
+  glacierbeam: M('Glacier Beam', 'Ice', 90, 100, 10), blizzardgale: M('Blizzard Gale', 'Ice', 110, 70, 5),
+  chillmist: M('Chill Mist', 'Ice', 0, 95, 20, { stat: { target: 'foe', stat: 'spe', n: -2 } }),
+  // Brawl
+  palmstrike: M('Palm Strike', 'Brawl', 40, 100, 30), kneestrike: M('Knee Strike', 'Brawl', 70, 100, 15),
+  titanfist: M('Titan Fist', 'Brawl', 100, 90, 10), haymaker: M('Haymaker', 'Brawl', 120, 70, 5),
+  brace: M('Brace', 'Brawl', 0, 0, 20, { stat: { target: 'self', stat: 'atk', n: 2 } }),
+  // Toxic
+  acidspit: M('Acid Spit', 'Toxic', 40, 100, 30, { poison: 20 }), venomfang: M('Venom Fang', 'Toxic', 60, 100, 20, { poison: 30 }),
+  sludgewave: M('Sludge Wave', 'Toxic', 90, 100, 10, { poison: 30 }), toxicburst: M('Toxic Burst', 'Toxic', 110, 80, 5, { poison: 40 }),
+  poisonmist: M('Poison Mist', 'Toxic', 0, 85, 20, { poison: 100 }),
+  // Ground
+  mudslap: M('Mud Slap', 'Ground', 20, 100, 10, { stat: { target: 'foe', stat: 'acc', n: -1, chance: 100 } }),
+  sandtoss: M('Sand Toss', 'Ground', 0, 100, 15, { stat: { target: 'foe', stat: 'acc', n: -1 } }),
+  digclaw: M('Dig Claw', 'Ground', 60, 100, 20), tremor: M('Tremor', 'Ground', 80, 100, 10), earthsplit: M('Earthsplit', 'Ground', 100, 100, 10),
+  // Flying
+  peck: M('Peck', 'Flying', 35, 100, 35), gust: M('Gust', 'Flying', 40, 100, 35), wingstrike: M('Wing Strike', 'Flying', 60, 100, 20),
+  skydive: M('Sky Dive', 'Flying', 85, 95, 10), hurricane: M('Hurricane Dive', 'Flying', 110, 80, 5),
+  // Mind
+  mindpulse: M('Mind Pulse', 'Mind', 50, 100, 25), psywave: M('Psy Wave', 'Mind', 65, 100, 20), mindcrush: M('Mind Crush', 'Mind', 90, 100, 10),
+  psystorm: M('Psy Storm', 'Mind', 110, 85, 5), trance: M('Trance', 'Mind', 0, 60, 20, { sleep: 100 }),
+  focus: M('Calm Focus', 'Mind', 0, 0, 20, { stat: { target: 'self', stat: 'spa', n: 1 } }),
+  // Bug
+  bugnip: M('Bug Nip', 'Bug', 40, 100, 30), silkshot: M('Silk Shot', 'Bug', 0, 95, 40, { stat: { target: 'foe', stat: 'spe', n: -2 } }),
+  crossslash: M('Cross Slash', 'Bug', 70, 100, 15), swarmrush: M('Swarm Rush', 'Bug', 90, 100, 10), lancehorn: M('Lance Horn', 'Bug', 110, 85, 5),
+  // Rock
+  rocktoss: M('Rock Toss', 'Rock', 50, 90, 15), rockslam: M('Rock Slam', 'Rock', 75, 90, 10), bouldercrash: M('Boulder Crash', 'Rock', 100, 80, 5),
+  // Spirit
+  phantomtouch: M('Phantom Touch', 'Spirit', 40, 100, 30, { par: 20 }), hexbolt: M('Hex Bolt', 'Spirit', 65, 100, 15),
+  spiritorb: M('Spirit Orb', 'Spirit', 85, 100, 10), soulrend: M('Soul Rend', 'Spirit', 110, 85, 5),
+  // Dragon
+  galecoil: M('Gale Coil', 'Dragon', 40, 100, 20), drakebreath: M('Drake Breath', 'Dragon', 60, 100, 20, { par: 30 }),
+  wyrmclaw: M('Wyrm Claw', 'Dragon', 80, 100, 15), dracosurge: M('Draco Surge', 'Dragon', 110, 90, 5),
+  // Shadow
+  ambush: M('Ambush', 'Shadow', 40, 100, 20, { priority: 1 }), nightbite: M('Night Bite', 'Shadow', 60, 100, 25),
+  umbralpulse: M('Umbral Pulse', 'Shadow', 80, 100, 15), nightfall: M('Nightfall', 'Shadow', 100, 90, 5),
+  glare: M('Glare', 'Shadow', 0, 100, 30, { stat: { target: 'foe', stat: 'spe', n: -2 } }),
+  // Metal
+  ironclaw: M('Iron Claw', 'Metal', 50, 95, 35), steeltail: M('Steel Tail', 'Metal', 75, 85, 15, { stat: { target: 'foe', stat: 'def', n: -1, chance: 30 } }),
+  chromebeam: M('Chrome Beam', 'Metal', 80, 100, 10), meteorfist: M('Meteor Fist', 'Metal', 100, 85, 10),
+  ironwall: M('Iron Wall', 'Metal', 0, 0, 15, { stat: { target: 'self', stat: 'def', n: 2 } }),
+  // Fae
+  pixiebreeze: M('Pixie Breeze', 'Fae', 40, 100, 30), spritekiss: M('Sprite Kiss', 'Fae', 50, 100, 10, { drain: 75 }),
+  moonbeam: M('Moonbeam', 'Fae', 90, 100, 15), starfall: M('Starfall', 'Fae', 110, 85, 5),
+  sweetgaze: M('Sweet Gaze', 'Fae', 0, 100, 20, { stat: { target: 'foe', stat: 'atk', n: -2 } }),
 };
 
-// base: hp atk def spa spd spe. evo: {to, level} or {to, item}. rate = catch rate.
-export const SPECIES = {
-  sproutmole: {
-    no: 1, name: 'Sproutmole', types: ['Grass'], base: [45, 49, 49, 60, 60, 42], exp: 64, rate: 45, family: 'mole', stage: 1,
-    evo: { to: 'thornmole', level: 16 }, dex: 'A shy mole that sprouts a leaf on its head after a good rain. It digs in gardens to help plants grow.',
-    learn: [[1, 'tackle'], [1, 'growl'], [5, 'leafflick'], [9, 'mudslap'], [13, 'seeddrain'], [17, 'sporepuff'], [21, 'vinelash'], [27, 'digclaw'], [33, 'bramble']],
-  },
-  thornmole: {
-    no: 2, name: 'Thornmole', types: ['Grass', 'Ground'], base: [70, 80, 78, 82, 80, 58], exp: 155, rate: 45, family: 'mole', stage: 2,
-    dex: 'The thorns along its back harden like stone. It tunnels under forests, leaving flowers wherever it surfaces.',
-    learn: [[1, 'tackle'], [1, 'leafflick'], [16, 'digclaw'], [21, 'vinelash'], [27, 'tremor'], [33, 'bramble']],
-  },
-  emberkit: {
-    no: 3, name: 'Emberkit', types: ['Fire'], base: [39, 55, 40, 62, 50, 66], exp: 64, rate: 45, family: 'fox', stage: 1,
-    evo: { to: 'blazelynx', level: 16 }, dex: 'The flame on its tail flickers with its mood. When it sneezes, little sparks fly.',
-    learn: [[1, 'scratch'], [1, 'growl'], [5, 'ember'], [9, 'quickjab'], [13, 'chomp'], [17, 'flamefang'], [23, 'quickstep'], [29, 'blazerush']],
-  },
-  blazelynx: {
-    no: 4, name: 'Blazelynx', types: ['Fire'], base: [62, 80, 60, 86, 66, 92], exp: 155, rate: 45, family: 'fox', stage: 2,
-    dex: 'Its blazing mane can be seen from across a valley at night. It is fiercely loyal to a trusted trainer.',
-    learn: [[1, 'scratch'], [1, 'ember'], [16, 'flamefang'], [20, 'chomp'], [26, 'quickstep'], [30, 'blazerush'], [36, 'bodyslam']],
-  },
-  puddlefin: {
-    no: 5, name: 'Puddlefin', types: ['Water'], base: [46, 50, 60, 54, 58, 44], exp: 64, rate: 45, family: 'axolotl', stage: 1,
-    evo: { to: 'tidalotl', level: 16 }, dex: 'It loves splashing in puddles. Its frilly gills turn pink when it is happy.',
-    learn: [[1, 'tackle'], [1, 'tailwag'], [5, 'waterjet'], [9, 'harden'], [13, 'bubbleburst'], [19, 'chomp'], [25, 'headbutt'], [31, 'tidecrash']],
-  },
-  tidalotl: {
-    no: 6, name: 'Tidalotl', types: ['Water'], base: [72, 74, 84, 74, 82, 56], exp: 155, rate: 45, family: 'axolotl', stage: 2,
-    dex: 'With a flick of its crest it can call up waves tall enough to surf on. It guards quiet lakes.',
-    learn: [[1, 'tackle'], [1, 'waterjet'], [16, 'bubbleburst'], [22, 'headbutt'], [28, 'tidecrash'], [34, 'bodyslam']],
-  },
-  bunnip: {
-    no: 7, name: 'Bunnip', types: ['Normal'], base: [38, 52, 38, 30, 38, 64], exp: 50, rate: 255, family: 'rabbit', stage: 1,
-    evo: { to: 'hopscot', level: 14 }, dex: 'It hops through fields all day. Its huge feet thump the ground to warn friends of danger.',
-    learn: [[1, 'tackle'], [1, 'tailwag'], [4, 'quickjab'], [8, 'growl'], [12, 'chomp'], [17, 'quickstep'], [22, 'headbutt'], [28, 'bodyslam']],
-  },
-  hopscot: {
-    no: 8, name: 'Hopscot', types: ['Normal'], base: [62, 82, 60, 45, 60, 90], exp: 140, rate: 120, family: 'rabbit', stage: 2,
-    dex: 'One kick from its powerful legs can crack a log. It can leap over a house in a single bound.',
-    learn: [[1, 'tackle'], [1, 'quickjab'], [14, 'chomp'], [19, 'quickstep'], [24, 'headbutt'], [30, 'bodyslam']],
-  },
-  gustling: {
-    no: 9, name: 'Gustling', types: ['Normal', 'Flying'], base: [40, 45, 38, 35, 35, 58], exp: 52, rate: 255, family: 'bird', stage: 1,
-    evo: { to: 'galehawk', level: 15 }, dex: 'A chirpy little bird that rides the breeze. Flocks of them sing at sunrise.',
-    learn: [[1, 'peck'], [1, 'growl'], [5, 'gust'], [9, 'sandtoss'], [13, 'quickjab'], [18, 'wingstrike'], [25, 'quickstep'], [31, 'skydive']],
-  },
-  galehawk: {
-    no: 10, name: 'Galehawk', types: ['Normal', 'Flying'], base: [64, 72, 62, 52, 56, 88], exp: 145, rate: 90, family: 'bird', stage: 2,
-    dex: 'It circles high above, then dives at incredible speed. Its cry sounds like a rushing wind.',
-    learn: [[1, 'peck'], [1, 'gust'], [15, 'wingstrike'], [20, 'quickjab'], [27, 'quickstep'], [33, 'skydive']],
-  },
-  twigling: {
-    no: 11, name: 'Twigling', types: ['Bug'], base: [40, 38, 45, 25, 30, 40], exp: 39, rate: 255, family: 'stick', stage: 1,
-    evo: { to: 'barkmantis', level: 10 }, dex: 'It pretends to be a twig so birds will not notice it. It nibbles on leaves very slowly.',
-    learn: [[1, 'tackle'], [1, 'silkshot'], [6, 'bugnip'], [9, 'harden']],
-  },
-  barkmantis: {
-    no: 12, name: 'Barkmantis', types: ['Bug', 'Grass'], base: [60, 78, 64, 50, 58, 68], exp: 130, rate: 120, family: 'stick', stage: 2,
-    dex: 'Its bark-covered arms are sharp as blades. It stands perfectly still for hours, then strikes.',
-    learn: [[1, 'bugnip'], [1, 'harden'], [10, 'leafflick'], [14, 'crossslash'], [19, 'vinelash'], [24, 'powerup'], [30, 'bramble']],
-  },
-  buzzlet: {
-    no: 13, name: 'Buzzlet', types: ['Electric', 'Bug'], base: [40, 42, 38, 56, 45, 74], exp: 60, rate: 190, family: 'bee', stage: 1,
-    evo: { to: 'voltwasp', item: 'sparkstone' }, dex: 'Static builds up in its fuzzy coat as it buzzes from flower to flower. Touching it tingles.',
-    learn: [[1, 'spark'], [1, 'silkshot'], [6, 'bugnip'], [10, 'staticwave'], [15, 'zapbolt'], [21, 'quickstep'], [28, 'voltdive']],
-  },
-  voltwasp: {
-    no: 14, name: 'Voltwasp', types: ['Electric', 'Bug'], base: [62, 72, 56, 92, 64, 104], exp: 160, rate: 60, family: 'bee', stage: 2,
-    dex: 'Lightning crackles between its wings. It evolves when a Buzzlet absorbs the energy of a Spark Stone.',
-    learn: [[1, 'spark'], [1, 'bugnip'], [1, 'zapbolt'], [18, 'crossslash'], [24, 'quickstep'], [28, 'voltdive']],
-  },
-  pebbit: {
-    no: 15, name: 'Pebbit', types: ['Rock'], base: [42, 62, 82, 25, 35, 22], exp: 60, rate: 255, family: 'rock', stage: 1,
-    evo: { to: 'bouldox', level: 18 }, dex: 'Hikers often trip over it thinking it is an ordinary rock. It rolls downhill for fun.',
-    learn: [[1, 'tackle'], [1, 'harden'], [5, 'sandtoss'], [9, 'rocktoss'], [14, 'headbutt'], [19, 'digclaw'], [25, 'rockslam'], [31, 'tremor']],
-  },
-  bouldox: {
-    no: 16, name: 'Bouldox', types: ['Rock', 'Ground'], base: [78, 92, 112, 40, 55, 30], exp: 165, rate: 75, family: 'rock', stage: 2,
-    dex: 'It charges with its boulder horns lowered. Mountain roads are carved by herds of Bouldox.',
-    learn: [[1, 'tackle'], [1, 'rocktoss'], [18, 'digclaw'], [24, 'rockslam'], [30, 'tremor'], [36, 'bodyslam']],
-  },
-  dunepup: {
-    no: 17, name: 'Dunepup', types: ['Ground'], base: [50, 58, 48, 32, 42, 54], exp: 58, rate: 190, family: 'dog', stage: 1,
-    evo: { to: 'mesaruff', level: 20 }, dex: 'It loves to dig holes in sandy soil and bury its favorite stones. It wags its whole body.',
-    learn: [[1, 'tackle'], [1, 'tailwag'], [5, 'mudslap'], [9, 'chomp'], [13, 'digclaw'], [18, 'powerup'], [24, 'headbutt'], [30, 'tremor']],
-  },
-  mesaruff: {
-    no: 18, name: 'Mesaruff', types: ['Ground', 'Rock'], base: [76, 90, 74, 45, 62, 72], exp: 160, rate: 75, family: 'dog', stage: 2,
-    dex: 'Plates of red stone grow along its back like a desert mesa. Its howl can start a landslide.',
-    learn: [[1, 'chomp'], [1, 'mudslap'], [20, 'digclaw'], [24, 'rocktoss'], [28, 'headbutt'], [32, 'tremor'], [38, 'rockslam']],
-  },
+// damaging moves of each type, weakest to strongest, and a signature status move
+const POOL = {
+  Normal: ['quickjab', 'chomp', 'headbutt', 'bodyslam', 'megaimpact'], Fire: ['ember', 'flamefang', 'blazerush', 'inferno'],
+  Water: ['waterjet', 'bubbleburst', 'tidecrash', 'torrent'], Grass: ['leafflick', 'vinelash', 'bramble', 'solarlance'],
+  Electric: ['spark', 'zapbolt', 'voltdive', 'thundercrash'], Ice: ['frostnip', 'icicleshot', 'glacierbeam', 'blizzardgale'],
+  Brawl: ['palmstrike', 'kneestrike', 'titanfist', 'haymaker'], Toxic: ['acidspit', 'venomfang', 'sludgewave', 'toxicburst'],
+  Ground: ['mudslap', 'digclaw', 'tremor', 'earthsplit'], Flying: ['gust', 'wingstrike', 'skydive', 'hurricane'],
+  Mind: ['mindpulse', 'psywave', 'mindcrush', 'psystorm'], Bug: ['bugnip', 'crossslash', 'swarmrush', 'lancehorn'],
+  Rock: ['rocktoss', 'rockslam', 'bouldercrash', 'bouldercrash'], Spirit: ['phantomtouch', 'hexbolt', 'spiritorb', 'soulrend'],
+  Dragon: ['galecoil', 'drakebreath', 'wyrmclaw', 'dracosurge'], Shadow: ['ambush', 'nightbite', 'umbralpulse', 'nightfall'],
+  Metal: ['ironclaw', 'steeltail', 'chromebeam', 'meteorfist'], Fae: ['pixiebreeze', 'spritekiss', 'moonbeam', 'starfall'],
 };
+const STATUS = {
+  Normal: 'powerup', Fire: 'scorchhaze', Water: 'tailwag', Grass: 'stunpollen', Electric: 'staticwave', Ice: 'chillmist', Brawl: 'brace',
+  Toxic: 'poisonmist', Ground: 'sandtoss', Flying: 'quickstep', Mind: 'trance', Bug: 'silkshot', Rock: 'harden', Spirit: 'lullaby',
+  Dragon: 'quickstep', Shadow: 'glare', Metal: 'ironwall', Fae: 'sweetgaze',
+};
+
+function autoLearnset(types) {
+  const [a, b] = types;
+  const out = [[1, a === 'Normal' || !b ? 'tackle' : 'scratch'], [1, 'growl']];
+  POOL[a].forEach((m, i) => out.push([[4, 14, 26, 40][i] ?? 50, m]));
+  if (b) POOL[b].forEach((m, i) => { if (i < 3) out.push([[9, 20, 33][i], m]); });
+  else if (a !== 'Normal') out.push([18, 'headbutt']);
+  out.push([11, STATUS[a]]);
+  if (a !== 'Normal' && !b) out.push([47, POOL.Normal[3]]);
+  out.sort((x, y) => x[0] - y[0]);
+  const seen = new Set();
+  return out.filter(([, m]) => (seen.has(m) ? false : seen.add(m)));
+}
+
+// ---- build SPECIES from the compact table ----
+export const SPECIES = {};
+RAW_SPECIES.forEach((r, i) => {
+  const [id, name, types, base, evo, where, art, dex] = r;
+  const tps = types.split('/');
+  const total = base.reduce((s, x) => s + x, 0);
+  const s = {
+    no: i + 1, name, types: tps, base, art, where: where || '', dex,
+    family: art.family, stage: art.stage || 1, legend: !!art.legend,
+    exp: Math.round(total / 6.5), rate: art.legend ? 3 : total < 330 ? 255 : total < 420 ? 120 : total < 500 ? 60 : 45,
+    learn: HAND_LEARNSETS[id] || autoLearnset(tps),
+  };
+  if (evo) { const [to, how] = evo.split(':'); s.evo = /^\d+$/.test(how) ? { to, level: +how } : { to, item: how }; }
+  SPECIES[id] = s;
+});
 export const SPECIES_LIST = Object.keys(SPECIES).sort((a, b) => SPECIES[a].no - SPECIES[b].no);
+
+// Field moves ("Trail Discs"): what they unlock, which badge count lets you use them outside battle,
+// and which creature types can learn them.
+export const FIELD = {
+  slash: { item: 'td_slash', badges: 2, types: ['Grass', 'Bug', 'Normal', 'Shadow', 'Metal', 'Brawl', 'Dragon', 'Ground', 'Rock', 'Fire'], verb: 'cut down the bush' },
+  shatter: { item: 'td_shatter', badges: 3, types: ['Brawl', 'Rock', 'Ground', 'Metal', 'Normal', 'Fire', 'Dragon', 'Water'], verb: 'smash the rock' },
+  waveride: { item: 'td_waveride', badges: 4, types: ['Water', 'Ice', 'Dragon'], verb: 'ride the waves' },
+  heave: { item: 'td_heave', badges: 5, types: ['Brawl', 'Rock', 'Ground', 'Metal', 'Normal', 'Dragon'], verb: 'push boulders' },
+  glow: { item: 'td_glow', badges: 6, types: ['Electric', 'Fire', 'Fae', 'Mind', 'Spirit', 'Normal', 'Bug'], verb: 'light up dark places' },
+  soar: { item: 'td_soar', badges: 6, types: ['Flying', 'Dragon'], verb: 'fly to a town you have visited' },
+};
+export function canLearnField(sp, move) { return SPECIES[sp].types.some((t) => FIELD[move].types.includes(t)); }
 
 export const ITEMS = {
   potion: { name: 'Potion', price: 300, desc: 'Restores 20 HP to one creature.', kind: 'heal', heal: 20, battle: true },
   superpotion: { name: 'Super Potion', price: 700, desc: 'Restores 60 HP to one creature.', kind: 'heal', heal: 60, battle: true },
+  hyperpotion: { name: 'Hyper Potion', price: 1200, desc: 'Restores 120 HP to one creature.', kind: 'heal', heal: 120, battle: true },
+  maxpotion: { name: 'Max Potion', price: 2500, desc: 'Fully restores one creature\'s HP.', kind: 'heal', heal: 9999, battle: true },
   revive: { name: 'Revive', price: 1500, desc: 'Revives a fainted creature with half its HP.', kind: 'revive', battle: true },
-  fullheal: { name: 'Full Heal', price: 600, desc: 'Cures burns, paralysis and sleep.', kind: 'cure', battle: true },
+  fullheal: { name: 'Full Heal', price: 600, desc: 'Cures burns, poison, paralysis and sleep.', kind: 'cure', battle: true },
+  tonic: { name: 'Tonic', price: 1500, desc: 'Restores 10 PP to every move of one creature.', kind: 'pp', battle: true },
+  lvcandy: { name: 'Level Candy', price: 4800, desc: 'Raises a creature\'s level by one.', kind: 'level' },
+  repel: { name: 'Repel', price: 350, desc: 'Keeps weaker wild creatures away for 100 steps.', kind: 'repel', steps: 100 },
+  maxrepel: { name: 'Max Repel', price: 700, desc: 'Keeps weaker wild creatures away for 250 steps.', kind: 'repel', steps: 250 },
   orb: { name: 'Capture Orb', price: 200, desc: 'A device for catching wild creatures.', kind: 'orb', bonus: 1, battle: true },
   greatorb: { name: 'Great Orb', price: 600, desc: 'A better orb with a higher catch rate.', kind: 'orb', bonus: 1.5, battle: true },
+  ultraorb: { name: 'Ultra Orb', price: 1200, desc: 'A high-performance orb.', kind: 'orb', bonus: 2, battle: true },
+  masterorb: { name: 'Master Orb', price: 0, desc: 'Catches any wild creature without fail.', kind: 'orb', bonus: 255, battle: true },
   sparkstone: { name: 'Spark Stone', price: 2100, desc: 'A crackling stone. Makes certain creatures evolve.', kind: 'evo' },
+  moonshard: { name: 'Moon Shard', price: 2100, desc: 'A glittering shard. Makes certain creatures evolve.', kind: 'evo' },
+  duskstone: { name: 'Dusk Stone', price: 2100, desc: 'A dark, cold stone. Makes certain creatures evolve.', kind: 'evo' },
+  leafstone: { name: 'Leaf Stone', price: 2100, desc: 'A stone with a leaf pattern. Makes certain creatures evolve.', kind: 'evo' },
+  froststone: { name: 'Frost Stone', price: 2100, desc: 'An icy stone. Makes certain creatures evolve.', kind: 'evo' },
+  townmap: { name: 'Town Map', price: 0, desc: 'A map of the region from Mom. Shows where you are. (Shortcut: SELECT)', kind: 'map', key: true },
+  td_slash: { name: 'TD01 Slash', price: 0, desc: 'Trail Disc. Teaches Slash. Out of battle it cuts thorny bushes. Needs 2 badges.', kind: 'td', move: 'slash', key: true },
+  td_shatter: { name: 'TD02 Shatter', price: 0, desc: 'Trail Disc. Teaches Shatter. Out of battle it smashes cracked rocks. Needs 3 badges.', kind: 'td', move: 'shatter', key: true },
+  td_waveride: { name: 'TD03 Wave Ride', price: 0, desc: 'Trail Disc. Teaches Wave Ride. Out of battle you can travel on water. Needs 4 badges.', kind: 'td', move: 'waveride', key: true },
+  td_heave: { name: 'TD04 Heave', price: 0, desc: 'Trail Disc. Teaches Heave. Out of battle it pushes big boulders. Needs 5 badges.', kind: 'td', move: 'heave', key: true },
+  td_glow: { name: 'TD05 Glow', price: 0, desc: 'Trail Disc. Teaches Glow. Out of battle it lights up dark caves. Needs 6 badges.', kind: 'td', move: 'glow', key: true },
+  td_soar: { name: 'TD06 Soar', price: 0, desc: 'Trail Disc. Teaches Soar. Out of battle it flies you to any town you\'ve visited. Needs 6 badges.', kind: 'td', move: 'soar', key: true },
 };
 
-export const STATUS_NAMES = { burn: 'BRN', par: 'PAR', sleep: 'SLP' };
+export const STATUS_NAMES = { burn: 'BRN', par: 'PAR', sleep: 'SLP', poison: 'PSN' };
+
+export const BADGES = [
+  ['stone', 'Stone', '#a08060'], ['thistle', 'Thistle', '#58b048'], ['volt', 'Volt', '#e8c020'], ['tide', 'Tide', '#4890e8'],
+  ['grit', 'Grit', '#c03028'], ['lumen', 'Lumen', '#f85888'], ['ember', 'Ember', '#f08030'], ['wyrm', 'Wyrm', '#7038f8'],
+];

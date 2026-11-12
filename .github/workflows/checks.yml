@@ -11,4 +11,5 @@ jobs:
         with: { node-version: '20' }
       - run: pip install -r requirements.txt pytest
       - run: node tests/check_data.mjs
+      - run: node tests/check_reach.mjs
       - run: pytest -q
