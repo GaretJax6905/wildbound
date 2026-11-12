@@ -6,7 +6,7 @@ import { G, flag, setFlag, save, addItem, addToCollection } from './state.js';
 import { SPECIES, SPECIES_LIST, ITEMS, BADGES } from './data.js';
 import { MAPS, GYMS } from './maps.js';
 import { makeMon, healFull, name } from './mon.js';
-import { say, yesNo, choose, setNameHook } from './ui.js';
+import { say, yesNo, choose, setNameHook, offerNickname } from './ui.js';
 import { battle } from './battle.js';
 import { starterScreen, shopScreen, pcScreen, startMenu, checkEvolutions, partyScreen, townMapScreen, partnerScreen } from './screens.js';
 import { sfx, playMusic } from './audio.js';
@@ -465,6 +465,7 @@ async function starterSequence() {
   G.starter = sp;
   sfx('badge');
   await say(`${G.name} received ${SPECIES[sp].name}!`);
+  await offerNickname(m, SPECIES[sp].name);
   G.rivals.kai = COUNTER[sp];
   G.rivals.juno = ['sproutmole', 'emberkit', 'puddlefin'].find((x) => x !== sp && x !== COUNTER[sp]);
   await say(`KAI: Then I'll take ${SPECIES[G.rivals.kai].name}! It has the type advantage!`, `JUNO: That leaves ${SPECIES[G.rivals.juno].name} for me. Hi there, little buddy!`);

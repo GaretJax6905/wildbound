@@ -7,7 +7,7 @@ import { MOVES, SPECIES, ITEMS, TYPE_COLORS, SPECIAL_TYPES, effectiveness, STATU
 import { stats, maxHp, name, addExp, expYield, expForLevel, knows } from './mon.js';
 import { G, addToCollection, useItem } from './state.js';
 import { world } from './world.js';
-import { say, box, text, hpBar, bar, Menu, choose, yesNo, FONT_SMALL, menu } from './ui.js';
+import { say, box, text, hpBar, bar, Menu, choose, yesNo, FONT_SMALL, menu, offerNickname } from './ui.js';
 import { sfx, playMusic } from './audio.js';
 import { partyScreen, bagScreen } from './screens.js';
 
@@ -137,8 +137,8 @@ function drawBattle(g) {
     for (const pt of B.particles) { g.fillStyle = pt.c; g.fillRect(Math.round(pt.x), Math.round(pt.y), pt.s, pt.s); }
   }
   // info boxes
-  B.e.forEach((s, i) => { if (s.mon && !s.anim.hide && B.showInfo) infoBox(g, s, 4, B.double ? 4 + i * 27 : 10, false); });
-  B.p.forEach((s, i) => { if (s.mon && !s.anim.hide && B.showInfo) infoBox(g, s, 132, B.double ? 58 + i * 27 : 72, true); });
+  B.e.forEach((s, i) => { if (s.mon && !s.anim.hide && B.showInfo) infoBox(g, s, 2, B.double ? 4 + i * 27 : 10, false); });
+  B.p.forEach((s, i) => { if (s.mon && !s.anim.hide && B.showInfo) infoBox(g, s, 120, B.double ? 58 + i * 27 : 72, true); });
   box(g, 0, 112, W, 48, 'dark');
   if (B.prompt) {
     text(g, B.prompt[0], 10, 120, '#f8f8f8', '#384868');
@@ -148,7 +148,8 @@ function drawBattle(g) {
 
 function infoBox(g, s, x, y, mine) {
   const m = s.mon;
-  const w = 104, h = mine ? (B.double ? 26 : 36) : 25;
+  // as wide as the FIGHT/BAG box below, so long names and nicknames fit
+  const w = 120, h = mine ? (B.double ? 26 : 36) : 25;
   box(g, x, y, w, h);
   // long names (Thunderhound) squeeze the level tag to "L36" so they never overlap
   const nm = name(m);
@@ -740,6 +741,7 @@ async function throwOrb(it) {
     m.status = m.status || null;
     const where = addToCollection(m);
     if (isNew) await msg(`${name(m)}'s data was added to the DEX!`);
+    await offerNickname(m, SPECIES[m.sp].name);
     if (where === 'box') await msg(`Your team is full, so ${name(m)} was sent to the PC box for this region.`);
     B.orb = null;
     B.result = 'caught';

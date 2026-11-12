@@ -223,7 +223,15 @@ export class QtyPicker {
 }
 
 // HTML text input overlay (works with phone keyboards).
-export function askName(title, def) {
+// Ask "Give a nickname to X?" and store it on the creature (blank = no nickname)
+export async function offerNickname(m, speciesName) {
+  if (!(await yesNo(`Give a nickname to ${speciesName}?`))) return;
+  const v = await askName(`Nickname for ${speciesName}`, m.nick || speciesName, { keepCase: true, max: 12 });
+  m.nick = v && v.toLowerCase() !== speciesName.toLowerCase() ? v : null;
+}
+
+export function askName(title, def, opts = {}) {
+  const { keepCase = false, max = 10 } = opts;
   return new Promise((res) => {
     const wrapEl = document.getElementById('name-entry');
     const inp = document.getElementById('name-input');
@@ -231,11 +239,16 @@ export function askName(title, def) {
     const ok = document.getElementById('name-ok');
     lab.textContent = title;
     inp.value = def;
+    inp.maxLength = max;
+    inp.setAttribute('autocapitalize', keepCase ? 'words' : 'characters');
+    inp.style.textTransform = keepCase ? 'none' : '';
     wrapEl.hidden = false;
     import('./engine.js').then((e) => e.blockInput(true));
     setTimeout(() => { inp.focus(); inp.select(); }, 50);
     const done = () => {
-      const v = (inp.value || def).toUpperCase().replace(/[^\w .'-]/g, '').trim().slice(0, 10) || def;
+      let v = (inp.value || def).replace(/[^\w .'-]/g, '').trim().slice(0, max);
+      if (!keepCase) v = v.toUpperCase();
+      v = v || def;
       wrapEl.hidden = true;
       ok.onclick = null; inp.onkeydown = null;
       inp.blur();
