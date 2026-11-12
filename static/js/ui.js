@@ -3,13 +3,13 @@ import { W, H, input, open, frame } from './engine.js';
 import { sfx } from './audio.js';
 import { settings } from './state.js';
 
-export const FONT = '10px Pixelify, monospace';
-export const FONT_SMALL = '8px Pixelify, monospace';
-export const FONT_BIG = '600 14px Pixelify, monospace';
+export const FONT = '600 11px Pixelify, monospace';
+export const FONT_SMALL = '600 9px Pixelify, monospace';
+export const FONT_BIG = '700 15px Pixelify, monospace';
 
 // the pixel font has f-ligatures ("fi", "fl"); a zero-width non-joiner keeps letters separate
 const noLig = (s) => String(s).replace(/f(?=[filt])/g, 'f\u200c');
-export function text(g, s, x, y, col = '#383840', shadow = '#d0d0c8', font = FONT, align = 'left') {
+export function text(g, s, x, y, col = '#282830', shadow = '#cfcfc6', font = FONT, align = 'left') {
   s = noLig(s);
   g.font = font;
   g.textBaseline = 'top';
@@ -71,7 +71,7 @@ const measure = document.createElement('canvas').getContext('2d');
 // ---------- text box ----------
 export class TextBox {
   constructor(str, opts = {}) {
-    const lines = wrap(measure, str, W - 24);
+    const lines = wrap(measure, str, W - 26);
     this.pages = [];
     for (let i = 0; i < lines.length; i += 2) this.pages.push(lines.slice(i, i + 2));
     this.page = 0;
@@ -104,7 +104,7 @@ export class TextBox {
     this.pages[this.page].forEach((ln, i) => {
       const s = ln.slice(0, Math.max(0, Math.floor(left)));
       left -= ln.length;
-      text(g, s, 10, 120 + i * 15);
+      text(g, s, 11, 119 + i * 17);
     });
     if (this.typed && !this.opts.auto && !this.opts.instantClose && (frame >> 4) % 2) {
       g.fillStyle = '#e04030';
