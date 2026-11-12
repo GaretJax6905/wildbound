@@ -1,5 +1,6 @@
 // Turn-based battles: wild, trainer, double (2v2 tag battles) and
 // "alternating" two-trainer battles when you only have one creature.
+import { pxWidth } from './font.js';
 import { W, H, wait, setScene, getScene, frame, rand, chance, pick, fx, input, open } from './engine.js';
 import { creature, trainerPortrait, orb as orbSprite, blit } from './art.js';
 import { MOVES, SPECIES, ITEMS, TYPE_COLORS, SPECIAL_TYPES, effectiveness, STATUS_NAMES } from './data.js';
@@ -149,8 +150,11 @@ function infoBox(g, s, x, y, mine) {
   const m = s.mon;
   const w = 104, h = mine ? (B.double ? 26 : 36) : 25;
   box(g, x, y, w, h);
-  text(g, name(m), x + 7, y + 4, '#383840', '#d0d0c8', FONT_SMALL);
-  text(g, 'Lv' + m.level, x + w - 8, y + 4, '#383840', '#d0d0c8', FONT_SMALL, 'right');
+  // long names (Thunderhound) squeeze the level tag to "L36" so they never overlap
+  const nm = name(m);
+  const lv = pxWidth(nm) + pxWidth('Lv' + m.level) + 4 <= w - 12 ? 'Lv' + m.level : 'L' + m.level;
+  text(g, nm, x + 6, y + 4, '#383840', '#d0d0c8', FONT_SMALL);
+  text(g, lv, x + w - 6, y + 4, '#383840', '#d0d0c8', FONT_SMALL, 'right');
   if (m.status) { g.fillStyle = m.status === 'burn' ? '#e06030' : m.status === 'par' ? '#d0b020' : m.status === 'poison' ? '#a040a0' : '#8888a0'; g.fillRect(x + 7, y + 14, 15, 7); text(g, STATUS_NAMES[m.status], x + 8, y + 14, '#fff', null, '6px Pixelify, monospace'); }
   text(g, 'HP', x + 23, y + 14, '#e88a20', null, '600 6px Pixelify, monospace');
   if (mine && B.double) {

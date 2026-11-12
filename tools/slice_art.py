@@ -16,9 +16,37 @@ LAYOUT = {
   'Twigling Barkmantis.jpg': [['twigling'], ['barkmantis']],
 }
 SIZE = 384
+NEW = {
+  'Ammonix Krakammon.jpg': [['ammonix'], ['krakammon']],
+  'Ashpup Cinderfang.jpg': [['ashpup'], ['cinderfang']],
+  'Boltnut Dynamagnet.jpg': [['boltnut'], ['dynamagnet']],
+  'Budlet Bloomtrap Thornvine.jpg': [['budlet', 'bloomtrap'], ['thornvine']],
+  'Cindersnail Magmollusk.jpg': [['cindersnail'], ['magmollusk']],
+  'Coilet Constricta.jpg': [['coilet'], ['constricta']],
+  'Digadillo Armadrill.jpg': [['digadillo'], ['armadrill']],
+  'Flarecolt Blazestallion.jpg': [['flarecolt'], ['blazestallion']],
+  'Frostpup Glacieroo.jpg': [['frostpup'], ['glacieroo']],
+  'Grubling Shellgrub Stingwing.jpg': ([['grubling'], ['shellgrub'], ['stingwing']], (0, 0, 0.5, 1)),
+  'Gullwhip Pelicrest.jpg': [['gullwhip'], ['pelicrest']],
+  'Mindlet Psyrook Cerebrix.jpg': [['mindlet'], ['psyrook'], ['cerebrix']],
+  'Pterrock.jpg': [['pterrock']],
+  'Puffpetal Bloomsprite.jpg': [['puffpetal', 'bloomsprite']],
+  'Punchpup Brawlbull Titanox.jpg': [['punchpup'], ['brawlbull'], ['titanox']],
+  'Shellby Clamorite.jpg': [['shellby'], ['clamorite']],
+  'Snowmite Rimewing.jpg': [['snowmite'], ['rimewing']],
+  'Splashkoi Torrentail.jpg': [['splashkoi'], ['torrentail']],
+  'Squeakle Squeakrat.jpg': [['squeakle'], ['squeakrat']],
+  'Voltpup Thunderhound.jpg': [['voltpup'], ['thunderhound']],
+  'Wisplet Hauntle Shadeking.jpg': [['wisplet'], ['hauntle'], ['shadeking']],
+  'Wormlet Cocoonix Lunamoth.jpg': [['wormlet'], ['cocoonix'], ['lunamoth']],
+}
 
 def cut(fn, rows):
-    im = np.asarray(Image.open(os.path.join(SRC, fn)).convert('RGB')).astype(np.int32)
+    crop = None
+    if isinstance(rows, tuple): rows, crop = rows
+    pim = Image.open(os.path.join(SRC, fn)).convert('RGB')
+    if crop: pim = pim.crop((int(crop[0] * pim.width), int(crop[1] * pim.height), int(crop[2] * pim.width), int(crop[3] * pim.height)))
+    im = np.asarray(pim).astype(np.int32)
     H, W, _ = im.shape
     corners = np.concatenate([im[:20, :20].reshape(-1, 3), im[:20, -20:].reshape(-1, 3), im[-20:, :20].reshape(-1, 3), im[-20:, -20:].reshape(-1, 3)])
     bg = np.median(corners, 0)
@@ -28,7 +56,8 @@ def cut(fn, rows):
     edge = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
     bgmask = np.isin(lab, edge[edge > 0])
     sizes = nd.sum(near, lab, range(n + 1))
-    holes = (sizes > H * W * 0.0006) & (np.arange(n + 1) > 0)
+    means = np.asarray(nd.mean(dist, lab, range(n + 1)))
+    holes = (sizes > H * W * 0.0006) & (np.arange(n + 1) > 0) & (means < 7)
     bgmask |= holes[lab]
     fg = ~bgmask
     fg = nd.binary_opening(fg, iterations=2)
@@ -89,5 +118,5 @@ def cut(fn, rows):
                 out.append(f'{name}_{side}')
     print(fn, 'figures:', len(figs), 'rows:', [len(r[1]) for r in rowlist], '->', out)
 
-for fn, rows in LAYOUT.items():
+for fn, rows in (NEW if len(sys.argv) > 3 and sys.argv[3] == 'new' else LAYOUT).items():
     cut(fn, rows)
