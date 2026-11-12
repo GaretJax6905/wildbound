@@ -3,6 +3,7 @@
 // they look like hand-made pixel art. Tiles, buildings and people are drawn
 // pixel by pixel.
 import { SPECIES } from './data.js';
+import { pxText, pxWidth } from './font.js';
 
 const cache = new Map();
 function mk(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
@@ -956,10 +957,9 @@ export function building(kind, w, h, doorX) {
   const dx = doorX * 16;
   px(dx + 2, h * 16 - 15, 12, 15, '#5a3818'); px(dx + 3, h * 16 - 14, 10, 14, '#8a5a30'); px(dx + 3, h * 16 - 14, 10, 6, '#b0d8f0');
   if (B.label) {
-    g.font = 'bold 7px Pixelify, monospace'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    const tw = Math.max(26, g.measureText(B.label).width + 8);
-    px(dx + 8 - tw / 2, roofH - 12, tw, 10, '#f8f8f8'); px(dx + 9 - tw / 2, roofH - 11, tw - 2, 8, B.roofD);
-    g.fillStyle = '#f8f8f8'; g.fillText(B.label, dx + 8, roofH - 7);
+    const tw = Math.max(26, pxWidth(B.label) + 8);
+    px(dx + 8 - tw / 2, roofH - 13, tw, 11, '#f8f8f8'); px(dx + 9 - tw / 2, roofH - 12, tw - 2, 9, B.roofD);
+    pxText(g, B.label, dx + 8, roofH - 11, '#f8f8f8', null, 1, 'center');
   }
   if (kind === 'center') { px(dx + 6, 6, 4, 10, '#f8f8f8'); px(dx + 3, 9, 10, 4, '#f8f8f8'); }
   cache.set(key, c);

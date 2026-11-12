@@ -2,6 +2,7 @@
 import { W, H, input, open, frame } from './engine.js';
 import { sfx } from './audio.js';
 import { settings } from './state.js';
+import { pxText, pxWidth } from './font.js';
 
 export const FONT = '600 11px Pixelify, monospace';
 export const FONT_SMALL = '600 9px Pixelify, monospace';
@@ -9,7 +10,14 @@ export const FONT_BIG = '700 15px Pixelify, monospace';
 
 // the pixel font has f-ligatures ("fi", "fl"); a zero-width non-joiner keeps letters separate
 const noLig = (s) => String(s).replace(/f(?=[filt])/g, 'f\u200c');
+// Big headings use the outline font; everything else uses the crisp 5x7 pixel font.
+const isBig = (font) => { const m = /(\d+)px/.exec(font); return m && +m[1] >= 14; };
 export function text(g, s, x, y, col = '#282830', shadow = '#cfcfc6', font = FONT, align = 'left') {
+  if (!isBig(font)) {
+    const small = /(?:^|\s)[6-9]px/.test(font);
+    pxText(g, s, x, y + (small ? 0 : 2), col, shadow, 1, align);
+    return;
+  }
   s = noLig(s);
   g.font = font;
   g.textBaseline = 'top';
@@ -49,12 +57,13 @@ export function bar(g, x, y, w, frac, col = '#40a8f8') {
 
 export function wrap(g, str, maxW, font = FONT) {
   g.font = font;
+  const width = (t) => (isBig(font) ? g.measureText(t).width : pxWidth(t));
   const out = [];
   for (const para of String(str).split('\n')) {
     let line = '';
     for (const word of para.split(' ')) {
       const t = line ? line + ' ' + word : word;
-      if (g.measureText(t).width > maxW && line) { out.push(line); line = word; } else line = t;
+      if (width(t) > maxW && line) { out.push(line); line = word; } else line = t;
     }
     out.push(line);
   }

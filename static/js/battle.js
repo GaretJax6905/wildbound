@@ -94,7 +94,7 @@ function infoBox(g, s, x, y, mine) {
   text(g, name(m), x + 7, y + 4, '#383840', '#d0d0c8', FONT_SMALL);
   text(g, 'Lv' + m.level, x + w - 8, y + 4, '#383840', '#d0d0c8', FONT_SMALL, 'right');
   if (m.status) { g.fillStyle = m.status === 'burn' ? '#e06030' : m.status === 'par' ? '#d0b020' : m.status === 'poison' ? '#a040a0' : '#8888a0'; g.fillRect(x + 7, y + 14, 15, 7); text(g, STATUS_NAMES[m.status], x + 8, y + 14, '#fff', null, '6px Pixelify, monospace'); }
-  text(g, 'HP', x + 25, y + 14, '#f8a030', null, '600 6px Pixelify, monospace');
+  text(g, 'HP', x + 23, y + 14, '#e88a20', null, '600 6px Pixelify, monospace');
   if (mine && B.double) {
     hpBar(g, x + 36, y + 16, w - 70, s.disp / maxHp(m));
     text(g, `${Math.ceil(s.disp)}/${maxHp(m)}`, x + w - 7, y + 13, '#383840', null, FONT_SMALL, 'right');
@@ -102,9 +102,9 @@ function infoBox(g, s, x, y, mine) {
   }
   hpBar(g, x + 36, y + 16, w - 44, s.disp / maxHp(m));
   if (mine) {
-    text(g, `${Math.ceil(s.disp)}/${maxHp(m)}`, x + w - 8, y + 20, '#383840', '#d0d0c8', FONT_SMALL, 'right');
+    text(g, `${Math.ceil(s.disp)}/${maxHp(m)}`, x + w - 8, y + 21, '#383840', '#d0d0c8', FONT_SMALL, 'right');
     const lo = expForLevel(m.level), hi = expForLevel(m.level + 1);
-    bar(g, x + 7, y + h - 6, w - 14, (m.exp - lo) / (hi - lo));
+    bar(g, x + 7, y + h - 5, w - 14, (m.exp - lo) / (hi - lo));
   }
 }
 
