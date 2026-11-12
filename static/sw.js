@@ -1,6 +1,6 @@
 // Offline support: cache the whole game so it runs with no connection once
 // installed. Bump VERSION whenever game files change.
-const VERSION = 'wildbound-v9';
+const VERSION = 'wildbound-v10';
 const FILES = [
   '/', '/static/style.css', '/manifest.webmanifest',
   '/static/fonts/pixelify-sans-latin-400-normal.woff2', '/static/fonts/pixelify-sans-latin-600-normal.woff2',

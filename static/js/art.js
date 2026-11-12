@@ -38,7 +38,8 @@ function pixelize(c, palette, outline = '#1c1c2c', volume = false) {
       const lit = !solidAt(x - 1, y) || !solidAt(x, y - 1) || !solidAt(x - 1, y - 1);
       const dark = !solidAt(x + 1, y) || !solidAt(x, y + 1) || !solidAt(x + 1, y + 1);
       const dark2 = !dark && (!solidAt(x + 2, y + 1) || !solidAt(x + 1, y + 2));
-      const k = lit ? 1.14 : dark ? 0.76 : dark2 ? 0.88 : 1;
+      const dith = !lit && !dark && !dark2 && (!solidAt(x + 3, y + 2) || !solidAt(x + 2, y + 3)) && ((x + y) & 1);
+      const k = lit ? 1.14 : dark ? 0.76 : dark2 ? 0.88 : dith ? 0.92 : 1;
       if (k !== 1) for (let c2 = 0; c2 < 3; c2++) d[i + c2] = Math.max(0, Math.min(255, Math.round(src[i + c2] * k)));
     }
   }
@@ -70,9 +71,11 @@ function painter(g) {
       const E = (cx, cy, a, b2, c) => { g.fillStyle = u(c); g.beginPath(); g.ellipse(cx, cy, Math.max(0.5, a), Math.max(0.5, b2), rot, 0, Math.PI * 2); g.fill(); };
       const lum = (() => { const [r, gg, bb] = hex(col); return r * 0.3 + gg * 0.59 + bb * 0.11; })();
       if (!this.shaded || Math.min(rx, ry) < 3.2 || lum < 50) { E(x, y, rx, ry, col); return; }
-      E(x, y, rx, ry, shade(col, 0.78));
-      E(x - rx * 0.1, y - ry * 0.13, rx * 0.88, ry * 0.86, col);
-      E(x - rx * 0.38, y - ry * 0.42, rx * 0.3, ry * 0.24, shade(col, 1.17));
+      E(x, y, rx, ry, shade(col, 0.72));
+      E(x - rx * 0.05, y - ry * 0.07, rx * 0.94, ry * 0.92, shade(col, 0.86));
+      E(x - rx * 0.12, y - ry * 0.15, rx * 0.84, ry * 0.8, col);
+      E(x - rx * 0.32, y - ry * 0.36, rx * 0.42, ry * 0.34, shade(col, 1.1));
+      E(x - rx * 0.42, y - ry * 0.46, rx * 0.16, ry * 0.12, shade(col, 1.24));
     },
     circ(x, y, r, col) { this.ell(x, y, r, r, col); },
     rect(x, y, w, h, col) { g.fillStyle = u(col); g.fillRect(x, y, w, h); },
@@ -80,7 +83,8 @@ function painter(g) {
     line(pts, col, w = 1.5) { g.strokeStyle = u(col); g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke(); },
     eye(x, y, r = 2.2, mean = false) {
       this.ell(x, y, r * 0.85, r * 1.15, '#202028');
-      this.rect(Math.round(x - r * 0.5), Math.round(y - r * 0.7), 1, 1, '#ffffff');
+      if (this.res > 1) { this.ell(x, y + r * 0.35, r * 0.5, r * 0.45, '#3a3a5a'); this.ell(x - r * 0.3, y - r * 0.45, r * 0.32, r * 0.32, '#ffffff'); this.rect(x + r * 0.2, y + r * 0.25, 0.6, 0.6, '#ffffff'); }
+      else this.rect(Math.round(x - r * 0.5), Math.round(y - r * 0.7), 1, 1, '#ffffff');
       if (mean) this.line([[x - r * 1.4, y - r * 1.9], [x + r * 1.1, y - r * 1.1]], '#202028', 1.2);
     },
     clip(fn, shape) { g.save(); g.beginPath(); shape(g); g.clip(); fn(); g.restore(); },
@@ -415,7 +419,7 @@ const PLAN = {
     if (F.spikes) for (let i = 0; i < 4; i++) p.poly([[18 + i * 6, 32], [21 + i * 6, 25], [24 + i * 6, 32]], C[1]);
     pattern(p, F, C, (g) => g.ellipse(28, 40, 15, 10, 0, 0, 7), [13, 30, 30, 20]);
     p.rect(20, 44, 5, 9, C[0]); p.rect(31, 44, 5, 9, C[0]);
-    if (!back) { p.rect(20, 51, 5, 2, C[2]); p.rect(31, 51, 5, 2, C[2]); p.ell(28, 45, 7, 4, C[2]); }
+    if (!back) { p.rect(20, 51, 5, 2, C[2]); p.rect(31, 51, 5, 2, C[2]); p.ell(28, 45, 7, 4, C[2]); for (const fx of [21.6, 23.4, 32.6, 34.4]) p.rect(fx, 51.2, 0.5, 1.6, shade(C[0], 0.5)); }
     if (F.mane) for (let i = 0; i < 10; i++) { const a = Math.PI * (0.85 + i * 0.145); p.poly([[28 + Math.cos(a) * 8, 25 + Math.sin(a) * 7], [28 + Math.cos(a) * 15, 25 + Math.sin(a) * 13], [28 + Math.cos(a + 0.25) * 8, 25 + Math.sin(a + 0.25) * 7]], C[1]); }
     drawEars(p, 28, 24, 10, F, C);
     drawHorns(p, 28, 15, F, F.horn === 'antler' ? '#c8a070' : C[2]);
@@ -577,23 +581,45 @@ const PLAN = {
   },
 };
 
+// Battle / DEX sized sprites (48px+) are rendered at 2x resolution for extra detail:
+// draw them with an explicit width and height (drawCreature does this).
 export function creature(sp, size = 56, back = false) {
   const key = `c:${sp}:${size}:${back}`;
   if (cache.has(key)) return cache.get(key);
   const s = SPECIES[sp];
-  const c = mk(size, size);
+  const res = size >= 48 ? 2 : 1;
+  const c = mk(size * res, size * res);
   const g = c.getContext('2d');
-  g.scale(size / 56, size / 56);
+  g.scale((size * res) / 56, (size * res) / 56);
   const p = painter(g);
   p.shaded = size >= 40;
+  p.res = res;
   if (s.family === 'plan') {
     const k = s.art.stage === 1 ? 0.8 : s.art.stage === 2 ? 0.92 : 1;
     g.translate(28, 54); g.scale(k, k); g.translate(-28, -54);
     PLAN[s.art.plan](p, s.art.c, feats(s.art.f), back);
   } else FAM[s.family](p, s.stage, back);
   pixelize(c, [...p.used], '#1c1c2c', size >= 40);
+  if (res > 1) thickenOutline(c, '#1c1c2c');
   cache.set(key, c);
   return c;
+}
+export function drawCreature(g, sp, size, x, y, back = false) {
+  g.drawImage(creature(sp, size, back), Math.round(x), Math.round(y), size, size);
+}
+// grow the dark outline by one more pixel so hi-res sprites keep a bold edge
+function thickenOutline(c, outline) {
+  const g = c.getContext('2d');
+  const { width: w, height: h } = c;
+  const img = g.getImageData(0, 0, w, h); const d = img.data; const src = new Uint8ClampedArray(d);
+  const o = hex(outline);
+  const isO = (x, y) => { if (x < 0 || y < 0 || x >= w || y >= h) return false; const i = (y * w + x) * 4; return src[i + 3] && src[i] === o[0] && src[i + 1] === o[1] && src[i + 2] === o[2]; };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4;
+    if (src[i + 3]) continue;
+    if (isO(x - 1, y) || isO(x + 1, y) || isO(x, y - 1) || isO(x, y + 1)) { d[i] = o[0]; d[i + 1] = o[1]; d[i + 2] = o[2]; d[i + 3] = 255; }
+  }
+  g.putImageData(img, 0, 0);
 }
 
 // silhouette for unseen / evolution flash
@@ -601,8 +627,8 @@ export function silhouette(sp, size = 56, col = '#ffffff') {
   const key = `s:${sp}:${size}:${col}`;
   if (cache.has(key)) return cache.get(key);
   const src = creature(sp, size);
-  const c = mk(size, size); const g = c.getContext('2d');
-  g.drawImage(src, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, size, size);
+  const c = mk(src.width, src.height); const g = c.getContext('2d');
+  g.drawImage(src, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, src.width, src.height);
   cache.set(key, c);
   return c;
 }
@@ -748,53 +774,76 @@ export function person(lookId, dir = 'down', step = 0) {
 }
 
 // Battle portraits: a bigger, shaded trainer drawn with shapes and then pixelized.
-export function trainerPortrait(lookId) {
-  const key = 'tp:' + lookId;
+// pose: 'ready' (facing you, battle stance, pointing), or for your own trainer seen
+// from behind: 'throw0' (winding up with an orb) and 'throw1' (orb thrown, arm forward).
+export function trainerPortrait(lookId, pose = 'ready') {
+  const key = `tp:${lookId}:${pose}`;
   if (cache.has(key)) return cache.get(key);
   const L = LOOKS[lookId] || LOOKS.boy;
-  const c = mk(48, 72); const g = c.getContext('2d');
+  const back = pose !== 'ready';
+  const c = mk(56, 76); const g = c.getContext('2d');
+  g.translate(4, 2);
   const p = painter(g);
-  const sk = L.skin, hr = L.hair, sh = L.shirt, pa = L.pants;
-  // legs
-  p.rect(15, 52, 8, 16, pa); p.rect(25, 52, 8, 16, shade(pa, 0.85)); p.rect(23, 52, 2, 14, shade(pa, 0.6));
-  p.rect(13, 66, 11, 5, '#3a3040'); p.rect(24, 66, 11, 5, '#3a3040'); p.rect(14, 66, 4, 1, '#7a7080'); p.rect(26, 66, 4, 1, '#7a7080');
-  if (L.long) p.ell(24, 30, 15, 18, shade(hr, 0.8));
-  // torso
-  const coatLen = L.coat ? 62 : 54;
-  p.poly([[12, 32], [36, 32], [38, coatLen], [10, coatLen]], sh);
-  p.poly([[30, 32], [36, 32], [38, coatLen], [32, coatLen]], shade(sh, 0.8));
-  p.rect(12, 32, 24, 2, shade(sh, 1.15));
-  if (L.coat) { p.poly([[21, 33], [24, 33], [24, coatLen], [21, coatLen]], shade(sh, 0.6)); p.poly([[19, 33], [22, 40], [21, 33]], '#f8f8f8'); }
-  else { p.rect(12, 50, 24, 3, shade(pa, 0.9)); p.rect(22, 50, 4, 3, '#e0c050'); }
-  if (L.emblem) { p.circ(19, 40, 3, '#f8d030'); p.circ(20, 39, 1.5, '#282838'); }
-  // arms
-  p.ell(9, 41, 4, 10, sh, 0.15); p.ell(39, 41, 4, 10, shade(sh, 0.8), -0.15);
-  p.circ(8, 51, 3.5, sk); p.circ(40, 51, 3.5, shade(sk, 0.9));
-  // neck + head
-  p.rect(20, 27, 8, 6, shade(sk, 0.85));
-  p.ell(24, 18, 11, 12, sk);
-  p.ell(14, 19, 2, 3, shade(sk, 0.9)); p.ell(34, 19, 2, 3, shade(sk, 0.9));
-  // hair
+  const sk = L.skin, skS = shade(sk, 0.85), hr = L.hair, sh = L.shirt, shS = shade(sh, 0.78), pa = L.pants, paS = shade(pa, 0.8);
   const hrS = shade(hr, 0.75), hrH = shade(hr, 1.3);
-  if (!L.hat) {
-    p.ell(24, 11, 12, 8, hr);
-    p.poly([[12, 12], [14, 22], [17, 13]], hr); p.poly([[36, 12], [34, 22], [31, 13]], hr);
-    p.poly([[17, 12], [21, 17], [24, 12], [27, 17], [31, 12]], hr);
-    p.ell(20, 8, 4, 2, hrH);
-    if (L.spiky) for (let i = 0; i < 5; i++) p.poly([[14 + i * 5, 8], [16 + i * 5, -1 + (i % 2) * 3], [19 + i * 5, 8]], hr);
+  // legs in a wide stance
+  p.poly([[16, 52], [22, 52], [17, 68], [10, 68]], pa); p.poly([[26, 52], [32, 52], [38, 68], [31, 68]], paS);
+  p.ell(12, 69, 6, 3, '#3a3040'); p.ell(36, 69, 6, 3, '#3a3040'); p.rect(8, 67, 4, 1, '#7a7080'); p.rect(33, 67, 4, 1, '#7a7080');
+  if (L.long && !back) p.ell(24, 30, 15, 17, shade(hr, 0.8));
+  if (L.long && back) p.ell(24, 30, 14, 18, hr);
+  // torso
+  const coatLen = L.coat ? 60 : 54;
+  p.poly([[12, 32], [36, 32], [38, coatLen], [10, coatLen]], sh);
+  p.poly([[29, 32], [36, 32], [38, coatLen], [31, coatLen]], shS);
+  p.rect(12, 32, 24, 2, shade(sh, 1.15));
+  if (!back) {
+    if (L.coat) { p.poly([[21, 33], [24, 33], [24, coatLen], [21, coatLen]], shade(sh, 0.6)); p.poly([[19, 33], [22, 40], [21, 33]], '#f8f8f8'); }
+    else { p.rect(12, 50, 24, 3, shade(pa, 0.9)); p.rect(22, 50, 4, 3, '#e0c050'); }
+    if (L.emblem) { p.circ(19, 40, 3, '#f8d030'); p.circ(20, 39, 1.5, '#282838'); }
+  } else if (!L.coat) p.rect(12, 50, 24, 3, shade(pa, 0.9));
+  // arms
+  if (pose === 'ready') {
+    // left fist on hip
+    p.ell(9, 39, 3.6, 7, sh, 0.5); p.ell(12, 47, 3.2, 5, shS, -0.8); p.circ(15, 49, 3, sk);
+    // right arm pointing at the foe
+    p.ell(40, 30, 3.8, 9, sh, -0.95); p.circ(47, 23, 3.4, sk); p.rect(48, 19, 3, 2, sk);
+  } else if (pose === 'throw0') {
+    p.ell(9, 41, 4, 9, shS, 0.15);  p.circ(8, 50, 3.4, skS);
+    p.ell(40, 26, 3.8, 9, sh, 0.5); p.circ(44, 17, 3.6, sk);
+    p.circ(46, 13, 3.6, '#2aa89a'); p.rect(43, 13, 7, 1, '#e0b030');
   } else {
-    p.ell(24, 10, 12, 7, L.hat); p.rect(12, 10, 24, 4, L.hat); p.ell(20, 7, 4, 2, shade(L.hat, 1.2));
-    p.ell(24, 14, 15, 2.5, L.hatB || shade(L.hat, 0.7));
-    p.poly([[13, 14], [15, 20], [18, 15]], hr); p.poly([[35, 14], [33, 20], [30, 15]], hr);
+    p.ell(9, 41, 4, 9, shS, 0.15); p.circ(8, 50, 3.4, skS);
+    p.ell(36, 26, 3.8, 9, sh, -0.6); p.circ(30, 17, 3.6, sk);
   }
-  if (L.long) { p.ell(13, 24, 3, 9, hr); p.ell(35, 24, 3, 9, hrS); }
-  // face
-  p.ell(19, 19, 2, 2.6, '#202030'); p.ell(29, 19, 2, 2.6, '#202030');
-  p.rect(18, 17, 1, 1, '#ffffff'); p.rect(28, 17, 1, 1, '#ffffff');
-  p.line([[16.5, 14.5], [21, 15]], hrS, 1); p.line([[27, 15], [31.5, 14.5]], hrS, 1);
-  p.ell(16, 23, 2, 1, '#f0a8a8'); p.ell(32, 23, 2, 1, '#f0a8a8');
-  if (L.beard) { p.poly([[15, 22], [33, 22], [30, 30], [24, 32], [18, 30]], hr); p.rect(21, 25, 6, 1, shade(sk, 0.6)); }
-  else p.line([[22, 25], [24, 26], [26, 25]], shade(sk, 0.55), 1);
+  // neck + head
+  p.rect(20, 27, 8, 6, skS);
+  p.ell(24, 18, 11, 12, back ? hr : sk);
+  if (back) {
+    p.ell(13, 19, 2, 3, skS); p.ell(35, 19, 2, 3, skS);
+    p.ell(24, 22, 10, 9, hrS); p.ell(21, 12, 5, 3, hrH);
+    if (L.spiky && !L.hat) for (let i = 0; i < 5; i++) p.poly([[14 + i * 5, 8], [16 + i * 5, -1 + (i % 2) * 3], [19 + i * 5, 8]], hr);
+    if (L.hat) { p.ell(24, 10, 12, 7, L.hat); p.rect(12, 10, 24, 4, L.hat); p.rect(20, 12, 8, 2, shade(L.hat, 0.7)); }
+  } else {
+    p.ell(14, 19, 2, 3, skS); p.ell(34, 19, 2, 3, skS);
+    if (!L.hat) {
+      p.ell(24, 11, 12, 8, hr);
+      p.poly([[12, 12], [14, 22], [17, 13]], hr); p.poly([[36, 12], [34, 22], [31, 13]], hr);
+      p.poly([[17, 12], [21, 17], [24, 12], [27, 17], [31, 12]], hr);
+      p.ell(20, 8, 4, 2, hrH);
+      if (L.spiky) for (let i = 0; i < 5; i++) p.poly([[14 + i * 5, 8], [16 + i * 5, -1 + (i % 2) * 3], [19 + i * 5, 8]], hr);
+    } else {
+      p.ell(24, 10, 12, 7, L.hat); p.rect(12, 10, 24, 4, L.hat); p.ell(20, 7, 4, 2, shade(L.hat, 1.2));
+      p.ell(24, 14, 15, 2.5, L.hatB || shade(L.hat, 0.7));
+      p.poly([[13, 14], [15, 20], [18, 15]], hr); p.poly([[35, 14], [33, 20], [30, 15]], hr);
+    }
+    if (L.long) { p.ell(13, 24, 3, 9, hr); p.ell(35, 24, 3, 9, hrS); }
+    // determined battle face
+    p.ell(19, 19.5, 2, 2.4, '#202030'); p.ell(29, 19.5, 2, 2.4, '#202030');
+    p.rect(18, 18, 1, 1, '#ffffff'); p.rect(28, 18, 1, 1, '#ffffff');
+    p.line([[16, 15.5], [21.5, 16.8]], hrS, 1.2); p.line([[26.5, 16.8], [32, 15.5]], hrS, 1.2);
+    if (L.beard) { p.poly([[15, 22], [33, 22], [30, 30], [24, 32], [18, 30]], hr); p.rect(21, 25, 6, 1, shade(sk, 0.6)); }
+    else { p.line([[21.5, 25], [24, 26.2], [26.5, 25]], shade(sk, 0.5), 1.1); }
+  }
   pixelize(c, [...p.used], '#202030');
   cache.set(key, c);
   return c;

@@ -1,7 +1,7 @@
 // Full-screen menus: team, summary, bag, PC box, dex, shop, starter pick,
 // trainer card, options, title and the evolution scene.
 import { W, H, input, open, wait, frame, fx } from './engine.js';
-import { creature, silhouette, person } from './art.js';
+import { creature, silhouette, person, drawCreature } from './art.js';
 import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField } from './data.js';
 import { MAPS, LAYOUT } from './maps.js';
 import { stats, maxHp, name, expForLevel, evolve, movesAt, canEvolveByLevel } from './mon.js';
@@ -100,7 +100,7 @@ class Summary {
     const S = SPECIES[m.sp], st = stats(m);
     bg(g, '#e8d8a8');
     box(g, 2, 2, 92, 92);
-    g.drawImage(creature(m.sp, 64), 16, 2);
+    drawCreature(g, m.sp, 64, 16, 2);
     text(g, name(m), 8, 66);
     text(g, 'Lv' + m.level, 88, 66, '#383840', '#d0d0c8', FONT, 'right');
     S.types.forEach((t, k) => typeTag(g, t, 8 + k * 40, 80));
@@ -200,7 +200,7 @@ class BoxList extends ListScreen {
     box(g, 146, 28, 90, 128);
     const m = list[this.index];
     if (m) {
-      g.drawImage(creature(m.sp, 56), 163, 34);
+      drawCreature(g, m.sp, 56, 163, 34);
       text(g, name(m), 191, 94, '#383840', '#d0d0c8', FONT, 'center');
       SPECIES[m.sp].types.forEach((t, k) => typeTag(g, t, 153 + k * 40, 110));
       text(g, `HP ${m.hp}/${maxHp(m)}`, 191, 126, '#383840', '#d0d0c8', FONT_SMALL, 'center');
@@ -259,8 +259,8 @@ class DexList extends ListScreen {
     });
     box(g, 134, 4, 102, 152);
     const sp = SPECIES_LIST[this.index];
-    if (G.dex.seen[sp]) g.drawImage(creature(sp, 56), 157, 12);
-    else g.drawImage(silhouette(sp, 56, '#303040'), 157, 12);
+    if (G.dex.seen[sp]) drawCreature(g, sp, 56, 157, 12);
+    else g.drawImage(silhouette(sp, 56, '#303040'), 157, 12, 56, 56);
     if (G.dex.seen[sp]) SPECIES[sp].types.forEach((t, k) => typeTag(g, t, 145 + k * 40, 72));
     const s = Object.keys(G.dex.seen).length, c = Object.keys(G.dex.caught).length;
     text(g, `SEEN ${s}`, 144, 90); text(g, `CAUGHT ${c}`, 144, 104);
@@ -275,7 +275,7 @@ class DexEntry {
     const S = SPECIES[this.sp];
     bg(g, '#c04848');
     box(g, 4, 4, 232, 152);
-    g.drawImage(creature(this.sp, 64), 10, 8);
+    drawCreature(g, this.sp, 64, 10, 8);
     text(g, `No.${String(S.no).padStart(3, '0')}  ${S.name}`, 78, 14, '#383840', '#d0d0c8', FONT_BIG);
     S.types.forEach((t, k) => typeTag(g, t, 78 + k * 40, 34));
     const evo = S.evo ? `Evolves into ${SPECIES[S.evo.to].name} ${S.evo.level ? 'at Lv. ' + S.evo.level : 'with a ' + ITEMS[S.evo.item].name}.` : '';
@@ -365,7 +365,7 @@ class StarterPick {
       const x = 8 + i * 77, sel = i === this.i;
       box(g, x, 26, 72, 84, sel ? 'red' : 'white');
       const bob = sel ? Math.round(Math.sin(frame / 8) * 2) : 0;
-      g.drawImage(creature(sp, 56), x + 8, 32 + bob);
+      drawCreature(g, sp, 56, x + 8, 32 + bob);
       text(g, SPECIES[sp].name, x + 36, 88, '#383840', '#d0d0c8', FONT_SMALL, 'center');
       typeTag(g, SPECIES[sp].types[0], x + 18, 98);
     });
@@ -446,10 +446,10 @@ class Title {
     text(g, 'WILDBOUND', W / 2, 14, '#f8d030', '#803010', '600 28px Pixelify, monospace', 'center');
     text(g, 'A creature journey across regions', W / 2, 46, '#f8f8f8', '#203060', FONT_SMALL, 'center');
     const sp = SPECIES_LIST[Math.floor(this.t / 150) % SPECIES_LIST.length];
-    g.drawImage(creature(sp, 56), 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
+    drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 22, 86, 32, 42);
     this.menu.draw(g);
-    text(g, 'v1.5', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v1.6', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }
@@ -463,7 +463,7 @@ class EvoScene {
     for (let i = 0; i < 20; i++) { const a = (i / 20) * Math.PI * 2 + this.t / 30; g.fillStyle = '#f8f0a0'; g.fillRect(W / 2 + Math.cos(a) * (40 + (this.t % 40)), 56 + Math.sin(a) * (30 + (this.t % 30)), 2, 2); }
     const sp = this.showNew ? this.to : this.from;
     const img = this.phase === 1 ? silhouette(sp, 56, '#f8f8f8') : creature(sp, 56);
-    g.drawImage(img, W / 2 - 28, 28);
+    g.drawImage(img, W / 2 - 28, 28, 56, 56);
   }
 }
 export async function evolutionScene(m, to, fromItem = false) {
