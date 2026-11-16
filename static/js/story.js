@@ -238,7 +238,7 @@ const MOTTO = ['NYX: When daylight fades and stars descend...', 'CORVO: ...the s
 export async function newGameIntro(askName) {
   const scene = { draw(g) {
     g.fillStyle = '#101828'; g.fillRect(0, 0, 240, 160);
-    if (scene.show) { g.imageSmoothingEnabled = false; g.drawImage(scene.portrait, 92, 8, 56, 76); }
+    if (scene.show) art.blit(g, scene.portrait, 92, 8, 56, 76);
     if (scene.mon) art.blit(g, scene.mon, 150, 40, 56, 56);
   } };
   const art = await import('./art.js');
@@ -252,8 +252,14 @@ export async function newGameIntro(askName) {
   sfx('door');
   await say('This world is full of creatures, living in every region you can imagine.', 'Trainers travel from region to region, starting fresh every time, with only a partner or two by their side.');
   scene.mon = null;
-  await say('Now, tell me. What is your name?');
-  G.name = await askName('Your name?', 'TOM');
+  art.setPlayerLook('boy');
+  scene.portrait = art.trainerPortrait('player', 'ready');
+  const gi = await choose('Now, tell me about yourself. Are you a boy or a girl?', ['BOY', 'GIRL'], { w: 56, x: 178 });
+  G.gender = gi === 1 ? 'girl' : 'boy';
+  art.setPlayerLook(G.gender);
+  scene.portrait = art.trainerPortrait('player', 'ready');
+  await say('And what is your name?');
+  G.name = await askName('Your name?', G.gender === 'girl' ? 'LILY' : 'TOM');
   await say(`Right! So your name is ${G.name}!`);
   scene.portrait = art.trainerPortrait('kai', 'ready');
   await say('This boy lives right next door. He\'s been your rival since you were little. What was his name again?');

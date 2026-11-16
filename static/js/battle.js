@@ -114,8 +114,8 @@ function drawBattle(g) {
     g.beginPath(); g.ellipse(x + sl.anim.dx, y - 1, w, w * 0.25, 0, 0, 7); g.fill();
   }
   // trainer portraits during intro / outro
-  if (B.portraits) B.portraits.forEach((pt) => g.drawImage(trainerPortrait(pt.look, 'ready'), pt.x - 4, pt.y, 56, 76));
-  if (B.playerPortrait) g.drawImage(trainerPortrait('player', B.playerPortrait.pose || 'throw0'), B.playerPortrait.x - 4, 38, 56, 76);
+  if (B.portraits) B.portraits.forEach((pt) => blit(g, trainerPortrait(pt.look, pt.pose || 'ready'), pt.x - 4, pt.y, 56, 76));
+  if (B.playerPortrait) blit(g, trainerPortrait('player', B.playerPortrait.pose || 'throw0'), B.playerPortrait.x - 4, 38, 56, 76);
   const draw = (s, back) => {
     if (!s.mon || s.anim.hide) return;
     if (s.anim.blink > 0 && (s.anim.blink >> 1) % 2) return;
@@ -297,8 +297,10 @@ export async function battle(cfg) {
 async function winTrainer() {
   playMusic('victory');
   const n = B.trainers.length;
-  B.portraits = B.trainers.map((t, i) => ({ look: t.look, x: n === 2 ? 132 + i * 52 : 152, y: 2 }));
+  // beaten trainers come back in their defeated pose
+  B.portraits = B.trainers.map((t, i) => ({ look: t.look, pose: 'defeat', x: n === 2 ? 132 + i * 52 : 152, y: 2 }));
   B.e.forEach((s) => { s.mon = null; });
+  B.showInfo = false;
   await msg(n === 2 ? `${G.name} defeated ${B.trainers[0].name} and ${B.trainers[1].name}!` : `${G.name} defeated ${B.trainers[0].name}!`);
   for (const t of B.trainers) if (t.lose) await msg(`${t.name}: ${t.lose}`);
   let money = 0;

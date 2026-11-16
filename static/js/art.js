@@ -719,6 +719,18 @@ export const LOOKS = {
   tamer: { skin: '#e8b890', hair: '#383838', shirt: '#a03838', pants: '#383838', coat: true },
 };
 
+// The player can be a boy or a girl. LOOKS.player is swapped in place so every
+// sprite and portrait that asks for 'player' follows the choice.
+const PLAYER_LOOKS = {
+  boy: { ...LOOKS.player },
+  girl: { skin: '#f8d0a8', hair: '#7a4a28', shirt: '#38a8a0', pants: '#4a3a68', hat: '#d84848', hatB: '#f8f8f8', long: true },
+};
+export function setPlayerLook(gender) {
+  for (const k of Object.keys(LOOKS.player)) delete LOOKS.player[k];
+  Object.assign(LOOKS.player, PLAYER_LOOKS[gender === 'girl' ? 'girl' : 'boy']);
+  for (const k of [...cache.keys()]) if (k.startsWith('p:player:') || k.startsWith('tp:player:')) cache.delete(k);
+}
+
 // Overworld people: small GBA-scale sprites (about 12x17 inside a 16x19 canvas). The body
 // sits inside the tile and only the very top of the head pokes above it (drawn 3px up).
 export function person(lookId, dir = 'down', step = 0) {
@@ -802,9 +814,32 @@ export function person(lookId, dir = 'down', step = 0) {
 // Battle portraits: a bigger, shaded trainer drawn with shapes and then pixelized.
 // pose: 'ready' (facing you, battle stance, pointing), or for your own trainer seen
 // from behind: 'throw0' (winding up with an orb) and 'throw1' (orb thrown, arm forward).
+// Hand-drawn trainer art: static/art/trainers/<look>_<pose>.webp (pose: ready | defeat),
+// listed in static/art/trainers/index.json. Looks without art keep the pixel portrait.
+const CUSTOM_TR = {};
+export function loadTrainerArt() {
+  return fetch('/static/art/trainers/index.json').then((r) => (r.ok ? r.json() : [])).then((list) => Promise.all(list.map((key) => new Promise((done) => {
+    const [look, pose] = key.split('_');
+    const im = new Image();
+    im.onload = () => { (CUSTOM_TR[look] ||= {})[pose] = im; for (const k of [...cache.keys()]) if (k.startsWith(`tp:${look}:`)) cache.delete(k); done(); };
+    im.onerror = done;
+    im.src = `/static/art/trainers/${key}.webp`;
+  })))).catch(() => {});
+}
 export function trainerPortrait(lookId, pose = 'ready') {
   const key = `tp:${lookId}:${pose}`;
   if (cache.has(key)) return cache.get(key);
+  const T = CUSTOM_TR[lookId];
+  const art = T && (pose === 'defeat' ? T.defeat || T.ready : pose === 'ready' ? T.ready : null);
+  if (art) {
+    const R = 6, c = mk(56 * R, 76 * R), g = c.getContext('2d');
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(art, 0, 0, c.width, c.height);
+    c.hd = true;
+    cache.set(key, c);
+    return c;
+  }
+  if (pose === 'defeat') return trainerPortrait(lookId, 'ready');
   const L = LOOKS[lookId] || LOOKS.boy;
   const back = pose !== 'ready';
   const c = mk(112, 152); const g = c.getContext('2d');
@@ -904,24 +939,50 @@ function srand(seed) { let s = seed * 9301 + 49297; return () => { s = (s * 9301
 
 const TILE_DRAW = {
   grass(px, r) {
-    px(0, 0, 16, 16, '#88d070');
-    for (let i = 0; i < 4; i++) { const x = Math.floor(r() * 13) + 1, y = Math.floor(r() * 13) + 2; px(x, y, 1, 1, '#6cb85a'); px(x + 2, y, 1, 1, '#6cb85a'); px(x + 1, y + 1, 1, 1, '#6cb85a'); }
-    for (let i = 0; i < 2; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#a8e090');
+    // olive meadow grass with soft tufts; some tiles get a little clover
+    px(0, 0, 16, 16, '#8ab45c');
+    for (let i = 0; i < 6; i++) { const x = Math.floor(r() * 14) + 1, y = Math.floor(r() * 13) + 2; px(x, y, 1, 2, '#729c4a'); px(x + 1, y - 1, 1, 2, '#9cc46c'); }
+    for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#b4d482');
+    for (let i = 0; i < 2; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#7ea852');
+    if (r() < 0.35) { const x = Math.floor(r() * 10) + 3, y = Math.floor(r() * 9) + 4; px(x, y, 2, 2, '#5c9446'); px(x + 2, y, 2, 2, '#5c9446'); px(x + 1, y - 2, 2, 2, '#5c9446'); px(x + 1, y + 2, 1, 2, '#4a7c38'); px(x, y, 1, 1, '#7cb85a'); px(x + 2, y, 1, 1, '#7cb85a'); px(x + 1, y - 2, 1, 1, '#7cb85a'); }
   },
   tall(px) {
-    px(0, 0, 16, 16, '#4ea640');
+    px(0, 0, 16, 16, '#5f9e46');
     const tuft = (x, y) => {
-      px(x, y + 3, 5, 3, '#2f7a2a');
-      px(x, y + 1, 1, 3, '#3f9436'); px(x + 1, y, 1, 4, '#5cba4c'); px(x + 2, y + 2, 1, 2, '#3f9436');
-      px(x + 3, y - 1, 1, 5, '#5cba4c'); px(x + 4, y + 1, 1, 3, '#3f9436');
-      px(x + 1, y, 1, 1, '#a0e080'); px(x + 3, y - 1, 1, 1, '#a0e080');
-      px(x, y + 5, 5, 1, '#245e22');
+      px(x, y + 3, 5, 3, '#3e7a32');
+      px(x, y + 1, 1, 3, '#4e8c3e'); px(x + 1, y, 1, 4, '#6cae50'); px(x + 2, y + 2, 1, 2, '#4e8c3e');
+      px(x + 3, y - 1, 1, 5, '#6cae50'); px(x + 4, y + 1, 1, 3, '#4e8c3e');
+      px(x + 1, y, 1, 1, '#b0d888'); px(x + 3, y - 1, 1, 1, '#b0d888');
+      px(x, y + 5, 5, 1, '#2e5e28');
     };
     tuft(0, 2); tuft(8, 1); tuft(4, 8); tuft(11, 9); tuft(-3, 9);
   },
   path(px, r) {
-    px(0, 0, 16, 16, '#e8d098');
-    for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#d0b478');
+    // cobblestones: irregular stones set in mossy mortar
+    px(0, 0, 16, 16, '#8a866a');
+    const rows = [[0, 8], [8, 8]];
+    rows.forEach(([y0, hh], ri) => {
+      let x = -Math.floor(r() * 4) - (ri % 2) * 4;
+      while (x < 16) {
+        const w = 6 + Math.floor(r() * 4);
+        const x0 = Math.max(0, x + 1), x1 = Math.min(16, x + w), y1 = y0 + hh;
+        if (x1 - x0 >= 2) {
+          const tone = r() < 0.3 ? ['#b8b092', '#c8c1a4', '#9a9276'] : r() < 0.5 ? ['#aca486', '#bcb598', '#8e866a'] : ['#b2aa8c', '#c4bd9e', '#948c70'];
+          px(x0, y0 + 1, x1 - x0, hh - 1, tone[0]);
+          px(x0 + 1, y0 + 1, x1 - x0 - 2, 1, tone[1]);
+          px(x0, y1 - 1, x1 - x0, 1, tone[2]); px(x1 - 1, y0 + 1, 1, hh - 1, tone[2]);
+          px(x0, y0 + 1, 1, 1, '#8a866a'); px(x1 - 1, y1 - 1, 1, 1, '#8a866a'); px(x0, y1 - 1, 1, 1, '#8a866a'); px(x1 - 1, y0 + 1, 1, 1, '#8a866a');
+        }
+        x += w;
+      }
+    });
+    for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#7c9c50');
+  },
+  dirt(px, r) {
+    // packed-earth trail for routes
+    px(0, 0, 16, 16, '#d8be86');
+    for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#c0a46c');
+    for (let i = 0; i < 2; i++) { const x = Math.floor(r() * 13), y = Math.floor(r() * 13); px(x, y, 2, 1, '#e8d4a0'); px(x, y + 1, 2, 1, '#a88c58'); }
   },
   sand(px, r) { px(0, 0, 16, 16, '#f0e0a8'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#d8c488'); },
   tree(px) {
@@ -942,11 +1003,14 @@ const TILE_DRAW = {
     px((2 + o) % 16, 4, 5, 1, '#90c8f8'); px((10 + o) % 16, 10, 4, 1, '#90c8f8'); px((5 + o) % 16, 13, 3, 1, '#90c8f8');
   },
   flower(px, r, f) {
+    // a little flower bed: dark soil, a leafy bush and blossoms that sway
     TILE_DRAW.grass(px, srand(7));
+    px(2, 10, 12, 5, '#6a4a30'); px(1, 11, 14, 3, '#6a4a30'); px(2, 14, 12, 1, '#4e3420'); px(3, 10, 10, 1, '#82603e');
+    px(3, 4, 10, 8, '#3f8a3a'); px(2, 6, 12, 5, '#3f8a3a'); px(4, 3, 8, 2, '#4f9c44');
+    px(3, 10, 10, 1, '#2c6a2c'); px(5, 5, 2, 1, '#6cb85a'); px(9, 4, 2, 1, '#6cb85a');
     const o = f % 2;
-    for (const [x, y, c] of [[3, 3, '#f05858'], [10, 9, '#f8f8f8'], [11, 2, '#f8d030'], [4, 11, '#f8f8f8']]) {
-      px(x + o, y, 3, 1, c); px(x + 1 + o, y - 1, 1, 3, c); px(x + 1 + o, y, 1, 1, '#f8c020'); px(x + 1, y + 2, 1, 2, '#3c8c34');
-    }
+    const pal = [['#f06070', '#f8c0c8'], ['#f8d040', '#fff0a0'], ['#f8f8f8', '#f8d030'], ['#c070e0', '#f0c0f8']][Math.floor(r() * 4)];
+    for (const [x, y] of [[4, 5], [9, 4], [6, 8], [11, 7], [3, 9]]) { px(x + o, y, 2, 2, pal[0]); px(x + o, y, 1, 1, pal[1]); }
   },
   fence(px) {
     TILE_DRAW.grass(px, srand(5));
@@ -954,8 +1018,11 @@ const TILE_DRAW = {
     px(2, 3, 3, 11, '#d8a870'); px(11, 3, 3, 11, '#d8a870'); px(2, 13, 3, 1, '#8a6038'); px(11, 13, 3, 1, '#8a6038');
   },
   sign(px) {
+    // white board on two stone posts
     TILE_DRAW.grass(px, srand(9));
-    px(7, 9, 2, 6, '#8a6038'); px(2, 3, 12, 7, '#c89058'); px(3, 4, 10, 5, '#e8b878'); px(4, 5, 8, 1, '#8a6038'); px(4, 7, 6, 1, '#8a6038');
+    px(3, 10, 2, 5, '#7c7870'); px(11, 10, 2, 5, '#7c7870'); px(3, 14, 2, 1, '#5c5850'); px(11, 14, 2, 1, '#5c5850');
+    px(1, 2, 14, 9, '#5c5850'); px(2, 3, 12, 7, '#a8a498'); px(3, 4, 10, 5, '#f0ece0');
+    px(4, 5, 8, 1, '#6a6458'); px(4, 7, 6, 1, '#6a6458'); px(2, 3, 12, 1, '#c8c4b8');
   },
   rock(px) {
     TILE_DRAW.grass(px, srand(11));
@@ -1012,7 +1079,7 @@ export const TILE_FRAMES = { water: 2, flower: 2, lava: 2 };
 export function tile(name, variant = 0, f = 0) {
   const frames = TILE_FRAMES[name] || 1;
   const ff = f % frames;
-  const v = ['grass', 'path', 'sand', 'cavefloor', 'cavepath', 'snow', 'snowpath', 'ash'].includes(name) ? variant % 4 : 0;
+  const v = ['grass', 'path', 'dirt', 'sand', 'cavefloor', 'cavepath', 'snow', 'snowpath', 'ash'].includes(name) ? variant % 4 : 0;
   const key = `t:${name}:${v}:${ff}`;
   if (cache.has(key)) return cache.get(key);
   const c = mk(16, 16); const g = c.getContext('2d');
@@ -1022,16 +1089,44 @@ export function tile(name, variant = 0, f = 0) {
   return c;
 }
 
+// grassy fringe drawn over a path tile on the sides that touch grass
+// (bits: 1 = north, 2 = east, 4 = south, 8 = west)
+export function pathEdge(bits) {
+  const key = 'pe:' + bits;
+  if (cache.has(key)) return cache.get(key);
+  const c = mk(16, 16); const g = c.getContext('2d');
+  const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+  const r = srand(bits + 40);
+  const side = (horiz, at, inward) => {
+    for (let i = 0; i < 16; i++) {
+      const d = 1 + (r() < 0.45 ? 1 : 0) + (r() < 0.15 ? 1 : 0);
+      for (let k = 0; k < d; k++) {
+        const col = k === d - 1 ? '#a6c878' : '#8ab45c';
+        const o = at + inward * k;
+        if (horiz) px(i, o, 1, 1, col); else px(o, i, 1, 1, col);
+      }
+      const sh = at + inward * d;
+      if (horiz) px(i, sh, 1, 1, 'rgba(60,70,40,0.25)'); else px(sh, i, 1, 1, 'rgba(60,70,40,0.25)');
+    }
+  };
+  if (bits & 1) side(true, 0, 1);
+  if (bits & 4) side(true, 15, -1);
+  if (bits & 8) side(false, 0, 1);
+  if (bits & 2) side(false, 15, -1);
+  cache.set(key, c);
+  return c;
+}
+
 // ---------------- buildings ----------------
 const BUILD = {
-  house: { roof: '#c05038', roofD: '#8a3020', wall: '#f0e8d8' },
-  house2: { roof: '#4878c0', roofD: '#305890', wall: '#f0e8d8' },
-  lab: { roof: '#888898', roofD: '#606070', wall: '#f8f8f0' },
-  center: { roof: '#e05050', roofD: '#a83030', wall: '#f8f0f0', label: 'HEAL' },
-  mart: { roof: '#4080e0', roofD: '#2858a8', wall: '#f0f0f8', label: 'MART' },
-  gym: { roof: '#a07840', roofD: '#705020', wall: '#c8c0b0', label: 'GYM' },
-  tower: { roof: '#383850', roofD: '#202030', wall: '#686880', label: 'TOWER' },
-  league: { roof: '#c8a030', roofD: '#8a6a18', wall: '#f0e8d8', label: 'LEAGUE' },
+  house: { roof: '#c4583a', roofD: '#86321e', wall: '#f0e2c4', style: 'timber' },
+  house2: { roof: '#4c78b8', roofD: '#2e5088', wall: '#efe4cc', style: 'timber' },
+  lab: { roof: '#8a8c98', roofD: '#5e6070', wall: '#f4f0e6', style: 'stone' },
+  center: { roof: '#d85048', roofD: '#9a2e28', wall: '#f2d890', label: 'HEAL', style: 'brick' },
+  mart: { roof: '#4a80d8', roofD: '#2a58a0', wall: '#d08860', label: 'MART', style: 'brick' },
+  gym: { roof: '#a07840', roofD: '#6c4c1e', wall: '#b8b0a0', label: 'GYM', style: 'stone' },
+  tower: { roof: '#3c3c54', roofD: '#22223a', wall: '#6c6c84', label: 'TOWER', style: 'stone' },
+  league: { roof: '#c8a030', roofD: '#8a6a18', wall: '#ece2cc', label: 'LEAGUE', style: 'stone' },
 };
 export function building(kind, w, h, doorX) {
   const key = `b:${kind}:${w}:${h}:${doorX}`;
@@ -1040,21 +1135,62 @@ export function building(kind, w, h, doorX) {
   const c = mk(w * 16, h * 16); const g = c.getContext('2d');
   const px = (x, y, ww, hh, col) => { g.fillStyle = col; g.fillRect(x, y, ww, hh); };
   const roofH = (h - 2) * 16 + 4;
-  const W2 = w * 16;
-  px(0, roofH - 4, W2, h * 16 - roofH + 4, B.wall);
-  px(0, h * 16 - 3, W2, 3, '#a09888');
+  const W2 = w * 16, H2 = h * 16;
+  const wallTop = roofH - 2;
+  // ---- walls ----
+  const style = B.style || 'plain';
+  px(0, wallTop, W2, H2 - wallTop, B.wall);
+  if (style === 'timber') {
+    const beam = '#6a4628', beamL = '#8a603a';
+    px(0, wallTop, W2, 2, beam); px(0, H2 - 8, W2, 2, beam);
+    for (let i = 0; i <= w; i++) { const x = Math.min(W2 - 2, i * 16); px(x, wallTop, 2, H2 - wallTop - 6, beam); px(x, wallTop, 1, H2 - wallTop - 6, beamL); }
+    for (let i = 0; i < w; i++) {
+      if (i === doorX) continue;
+      // diagonal brace under the window
+      for (let k = 0; k < 6; k++) px(i * 16 + 3 + k * 2, H2 - 9 - k, 2, 1, beam);
+    }
+  } else if (style === 'brick') {
+    for (let y = wallTop + 2, row = 0; y < H2 - 4; y += 4, row++) {
+      px(0, y, W2, 1, shade(B.wall, 0.78));
+      for (let x = (row % 2) * 4; x < W2; x += 8) px(x, y, 1, 4, shade(B.wall, 0.8));
+      for (let x = (row % 2) * 4 + 2; x < W2; x += 16) px(x, y + 1, 3, 1, shade(B.wall, 1.08));
+    }
+  } else if (style === 'stone') {
+    for (let y = wallTop + 2, row = 0; y < H2 - 4; y += 6, row++) {
+      px(0, y, W2, 1, shade(B.wall, 0.75));
+      for (let x = (row % 2) * 6; x < W2; x += 12) px(x, y, 1, 6, shade(B.wall, 0.75));
+      for (let x = (row % 2) * 6 + 2; x < W2; x += 12) px(x, y + 1, 6, 1, shade(B.wall, 1.1));
+    }
+  }
+  // stone foundation
+  px(0, H2 - 6, W2, 6, '#9a9484'); px(0, H2 - 6, W2, 1, '#b8b2a2'); px(0, H2 - 1, W2, 1, '#6e6a5e');
+  for (let x = 3; x < W2; x += 9) px(x, H2 - 5, 1, 4, '#7e786a');
+  // ---- roof: overlapping clay tiles ----
   px(0, 2, W2, roofH - 2, B.roof);
-  for (let y = 6; y < roofH; y += 5) px(0, y, W2, 1, B.roofD);
-  px(0, 2, W2, 2, '#f8f8f8'); px(0, roofH - 2, W2, 2, B.roofD);
-  // windows
+  for (let y = 4, row = 0; y < roofH - 1; y += 4, row++) {
+    px(0, y + 3, W2, 1, B.roofD);
+    for (let x = (row % 2) * 3; x < W2; x += 6) { px(x, y, 1, 3, shade(B.roof, 0.82)); px(x + 1, y, 3, 1, shade(B.roof, 1.14)); }
+  }
+  px(0, 2, W2, 2, shade(B.roof, 1.25)); px(0, 2, W2, 1, B.roofD);
+  px(0, roofH - 2, W2, 2, B.roofD); px(0, roofH, W2, 1, 'rgba(0,0,0,0.25)');
+  px(0, 2, 1, roofH - 2, B.roofD); px(W2 - 1, 2, 1, roofH - 2, B.roofD);
+  // ---- windows: wooden frame, cross bars, sill ----
   for (let i = 0; i < w; i++) {
     if (i === doorX) continue;
     if (kind === 'gym' && i % 2) continue;
-    px(i * 16 + 3, roofH + 3, 10, 9, '#606878'); px(i * 16 + 4, roofH + 4, 8, 7, '#88c8f0'); px(i * 16 + 5, roofH + 5, 3, 2, '#d0f0ff');
+    const wx = i * 16 + 3, wy = roofH + 2;
+    px(wx - 1, wy - 1, 12, 11, '#5a3c22'); px(wx, wy, 10, 9, '#7ab8e0'); px(wx + 1, wy + 1, 3, 3, '#c8ecff');
+    px(wx + 4, wy, 1, 9, '#5a3c22'); px(wx, wy + 4, 10, 1, '#5a3c22');
+    px(wx - 2, wy + 9, 14, 2, '#8a6a48'); px(wx - 2, wy + 9, 14, 1, '#a88a62');
   }
-  // door
+  // ---- door: planks in a frame, with a step ----
   const dx = doorX * 16;
-  px(dx + 2, h * 16 - 15, 12, 15, '#5a3818'); px(dx + 3, h * 16 - 14, 10, 14, '#8a5a30'); px(dx + 3, h * 16 - 14, 10, 6, '#b0d8f0');
+  px(dx + 1, H2 - 17, 14, 17, '#4a3020');
+  px(dx + 3, H2 - 15, 10, 15, '#8a5a30');
+  for (let x = dx + 5; x < dx + 13; x += 3) px(x, H2 - 15, 1, 15, '#6e4626');
+  px(dx + 4, H2 - 13, 8, 4, '#a8d4ee'); px(dx + 4, H2 - 13, 8, 1, '#6e4626');
+  px(dx + 11, H2 - 7, 1, 2, '#e8c860');
+  px(dx, H2 - 2, 16, 2, '#b0aa98');
   if (B.label) {
     const tw = Math.max(26, pxWidth(B.label) + 8);
     px(dx + 8 - tw / 2, roofH - 13, tw, 11, '#f8f8f8'); px(dx + 9 - tw / 2, roofH - 12, tw - 2, 9, B.roofD);

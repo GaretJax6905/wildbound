@@ -2,7 +2,8 @@
 // and field moves (Slash bushes, Shatter rocks, Wave Ride water, Heave boulders, Glow dark caves).
 import { W, H, T, input, wait, fadeOut, fadeIn, setScene, frame, chance, pick } from './engine.js';
 import { MAPS, SOLID, GRASSY, buildingSolid } from './maps.js';
-import { tile, person, building, itemBall, creature } from './art.js';
+import { tile, person, building, itemBall, creature, setPlayerLook, pathEdge } from './art.js';
+const LAWN = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock']);
 import { G, flag, setFlag, save, addItem } from './state.js';
 import { ITEMS, FIELD, SPECIES } from './data.js';
 import { say, box, text, yesNo } from './ui.js';
@@ -70,6 +71,7 @@ export function loadMap(id, x, y, dir) {
 }
 
 export function enterWorld() {
+  setPlayerLook(G.gender);
   setScene(worldScene);
   loadMap(G.pos.map, G.pos.x, G.pos.y, G.pos.dir);
 }
@@ -382,9 +384,17 @@ export const worldScene = {
     const cx = Math.round(ppx - (W / 2 - 8)), cy = Math.round(ppy - (H / 2 - 8));
     const x0 = Math.floor(cx / T) - 1, y0 = Math.floor(cy / T) - 1;
     const af = Math.floor(frame / 32);
+    const town = m.music === 'town';
     for (let ty = y0; ty < y0 + H / T + 3; ty++) {
       for (let tx = x0; tx < x0 + W / T + 3; tx++) {
-        g.drawImage(tile(tileAt(tx, ty), (tx * 7 + ty * 13) & 3, af), tx * T - cx, ty * T - cy);
+        const tn = tileAt(tx, ty);
+        // towns are paved with cobblestones; routes keep a dirt trail
+        const shown = tn === 'path' && !town ? 'dirt' : tn;
+        g.drawImage(tile(shown, (tx * 7 + ty * 13) & 3, af), tx * T - cx, ty * T - cy);
+        if (tn === 'path') {
+          const bits = (LAWN.has(tileAt(tx, ty - 1)) ? 1 : 0) | (LAWN.has(tileAt(tx + 1, ty)) ? 2 : 0) | (LAWN.has(tileAt(tx, ty + 1)) ? 4 : 0) | (LAWN.has(tileAt(tx - 1, ty)) ? 8 : 0);
+          if (bits) g.drawImage(pathEdge(bits), tx * T - cx, ty * T - cy);
+        }
       }
     }
     for (const b of m.buildings) g.drawImage(building(b.kind, b.w, b.h, b.door), b.x * T - cx, b.y * T - cy);
