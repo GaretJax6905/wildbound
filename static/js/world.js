@@ -2,7 +2,7 @@
 // and field moves (Slash bushes, Shatter rocks, Wave Ride water, Heave boulders, Glow dark caves).
 import { W, H, T, input, wait, fadeOut, fadeIn, setScene, frame, chance, pick } from './engine.js';
 import { MAPS, SOLID, GRASSY, buildingSolid } from './maps.js';
-import { tile, person, building, itemBall, creature, setPlayerLook, pathEdge } from './art.js';
+import { tile, person, building, itemBall, creature, setPlayerLook, pathEdge, drawPerson } from './art.js';
 const LAWN = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock']);
 import { G, flag, setFlag, save, addItem } from './state.js';
 import { ITEMS, FIELD, SPECIES } from './data.js';
@@ -414,11 +414,11 @@ export const worldScene = {
       if (a.isPlayer && p.surf) {
         g.fillStyle = '#3870c8'; g.beginPath(); g.ellipse(ax + 8, ay + 12, 9, 5, 0, 0, 7); g.fill();
         g.fillStyle = '#88c0f8'; g.fillRect(ax + 2, ay + 9, 12, 2);
-        g.drawImage(person(a.look, a.dir, 0), ax, ay - 7);
+        drawPerson(g, person(a.look, a.dir, 0), ax, ay - 7);
         continue;
       }
       const stepF = a.moving && a.off > 3 && a.off < 13 ? (a.walkPhase % 2 ? 1 : 2) : 0;
-      g.drawImage(person(a.look, a.dir, stepF), ax, ay - 3);
+      drawPerson(g, person(a.look, a.dir, stepF), ax, ay - 3);
       const tx = a.moving && a.off > 8 ? a.tx : a.x, ty = a.moving && a.off > 8 ? a.ty : a.y;
       const under = tileAt(tx, ty);
       if (GRASSY.has(under) && !(a.moving && a.off <= 8 && !GRASSY.has(tileAt(a.x, a.y)))) {

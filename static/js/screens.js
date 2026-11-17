@@ -449,7 +449,7 @@ class Title {
     drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 20, 82, 40, 48);
     this.menu.draw(g);
-    text(g, 'v2.2', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v2.4', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }

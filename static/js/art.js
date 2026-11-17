@@ -725,7 +725,9 @@ const PLAYER_LOOKS = {
   boy: { ...LOOKS.player },
   girl: { skin: '#f8d0a8', hair: '#7a4a28', shirt: '#38a8a0', pants: '#4a3a68', hat: '#d84848', hatB: '#f8f8f8', long: true },
 };
+let PLAYER_GENDER = 'boy';
 export function setPlayerLook(gender) {
+  PLAYER_GENDER = gender === 'girl' ? 'girl' : 'boy';
   for (const k of Object.keys(LOOKS.player)) delete LOOKS.player[k];
   Object.assign(LOOKS.player, PLAYER_LOOKS[gender === 'girl' ? 'girl' : 'boy']);
   for (const k of [...cache.keys()]) if (k.startsWith('p:player:') || k.startsWith('tp:player:')) cache.delete(k);
@@ -733,9 +735,36 @@ export function setPlayerLook(gender) {
 
 // Overworld people: small GBA-scale sprites (about 12x17 inside a 16x19 canvas). The body
 // sits inside the tile and only the very top of the head pokes above it (drawn 3px up).
+// Hand-made pixel sprites for the player: static/art/player/<gender>_<down|up|right0|right1>.png
+const PLAYER_PIX = {};
+export function loadPlayerSprites() {
+  for (const gd of ['boy', 'girl']) for (const f of ['down', 'up', 'right0', 'right1']) {
+    const im = new Image();
+    im.onload = () => { (PLAYER_PIX[gd] ||= {})[f] = im; for (const k of [...cache.keys()]) if (k.startsWith('p:player:')) cache.delete(k); };
+    im.src = `/static/art/player/${gd}_${f}.png`;
+  }
+}
+// sprites are drawn at 70% so the player stays about a tile and a bit tall
+const PIX_SCALE = 0.7;
+function playerPixel(dir, step) {
+  const P = PLAYER_PIX[PLAYER_GENDER];
+  if (!P || !P.down || !P.up || !P.right0) return null;
+  const side = dir === 'left' || dir === 'right';
+  const src = side ? (step && P.right1 ? P.right1 : P.right0) : P[dir === 'up' ? 'up' : 'down'];
+  const U = 4;
+  const c = mk(src.width * U, src.height * U); const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  if (dir === 'left') { g.translate(c.width, 0); g.scale(-1, 1); }
+  g.drawImage(src, 0, 0, c.width, c.height);
+  c.lw = src.width * PIX_SCALE; c.lh = src.height * PIX_SCALE;
+  c.ox = (16 - c.lw) / 2;
+  c.oy = 19 - c.lh - (!side && step ? 1 : 0);
+  return c;
+}
 export function person(lookId, dir = 'down', step = 0) {
   const key = `p:${lookId}:${dir}:${step}`;
   if (cache.has(key)) return cache.get(key);
+  if (lookId === 'player') { const pc = playerPixel(dir, step); if (pc) { cache.set(key, pc); return pc; } }
   const L = LOOKS[lookId] || LOOKS.boy;
   const c = mk(16, 19); const g = c.getContext('2d');
   const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
@@ -829,6 +858,18 @@ export function loadTrainerArt() {
 export function trainerPortrait(lookId, pose = 'ready') {
   const key = `tp:${lookId}:${pose}`;
   if (cache.has(key)) return cache.get(key);
+  if (lookId === 'player') {
+    const P = CUSTOM_TR['player' + PLAYER_GENDER];
+    const pic = P && (pose === 'ready' ? P.ready : P.back);
+    if (pic) {
+      const R = 6, c = mk(56 * R, 76 * R), g = c.getContext('2d');
+      g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      g.drawImage(pic, 0, 0, c.width, c.height);
+      c.hd = true;
+      cache.set(key, c);
+      return c;
+    }
+  }
   const T = CUSTOM_TR[lookId];
   const art = T && (pose === 'defeat' ? T.defeat || T.ready : pose === 'ready' ? T.ready : null);
   if (art) {
@@ -1087,6 +1128,11 @@ export function tile(name, variant = 0, f = 0) {
   (TILE_DRAW[name] || TILE_DRAW.void)(px, srand(v + 1), ff);
   cache.set(key, c);
   return c;
+}
+
+export function drawPerson(g, c, x, y) {
+  if (c.lw) { const prev = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(c, x + c.ox, y + c.oy, c.lw, c.lh); g.imageSmoothingEnabled = prev; }
+  else g.drawImage(c, x, y);
 }
 
 // grassy fringe drawn over a path tile on the sides that touch grass
