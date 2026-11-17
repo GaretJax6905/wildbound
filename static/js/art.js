@@ -744,10 +744,22 @@ export function loadPlayerSprites() {
     im.src = `/static/art/player/${gd}_${f}.png`;
   }
 }
-// sprites are drawn at 70% so the player stays about a tile and a bit tall
-const PIX_SCALE = 0.7;
-function playerPixel(dir, step) {
-  const P = PLAYER_PIX[PLAYER_GENDER];
+// Hand-made pixel sprites for townspeople and trainers: static/art/npc/<look>_<dir>.png,
+// listed in static/art/npc/index.json. Looks without sprites keep the generated ones.
+const NPC_PIX = {};
+export function loadNpcSprites() {
+  return fetch('/static/art/npc/index.json').then((r) => (r.ok ? r.json() : {})).then((idx) => {
+    for (const look of Object.keys(idx)) for (const f of ['down', 'up', 'right0', 'right1']) {
+      const im = new Image();
+      im.onload = () => { (NPC_PIX[look] ||= {})[f] = im; for (const k of [...cache.keys()]) if (k.startsWith(`p:${look}:`)) cache.delete(k); };
+      im.src = `/static/art/npc/${look}_${f}.png`;
+    }
+  }).catch(() => {});
+}
+// the player's sheet is 30 px tall, the NPC sheets about 44: both end up roughly 21 px on screen,
+// a tile and a bit, like the rest of the cast
+const PIX_SCALE = 0.7, NPC_SCALE = 21 / 44;
+function pixSprite(P, dir, step, scale) {
   if (!P || !P.down || !P.up || !P.right0) return null;
   const side = dir === 'left' || dir === 'right';
   const src = side ? (step && P.right1 ? P.right1 : P.right0) : P[dir === 'up' ? 'up' : 'down'];
@@ -756,15 +768,17 @@ function playerPixel(dir, step) {
   g.imageSmoothingEnabled = false;
   if (dir === 'left') { g.translate(c.width, 0); g.scale(-1, 1); }
   g.drawImage(src, 0, 0, c.width, c.height);
-  c.lw = src.width * PIX_SCALE; c.lh = src.height * PIX_SCALE;
+  c.lw = src.width * scale; c.lh = src.height * scale;
   c.ox = (16 - c.lw) / 2;
   c.oy = 19 - c.lh - (!side && step ? 1 : 0);
   return c;
 }
+function playerPixel(dir, step) { return pixSprite(PLAYER_PIX[PLAYER_GENDER], dir, step, PIX_SCALE); }
 export function person(lookId, dir = 'down', step = 0) {
   const key = `p:${lookId}:${dir}:${step}`;
   if (cache.has(key)) return cache.get(key);
   if (lookId === 'player') { const pc = playerPixel(dir, step); if (pc) { cache.set(key, pc); return pc; } }
+  else if (NPC_PIX[lookId]) { const pc = pixSprite(NPC_PIX[lookId], dir, step, NPC_SCALE); if (pc) { cache.set(key, pc); return pc; } }
   const L = LOOKS[lookId] || LOOKS.boy;
   const c = mk(16, 19); const g = c.getContext('2d');
   const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };

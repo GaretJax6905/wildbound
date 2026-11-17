@@ -5,7 +5,7 @@ import { titleScreen, optionsScreen } from './screens.js';
 import { enterWorld } from './world.js';
 import { say, yesNo, askName } from './ui.js';
 import { newGameIntro } from './story.js';
-import { loadCustomArt, loadTrainerArt, loadPlayerSprites } from './art.js';
+import { loadCustomArt, loadTrainerArt, loadPlayerSprites, loadNpcSprites } from './art.js';
 
 const blank = { draw(g) { g.fillStyle = '#101828'; g.fillRect(0, 0, 240, 160); } };
 
@@ -14,6 +14,7 @@ async function boot() {
   loadCustomArt();
   loadTrainerArt();
   loadPlayerSprites();
+  loadNpcSprites();
   bindTouchPad();
   setFirstInputHandler(unlockAudio);
   requestPersistentStorage();
