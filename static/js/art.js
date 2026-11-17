@@ -673,6 +673,9 @@ export function silhouette(sp, size = 56, col = '#ffffff') {
 
 // ---------------- people (16x24) ----------------
 export const LOOKS = {
+  gymace: { skin: '#f8d0a8', hair: '#3a9a50', shirt: '#e8f0e8', pants: '#f0f0f0', long: false },
+  gymswim: { skin: '#c88858', hair: '#2858c8', shirt: '#3870e0', pants: '#3870e0', long: true },
+  gymbelt: { skin: '#c89070', hair: '#202020', shirt: '#2848a8', pants: '#2848a8' },
   player: { skin: '#f8d0a8', hair: '#503018', shirt: '#f09030', pants: '#384870', hat: '#3a7ac8', hatB: '#f8f8f8' },
   kai: { skin: '#f0c8a0', hair: '#283858', shirt: '#3870c8', pants: '#303040', spiky: true },
   juno: { skin: '#e8b890', hair: '#e07830', shirt: '#38a868', pants: '#584038', long: true },
@@ -758,7 +761,8 @@ export function loadNpcSprites() {
 }
 // the player's sheet is 30 px tall, the NPC sheets about 44: both end up roughly 21 px on screen,
 // a tile and a bit, like the rest of the cast
-const PIX_SCALE = 0.7, NPC_SCALE = 21 / 44;
+const PIX_SCALE = 0.7;
+const KID_LOOKS = new Set(['lass', 'girl', 'boy', 'bugkid', 'kai', 'juno']);
 function pixSprite(P, dir, step, scale) {
   if (!P || !P.down || !P.up || !P.right0) return null;
   const side = dir === 'left' || dir === 'right';
@@ -778,7 +782,12 @@ export function person(lookId, dir = 'down', step = 0) {
   const key = `p:${lookId}:${dir}:${step}`;
   if (cache.has(key)) return cache.get(key);
   if (lookId === 'player') { const pc = playerPixel(dir, step); if (pc) { cache.set(key, pc); return pc; } }
-  else if (NPC_PIX[lookId]) { const pc = pixSprite(NPC_PIX[lookId], dir, step, NPC_SCALE); if (pc) { cache.set(key, pc); return pc; } }
+  else if (NPC_PIX[lookId] && NPC_PIX[lookId].down) {
+    // every sheet is drawn at its own pixel size: scale each to a common height (kids a little shorter)
+    const tall = KID_LOOKS.has(lookId) ? 18 : 21;
+    const pc = pixSprite(NPC_PIX[lookId], dir, step, tall / NPC_PIX[lookId].down.height);
+    if (pc) { cache.set(key, pc); return pc; }
+  }
   const L = LOOKS[lookId] || LOOKS.boy;
   const c = mk(16, 19); const g = c.getContext('2d');
   const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
@@ -884,7 +893,7 @@ export function trainerPortrait(lookId, pose = 'ready') {
       return c;
     }
   }
-  const T = CUSTOM_TR[lookId];
+  const T = CUSTOM_TR[{ gymswim: 'swimmer', gymbelt: 'blackbelt', gymace: 'acetrainer' }[lookId] || lookId];
   const art = T && (pose === 'defeat' ? T.defeat || T.ready : pose === 'ready' ? T.ready : null);
   if (art) {
     const R = 6, c = mk(56 * R, 76 * R), g = c.getContext('2d');

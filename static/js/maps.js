@@ -477,11 +477,11 @@ export const GYMS = {
   stone: { id: 'stone', type: 'Rock', look: 'shale' },
   thistle: { id: 'thistle', type: 'Grass', look: 'briar', tlook: 'lass', layout: 1, tip: 'Fire, Ice, Flying, Bug and Toxic moves wilt grass!' },
   volt: { id: 'volt', type: 'Electric', look: 'jolt', tlook: 'scientist', layout: 2, tip: 'Ground types are completely immune to electricity!' },
-  tide: { id: 'tide', type: 'Water', look: 'marina', tlook: 'swimmer', layout: 3, tip: 'Grass and Electric moves make waves crash!' },
-  grit: { id: 'grit', type: 'Brawl', look: 'kenta', tlook: 'blackbelt', layout: 1, tip: 'Flying, Mind and Fae moves beat brawlers.' },
+  tide: { id: 'tide', type: 'Water', look: 'marina', tlook: 'gymswim', layout: 3, tip: 'Grass and Electric moves make waves crash!' },
+  grit: { id: 'grit', type: 'Brawl', look: 'kenta', tlook: 'gymbelt', layout: 1, tip: 'Flying, Mind and Fae moves beat brawlers.' },
   lumen: { id: 'lumen', type: 'Mind', look: 'sable', tlook: 'psychic', layout: 2, tip: 'Bug, Spirit and Shadow moves break the mind\'s focus.' },
   ember: { id: 'ember', type: 'Fire', look: 'ignis', tlook: 'hiker', layout: 3, tip: 'Water, Rock and Ground moves douse flames!' },
-  wyrm: { id: 'wyrm', type: 'Dragon', look: 'vesper', tlook: 'acetrainer', layout: 1, tip: 'Ice, Dragon and Fae moves are the bane of dragons.' },
+  wyrm: { id: 'wyrm', type: 'Dragon', look: 'vesper', tlook: 'gymace', layout: 1, tip: 'Ice, Dragon and Fae moves are the bane of dragons.' },
 };
 
 // ---------- Thistlewood (Gym 2: Grass) ----------
