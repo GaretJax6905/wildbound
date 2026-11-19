@@ -3,7 +3,7 @@
 import { wait, fadeOut, fadeIn, fx, setScene } from './engine.js';
 import { world, warp, walk, spawn, despawn, npcById, refreshNpcs, faceEachOther, showEmote, pathTo, blocked, opposite, stepActor, loadMap, fieldUser } from './world.js';
 import { G, flag, setFlag, save, addItem, addToCollection } from './state.js';
-import { SPECIES, SPECIES_LIST, ITEMS, BADGES } from './data.js';
+import { SPECIES, SPECIES_LIST, ITEMS, BADGES, regionDex } from './data.js';
 import { MAPS, GYMS } from './maps.js';
 import { makeMon, healFull, name } from './mon.js';
 import { say, yesNo, choose, setNameHook, offerNickname, askName } from './ui.js';
@@ -34,9 +34,10 @@ function evolveFor(sp, lvl) {
   }
 }
 const STARTER_LINES = new Set(['sproutmole', 'thornmole', 'grovemaw', 'emberkit', 'blazelynx', 'infernyx', 'puddlefin', 'tidalotl', 'abyssalotl']);
-function poolFor(types, lvl) {
+function poolFor(types, lvl, region = 'aldermoor') {
   return SPECIES_LIST.filter((sp) => {
     const S = SPECIES[sp];
+    if (S.region !== region) return false;
     if (S.legend || STARTER_LINES.has(sp)) return false;
     if (!S.types.some((t) => types.includes(t))) return false;
     if (minLevel(sp) > lvl) return false;
@@ -581,11 +582,12 @@ const SCRIPTS = {
   },
   async maple() {
     if (!flag('gotStarter')) return;
-    const c = Object.keys(G.dex.caught).length;
-    await say(`MAPLE: How is your DEX coming along? You've caught ${c} of ${SPECIES_LIST.length} kinds of creatures in Aldermoor.`);
+    const ALD = regionDex('aldermoor');
+    const c = ALD.filter((x) => G.dex.caught[x]).length;
+    await say(`MAPLE: How is your DEX coming along? You've caught ${c} of ${ALD.length} kinds of creatures in Aldermoor.`);
     if (c >= 15 && !flag('mapleGift')) { setFlag('mapleGift'); addItem('greatorb', 10); sfx('item'); await say('Wonderful progress! Take these 10 Great Orbs.'); }
     else if (c >= 60 && !flag('mapleGift2')) { setFlag('mapleGift2'); addItem('masterorb', 1); sfx('item'); await say('Over half the region! You deserve this: a MASTER ORB. It never fails. Save it for something legendary.'); }
-    else if (c >= SPECIES_LIST.length) await say('You caught every creature in Aldermoor! You are a true creature expert!');
+    else if (c >= ALD.length) await say('You caught every creature in Aldermoor! You are a true creature expert!');
     else await say('Creatures you leave in your PC box stay here in Aldermoor with me when you travel. I\'ll take good care of them!');
   },
   async shale() { await gymLeader('stone'); },

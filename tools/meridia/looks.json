@@ -1,0 +1,698 @@
+{
+ "bramblecub": {
+  "name": "Bramblecub",
+  "types": "Grass",
+  "look": "a small chubby bear cub with a coat of soft green moss, tan muzzle and belly, little burrs and clover sprigs stuck in its fur, big friendly eyes",
+  "evo": "thornbear:16"
+ },
+ "thornbear": {
+  "name": "Thornbear",
+  "types": "Grass",
+  "look": "a sturdy young bear standing on all fours, green mossy fur, thorny bramble vines wrapping its shoulders and forearms, red berries growing in the vines",
+  "evo": "briarbruin:36"
+ },
+ "briarbruin": {
+  "name": "Briarbruin",
+  "types": "Grass/Brawl",
+  "look": "a huge powerful bear standing upright like a wrestler, dark green mossy fur, massive thorny bramble gauntlets on its fists, a crown of leaves and berries on its head",
+  "evo": ""
+ },
+ "cindergecko": {
+  "name": "Cindergecko",
+  "types": "Fire",
+  "look": "a small orange gecko lizard with glowing ember spots along its back, a tail tip that glows like a hot coal, sticky toe pads and big amber eyes",
+  "evo": "forgecko:16"
+ },
+ "forgecko": {
+  "name": "Forgecko",
+  "types": "Fire",
+  "look": "a lean red-orange lizard standing upright, dark iron-like scale plates on its back and forearms, its tail ends in a glowing hammer-shaped club, sparks around it",
+  "evo": "smeltwyrm:36"
+ },
+ "smeltwyrm": {
+  "name": "Smeltwyrm",
+  "types": "Fire/Metal",
+  "look": "a large armored fire lizard-dragon with steel plating riveted over red scales, glowing molten-orange seams running between the plates, a forge-chimney spine, glowing eyes",
+  "evo": ""
+ },
+ "splotter": {
+  "name": "Splotter",
+  "types": "Water",
+  "look": "a cute blue otter pup with a pale cream belly, round ears, whiskers, holding a smooth pebble, a little water droplet curl on its head",
+  "evo": "surfotter:16"
+ },
+ "surfotter": {
+  "name": "Surfotter",
+  "types": "Water",
+  "look": "a sleek blue otter riding on a carved driftwood surfboard, a frothy wave crest mane, long flat tail like a rudder",
+  "evo": "glaciotter:36"
+ },
+ "glaciotter": {
+  "name": "Glaciotter",
+  "types": "Water/Ice",
+  "look": "a large regal otter with deep blue fur, an armor of clear ice crystals on its shoulders and back, a frozen wave-shaped crest, frosty breath, icy whiskers",
+  "evo": ""
+ },
+ "tumblepup": {
+  "name": "Tumblepup",
+  "types": "Normal",
+  "look": "a round fluffy tan puppy with floppy ears and a curly tail, curled half into a ball like it is about to roll",
+  "evo": "rollhound:20"
+ },
+ "rollhound": {
+  "name": "Rollhound",
+  "types": "Normal",
+  "look": "a muscular tan hound with thick armored-looking fur bands along its back like a pangolin, floppy ears, a confident grin",
+  "evo": ""
+ },
+ "chirpip": {
+  "name": "Chirpip",
+  "types": "Normal/Flying",
+  "look": "a tiny round yellow songbird with a fluffy chest, short stubby wings and a little crest of three feathers",
+  "evo": "swiftail:16"
+ },
+ "swiftail": {
+  "name": "Swiftail",
+  "types": "Normal/Flying",
+  "look": "a sleek swallow-like bird, gold and orange, with two very long streamer tail feathers and swept-back wings mid-flight",
+  "evo": "galeon:34"
+ },
+ "galeon": {
+  "name": "Galeon",
+  "types": "Flying",
+  "look": "a large majestic falcon with golden-bronze plumage, a crest of sharp feathers like a lion mane, huge wings spread wide with wind swirls",
+  "evo": ""
+ },
+ "larvel": {
+  "name": "Larvel",
+  "types": "Bug",
+  "look": "a small plump lime-green caterpillar with yellow spots, little stubby legs and a happy face",
+  "evo": "silkpod:7"
+ },
+ "silkpod": {
+  "name": "Silkpod",
+  "types": "Bug",
+  "look": "a silk cocoon wrapped in dry leaves and threads, hanging from a twig, two sleepy eyes peeking out",
+  "evo": "glimmoth:10"
+ },
+ "glimmoth": {
+  "name": "Glimmoth",
+  "types": "Bug/Fae",
+  "look": "a graceful moth with big pastel pink and sky-blue wings covered in sparkling dust, fluffy white collar and feathery antennae",
+  "evo": ""
+ },
+ "zaphog": {
+  "name": "Zaphog",
+  "types": "Electric",
+  "look": "a small round hedgehog with yellow lightning-shaped quills, a brown face and paws, tiny sparks crackling between the spines",
+  "evo": "voltspike:26"
+ },
+ "voltspike": {
+  "name": "Voltspike",
+  "types": "Electric",
+  "look": "a large spiky porcupine with long yellow-and-black lightning-bolt quills raised, electricity arcing between them, dark fur",
+  "evo": ""
+ },
+ "mossnail": {
+  "name": "Mossnail",
+  "types": "Bug/Grass",
+  "look": "a small snail with a shell covered in moss, tiny ferns and a little mushroom growing on top, sleepy stalk eyes",
+  "evo": "shellmoss:24"
+ },
+ "shellmoss": {
+  "name": "Shellmoss",
+  "types": "Bug/Grass",
+  "look": "a big snail whose shell is a mossy hill with a little tree, flowers and a tiny birdhouse growing on it, calm wise eyes",
+  "evo": ""
+ },
+ "hivelet": {
+  "name": "Hivelet",
+  "types": "Bug",
+  "look": "a small round fuzzy bee with amber and dark brown stripes, tiny clear wings and a little pollen pouch",
+  "evo": "hiveguard:22"
+ },
+ "hiveguard": {
+  "name": "Hiveguard",
+  "types": "Bug/Metal",
+  "look": "a bee knight with a polished steel armor shell over amber stripes, a lance-like metal stinger, honeycomb-pattern shield on its arm",
+  "evo": ""
+ },
+ "webbit": {
+  "name": "Webbit",
+  "types": "Bug/Shadow",
+  "look": "a small round dark purple spider with big shiny eyes and glowing violet markings, spinning a thread",
+  "evo": "arachnight:26"
+ },
+ "arachnight": {
+  "name": "Arachnight",
+  "types": "Bug/Shadow",
+  "look": "a large elegant black spider with a violet crescent-moon pattern on its back, long legs, a web of starry silk behind it",
+  "evo": ""
+ },
+ "sporeling": {
+  "name": "Sporeling",
+  "types": "Grass/Toxic",
+  "look": "a small mushroom creature with a red cap with cream spots, stubby little feet and a puff of pink spores",
+  "evo": "fungloom:28"
+ },
+ "fungloom": {
+  "name": "Fungloom",
+  "types": "Grass/Toxic",
+  "look": "a tall mushroom creature with a big purple cap with glowing lime spots, smaller glowing mushrooms growing from its body, drifting spores",
+  "evo": ""
+ },
+ "sandskink": {
+  "name": "Sandskink",
+  "types": "Ground",
+  "look": "a small sandy-tan skink lizard with short legs, smooth scales with brown bands, peeking up from sand",
+  "evo": "duneskink:24"
+ },
+ "duneskink": {
+  "name": "Duneskink",
+  "types": "Ground",
+  "look": "a long sandy lizard with digging claws, a spade-shaped head, ridged back scales and a whipping tail, sand swirling around",
+  "evo": "sandrake:42"
+ },
+ "sandrake": {
+  "name": "Sandrake",
+  "types": "Ground/Dragon",
+  "look": "a fierce desert dragon with sand-gold scales, wide wings like dune ridges with tattered edges, twin horns, swirling sandstorm around it",
+  "evo": ""
+ },
+ "prickle": {
+  "name": "Prickle",
+  "types": "Grass",
+  "look": "a tiny round green cactus creature with soft little spines, a pink flower on top and stubby feet",
+  "evo": "saguarro:28"
+ },
+ "saguarro": {
+  "name": "Saguarro",
+  "types": "Grass/Ground",
+  "look": "a tall saguaro cactus creature with two raised arms, a stern face, flowers on its head and a little bird nest in one arm",
+  "evo": ""
+ },
+ "scorpip": {
+  "name": "Scorpip",
+  "types": "Toxic/Ground",
+  "look": "a small orange scorpion with oversized cute claws, a curled stinger tipped in purple, beady eyes",
+  "evo": "dunestinger:30"
+ },
+ "dunestinger": {
+  "name": "Dunestinger",
+  "types": "Toxic/Ground",
+  "look": "a large armored desert scorpion with sunset-orange plates, huge pincers, a tall curled stinger dripping glowing violet venom",
+  "evo": ""
+ },
+ "shimmerling": {
+  "name": "Shimmerling",
+  "types": "Fire/Mind",
+  "look": "a small floating wisp of shimmering heat haze, golden with pink edges, round body with big dreamy eyes and a ripple trail",
+  "evo": "miragekin:sunstone"
+ },
+ "miragekin": {
+  "name": "Miragekin",
+  "types": "Fire/Mind",
+  "look": "an elegant floating desert spirit with a sun-disc halo, flowing ribbon-like veils of gold and magenta, shimmering mirage ripples around it",
+  "evo": ""
+ },
+ "ramblet": {
+  "name": "Ramblet",
+  "types": "Ground",
+  "look": "a small fluffy cream-colored lamb with tiny curled horns, brown legs and a determined face",
+  "evo": "ramparch:32"
+ },
+ "ramparch": {
+  "name": "Ramparch",
+  "types": "Ground/Rock",
+  "look": "a huge bighorn ram with massive curled horns made of layered red canyon rock, thick wool, standing on a ledge",
+  "evo": ""
+ },
+ "vultyke": {
+  "name": "Vultyke",
+  "types": "Flying/Shadow",
+  "look": "a scruffy young vulture chick with dark feathers, a bald pinkish-red head, and a cocky look",
+  "evo": "vultrex:30"
+ },
+ "vultrex": {
+  "name": "Vultrex",
+  "types": "Flying/Shadow",
+  "look": "a large menacing vulture with black and charcoal plumage, a red crested head, huge ragged wings spread wide, a bone necklace of feathers",
+  "evo": ""
+ },
+ "coyip": {
+  "name": "Coyip",
+  "types": "Ground",
+  "look": "a small tan coyote pup with huge pointed ears, a bushy tail and a mischievous grin",
+  "evo": "howlote:28"
+ },
+ "howlote": {
+  "name": "Howlote",
+  "types": "Ground/Shadow",
+  "look": "a lean coyote with sandy fur and a dark indigo back covered in star-like speckles, howling with its head raised",
+  "evo": ""
+ },
+ "dustwhirl": {
+  "name": "Dustwhirl",
+  "types": "Ground/Flying",
+  "look": "a small spinning dust devil whirlwind with two big eyes in the swirl, little pebbles and leaves orbiting it",
+  "evo": "siroccor:34"
+ },
+ "siroccor": {
+  "name": "Siroccor",
+  "types": "Ground/Flying",
+  "look": "a towering sand tornado creature with fierce eyes, a crown of orbiting stones, arms made of swirling sand",
+  "evo": ""
+ },
+ "stalagmon": {
+  "name": "Stalagmon",
+  "types": "Rock",
+  "look": "a small cone-shaped rock creature like a stalagmite with little stubby arms, mineral drips and sleepy eyes",
+  "evo": "stalagant:30"
+ },
+ "stalagant": {
+  "name": "Stalagant",
+  "types": "Rock/Ground",
+  "look": "a big hulking rock giant whose back is covered with a cluster of stalagmite spires, heavy arms, glowing mineral eyes",
+  "evo": ""
+ },
+ "trilobyte": {
+  "name": "Trilobyte",
+  "types": "Rock/Bug",
+  "look": "a small ancient trilobite creature with a segmented stone-brown shell, many tiny legs, and big round fossil eyes",
+  "evo": "trilocrown:35"
+ },
+ "trilocrown": {
+  "name": "Trilocrown",
+  "types": "Rock/Bug",
+  "look": "a large armored trilobite king with a fossilized shell, a crown of stone spikes on its head plate and golden amber accents",
+  "evo": ""
+ },
+ "crysmite": {
+  "name": "Crysmite",
+  "types": "Rock/Fae",
+  "look": "a tiny beetle with a cluster of pastel pink and blue crystals growing on its back, sparkling, big cute eyes",
+  "evo": "crystallix:moonshard"
+ },
+ "crystallix": {
+  "name": "Crystallix",
+  "types": "Rock/Fae",
+  "look": "a graceful creature made of glowing prismatic crystal, like a geode cracked open, with a crown of crystal spires and rainbow light inside",
+  "evo": ""
+ },
+ "lumigrub": {
+  "name": "Lumigrub",
+  "types": "Bug/Electric",
+  "look": "a small glowing green grub with a lantern-like glowing tail segment, tiny legs and happy eyes",
+  "evo": "scarabolt:28"
+ },
+ "scarabolt": {
+  "name": "Scarabolt",
+  "types": "Bug/Electric",
+  "look": "a large metallic teal scarab beetle with gold lightning-bolt markings, a horn crackling with electricity, wings slightly open",
+  "evo": ""
+ },
+ "kitewing": {
+  "name": "Kitewing",
+  "types": "Flying",
+  "look": "a small diamond-shaped bird like a paper kite, red and yellow with a long ribbon tail, spread flat in the wind",
+  "evo": "sailkite:32"
+ },
+ "sailkite": {
+  "name": "Sailkite",
+  "types": "Flying/Electric",
+  "look": "a large kite-shaped bird with sail-like red and gold wings, long ribbon tails crackling with electricity, flying through clouds",
+  "evo": ""
+ },
+ "prairox": {
+  "name": "Prairox",
+  "types": "Normal/Ground",
+  "look": "a big shaggy prairie bison with dark brown fur, a huge woolly hump, short curved horns and a determined look",
+  "evo": ""
+ },
+ "hoplit": {
+  "name": "Hoplit",
+  "types": "Bug",
+  "look": "a small bright green grasshopper with big hind legs, long antennae and a cheerful face",
+  "evo": "locustorm:26"
+ },
+ "locustorm": {
+  "name": "Locustorm",
+  "types": "Bug/Flying",
+  "look": "a large armored locust with bronze-green plates and powerful wings spread in flight, sharp mandibles",
+  "evo": ""
+ },
+ "shellsnap": {
+  "name": "Shellsnap",
+  "types": "Water/Rock",
+  "look": "a small sea turtle with a rocky shell covered in barnacles and a bit of coral, snapping beak, flippers",
+  "evo": "reefortress:34"
+ },
+ "reefortress": {
+  "name": "Reefortress",
+  "types": "Water/Rock",
+  "look": "a huge ancient sea turtle whose shell is a colorful coral reef with little towers like a castle, fish swimming around it",
+  "evo": ""
+ },
+ "pouchbeak": {
+  "name": "Pouchbeak",
+  "types": "Water/Flying",
+  "look": "a plump white pelican with a huge orange bill pouch full of water and a small fish, sleepy eyes",
+  "evo": ""
+ },
+ "bogslug": {
+  "name": "Bogslug",
+  "types": "Toxic/Water",
+  "look": "a small mossy-green sea slug with purple frills and spots, slimy and soft, droopy happy eyes",
+  "evo": "mirelurk:30"
+ },
+ "mirelurk": {
+  "name": "Mirelurk",
+  "types": "Toxic/Water",
+  "look": "a large swamp slug creature rising from mud, olive-green with purple poison frills, drooping reeds on its back, glowing eyes",
+  "evo": ""
+ },
+ "jellet": {
+  "name": "Jellet",
+  "types": "Water/Toxic",
+  "look": "a small translucent light-blue jellyfish with pink tentacles and a cute face, glowing softly",
+  "evo": "medusail:30"
+ },
+ "medusail": {
+  "name": "Medusail",
+  "types": "Water/Toxic",
+  "look": "a large regal jellyfish with a translucent sail-shaped crest above its bell, long trailing violet tentacles, glowing",
+  "evo": ""
+ },
+ "driftling": {
+  "name": "Driftling",
+  "types": "Water/Fae",
+  "look": "a tiny pastel teal seahorse with a curly tail, pink fins and starry sparkles",
+  "evo": "driftsteed:32"
+ },
+ "driftsteed": {
+  "name": "Driftsteed",
+  "types": "Water/Fae",
+  "look": "an elegant sea horse creature like a true horse with a fish tail, flowing foam mane, pastel teal and pink, galloping over a wave",
+  "evo": ""
+ },
+ "lanternfin": {
+  "name": "Lanternfin",
+  "types": "Water/Electric",
+  "look": "a small round deep-sea fish with a glowing yellow lantern lure on a stalk, big eyes and tiny fins",
+  "evo": "gloomangler:35"
+ },
+ "gloomangler": {
+  "name": "Gloomangler",
+  "types": "Water/Shadow",
+  "look": "a big menacing anglerfish with dark navy scales, a huge toothy mouth, and a glowing golden lantern lure, bioluminescent spots",
+  "evo": ""
+ },
+ "minnowisp": {
+  "name": "Minnowisp",
+  "types": "Water",
+  "look": "a tiny silver minnow fish with a shimmering body and a big curious eye",
+  "evo": "razorcuda:28"
+ },
+ "razorcuda": {
+  "name": "Razorcuda",
+  "types": "Water/Shadow",
+  "look": "a long sleek barracuda with steel-blue scales, dark stripes, a jutting jaw of sharp teeth and a fierce eye",
+  "evo": ""
+ },
+ "hoothaunt": {
+  "name": "Hoothaunt",
+  "types": "Spirit/Flying",
+  "look": "a small round ghostly owlet with pale lavender feathers, huge glowing golden eyes and a wispy translucent tail",
+  "evo": "owlgeist:34"
+ },
+ "owlgeist": {
+  "name": "Owlgeist",
+  "types": "Spirit/Flying",
+  "look": "a large spectral owl with indigo feathers fading into mist, glowing golden eyes, a lantern hanging from its talons, wings spread",
+  "evo": ""
+ },
+ "nutkin": {
+  "name": "Nutkin",
+  "types": "Normal",
+  "look": "a small red-orange squirrel with a huge fluffy tail, holding an acorn, cheeks stuffed full",
+  "evo": "cachekin:30"
+ },
+ "cachekin": {
+  "name": "Cachekin",
+  "types": "Normal/Grass",
+  "look": "a big squirrel whose giant tail is made of autumn leaves in red and gold, wearing an acorn cap like a helmet",
+  "evo": ""
+ },
+ "rustling": {
+  "name": "Rustling",
+  "types": "Grass",
+  "look": "a small creature made of a pile of red, orange and yellow autumn leaves with two big eyes peeking out",
+  "evo": "leafwraith:32"
+ },
+ "leafwraith": {
+  "name": "Leafwraith",
+  "types": "Grass/Spirit",
+  "look": "a tall floating spirit made of swirling autumn leaves with a hooded shape, glowing amber eyes and wispy branch-like arms",
+  "evo": ""
+ },
+ "gravepup": {
+  "name": "Gravepup",
+  "types": "Spirit",
+  "look": "a small translucent pale ghost puppy with floppy ears, a wispy tail, a little collar with a bell",
+  "evo": "hollowhound:34"
+ },
+ "hollowhound": {
+  "name": "Hollowhound",
+  "types": "Spirit/Shadow",
+  "look": "a large spectral hound with dark smoky fur, glowing mint-green eyes and paw-prints, ghostly chains, flames of mist along its back",
+  "evo": ""
+ },
+ "glintpie": {
+  "name": "Glintpie",
+  "types": "Metal/Flying",
+  "look": "a small black and white magpie with a shiny silver metallic sheen on its wings, holding a coin in its beak",
+  "evo": "gildcrow:30"
+ },
+ "gildcrow": {
+  "name": "Gildcrow",
+  "types": "Metal/Flying",
+  "look": "a large crow with black feathers and gleaming gold metal-plated wings and beak, a monocle-like ring around one eye",
+  "evo": ""
+ },
+ "yetling": {
+  "name": "Yetling",
+  "types": "Ice/Brawl",
+  "look": "a small fluffy white yeti cub with blue-gray face and paws, little fists raised, snow on its head",
+  "evo": "yetirage:38"
+ },
+ "yetirage": {
+  "name": "Yetirage",
+  "types": "Ice/Brawl",
+  "look": "a huge muscular yeti with shaggy white fur, icy blue forearms like frozen gauntlets, roaring with snow swirling",
+  "evo": ""
+ },
+ "pengloo": {
+  "name": "Pengloo",
+  "types": "Ice/Water",
+  "look": "a small round navy-blue penguin chick with a white belly, a little orange beak, sliding on its belly",
+  "evo": "emperice:36"
+ },
+ "emperice": {
+  "name": "Emperice",
+  "types": "Ice/Water",
+  "look": "a tall regal emperor penguin with a crown and cape made of ice crystals, golden collar markings, proud stance",
+  "evo": ""
+ },
+ "flurrybun": {
+  "name": "Flurrybun",
+  "types": "Ice/Fae",
+  "look": "a small slender snow-white stoat with a black-tipped tail, big sparkling eyes and snowflake sparkles around it",
+  "evo": "aurorine:32"
+ },
+ "aurorine": {
+  "name": "Aurorine",
+  "types": "Ice/Fae",
+  "look": "an elegant long-bodied ermine with white fur shimmering with aurora green, blue and pink ribbons of light flowing from its tail",
+  "evo": ""
+ },
+ "rustmite": {
+  "name": "Rustmite",
+  "types": "Metal/Bug",
+  "look": "a small rusty-orange metal beetle with a riveted shell, tiny bolts for spots, curious antenna",
+  "evo": "ironmantle:34"
+ },
+ "ironmantle": {
+  "name": "Ironmantle",
+  "types": "Metal/Bug",
+  "look": "a large armored rhinoceros beetle with heavy polished iron plates, a big steel horn, rivets and a few rust streaks",
+  "evo": ""
+ },
+ "kidbolt": {
+  "name": "Kidbolt",
+  "types": "Electric",
+  "look": "a small white mountain goat kid with tiny yellow lightning-shaped horns, sparks crackling, bouncing on a rock",
+  "evo": "voltibex:36"
+ },
+ "voltibex": {
+  "name": "Voltibex",
+  "types": "Electric/Rock",
+  "look": "a big mountain ibex with slate-gray coat and huge backward-curving horns crackling with lightning, standing on a peak",
+  "evo": ""
+ },
+ "sleetwing": {
+  "name": "Sleetwing",
+  "types": "Ice/Flying",
+  "look": "a small round pale blue bird with frosty fluffy feathers, icicle-tipped wings and a puffed chest",
+  "evo": "hailhawk:38"
+ },
+ "hailhawk": {
+  "name": "Hailhawk",
+  "types": "Ice/Flying",
+  "look": "a fierce hawk with steel-blue and white plumage, wings edged with sharp ice crystals, diving through hail",
+  "evo": ""
+ },
+ "cloudlet": {
+  "name": "Cloudlet",
+  "types": "Flying/Fae",
+  "look": "a small fluffy white cloud creature with pink cheeks, a happy face and a tiny raindrop",
+  "evo": "nimbulord:sparkstone"
+ },
+ "nimbulord": {
+  "name": "Nimbulord",
+  "types": "Flying/Electric",
+  "look": "a big dark storm-cloud creature with a crown of lightning bolts, stern face, arms of swirling cloud, rain and sparks falling",
+  "evo": ""
+ },
+ "frostbeetle": {
+  "name": "Frostbeetle",
+  "types": "Ice/Bug",
+  "look": "a large beetle with a shell of thick clear blue ice, frost crystals on its legs and frosty mandibles",
+  "evo": ""
+ },
+ "murkit": {
+  "name": "Murkit",
+  "types": "Shadow",
+  "look": "a small sleek dark purple ferret with a mask-like marking around big glowing eyes and a fluffy tail",
+  "evo": "umbrastoat:30"
+ },
+ "umbrastoat": {
+  "name": "Umbrastoat",
+  "types": "Shadow/Brawl",
+  "look": "a long powerful shadow weasel with dark fur, violet claw trails, a scarf-like tail and a fierce masked face",
+  "evo": ""
+ },
+ "umbrapede": {
+  "name": "Umbrapede",
+  "types": "Shadow/Bug",
+  "look": "a small dark centipede with many red-tipped legs, segmented charcoal plates and glowing red eyes",
+  "evo": "centigloom:34"
+ },
+ "centigloom": {
+  "name": "Centigloom",
+  "types": "Shadow/Toxic",
+  "look": "a huge coiled centipede with black glossy armor, crimson legs, venomous fangs and dripping violet poison",
+  "evo": ""
+ },
+ "sparkshade": {
+  "name": "Sparkshade",
+  "types": "Electric/Spirit",
+  "look": "a small floating ghostly spark with a blue body, a yellow lightning-shaped tail and a cute face, glowing",
+  "evo": "stormwisp:duskstone"
+ },
+ "stormwisp": {
+  "name": "Stormwisp",
+  "types": "Electric/Spirit",
+  "look": "a floating ghostly storm phantom made of ball lightning and blue mist, with forked lightning arms and a crackling halo",
+  "evo": ""
+ },
+ "armorghast": {
+  "name": "Armorghast",
+  "types": "Spirit/Metal",
+  "look": "an empty suit of medieval knight armor floating slightly, ghostly green light glowing from the gaps and the visor, holding a broken sword",
+  "evo": ""
+ },
+ "squirebeetle": {
+  "name": "Squirebeetle",
+  "types": "Metal/Brawl",
+  "look": "a small round steel-gray beetle like a squire, tiny horn, a red cape and a little twig held like a sword",
+  "evo": "paladeetle:36"
+ },
+ "paladeetle": {
+  "name": "Paladeetle",
+  "types": "Metal/Brawl",
+  "look": "a large upright stag beetle knight in polished silver armor with a red cape, its long horns crossed like a lance and blade",
+  "evo": ""
+ },
+ "clanklet": {
+  "name": "Clanklet",
+  "types": "Metal",
+  "look": "a small brass wind-up toy creature with a big key on its back, round body, little gear joints and blinking eyes",
+  "evo": "clockork:ironcore"
+ },
+ "clockork": {
+  "name": "Clockork",
+  "types": "Metal/Mind",
+  "look": "a tall brass clockwork creature with a clock face for a chest, spinning gears visible inside, pendulum tail and glowing eyes",
+  "evo": ""
+ },
+ "frostox": {
+  "name": "Frostox",
+  "types": "Ice/Ground",
+  "look": "a big shaggy musk ox with long dark brown fur crusted with frost, broad icy horns sweeping down, breath steaming",
+  "evo": ""
+ },
+ "orelet": {
+  "name": "Orelet",
+  "types": "Rock/Metal",
+  "look": "a small round rock creature with shiny gold and copper ore veins, little arms and a cheeky face",
+  "evo": "oregolem:30"
+ },
+ "oregolem": {
+  "name": "Oregolem",
+  "types": "Rock/Metal",
+  "look": "a medium stone golem with thick bronze and gold ore fists, metallic veins across its rocky body",
+  "evo": "titanore:45"
+ },
+ "titanore": {
+  "name": "Titanore",
+  "types": "Rock/Metal",
+  "look": "a towering colossal golem of dark stone and veins of glowing molten gold and steel, crystals on its shoulders, a crown-like peak on its head",
+  "evo": ""
+ },
+ "rimelet": {
+  "name": "Rimelet",
+  "types": "Dragon/Ice",
+  "look": "a small baby dragon with pale icy-blue scales, stubby wings, little frost horns and a snowflake on its forehead",
+  "evo": "rimewyrm:40"
+ },
+ "rimewyrm": {
+  "name": "Rimewyrm",
+  "types": "Dragon/Ice",
+  "look": "a large majestic ice dragon with deep-blue scales, wings like sheets of frost, icicle spines and swirling snow around it",
+  "evo": ""
+ },
+ "solkhan": {
+  "name": "Solkhan",
+  "types": "Fire/Ground",
+  "look": "a mighty legendary lion with golden fur, a mane of blazing sunfire forming a sun disc, glowing runes on its paws, standing on glassy sand",
+  "evo": ""
+ },
+ "thundrael": {
+  "name": "Thundrael",
+  "types": "Electric/Flying",
+  "look": "a legendary giant thunderbird with indigo plumage, golden lightning patterns across huge wings, a crest of crackling lightning",
+  "evo": ""
+ },
+ "glacieth": {
+  "name": "Glacieth",
+  "types": "Ice/Spirit",
+  "look": "a legendary ghostly ice serpent with translucent pale-blue body, violet spirit flames, a crown of ice crystals, frosty aurora trail",
+  "evo": ""
+ },
+ "meridion": {
+  "name": "Meridion",
+  "types": "Normal/Fae",
+  "look": "a mythical small floating creature with a white body and a flowing tail that changes colors like a rainbow, a crown with sun, snowflake, leaf and raindrop symbols",
+  "evo": ""
+ }
+}

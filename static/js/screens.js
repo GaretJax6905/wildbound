@@ -2,7 +2,7 @@
 // trainer card, options, title and the evolution scene.
 import { W, H, input, open, wait, frame, fx } from './engine.js';
 import { creature, silhouette, person, drawCreature, trainerPortrait, blit } from './art.js';
-import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField } from './data.js';
+import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField, regionDex } from './data.js';
 import { MAPS, LAYOUTS } from './maps.js';
 const layout = () => LAYOUTS[G.region] || LAYOUTS.aldermoor;
 import { stats, maxHp, name, expForLevel, evolve, movesAt, canEvolveByLevel } from './mon.js';
@@ -244,28 +244,31 @@ export async function pcScreen() {
 }
 
 // ---------------- DEX ----------------
+// each region keeps its own Dex: the list shows the region you're in, numbered from 001
+const dexList = () => regionDex(G.region || 'aldermoor');
 class DexList extends ListScreen {
-  itemsFn() { return SPECIES_LIST; }
+  itemsFn() { return dexList(); }
   draw(g) {
     bg(g, '#c04848');
     box(g, 4, 4, 128, 152);
-    const top = Math.max(0, Math.min(this.index - 4, SPECIES_LIST.length - 9));
-    SPECIES_LIST.slice(top, top + 9).forEach((sp, j) => {
+    const L = dexList();
+    const top = Math.max(0, Math.min(this.index - 4, L.length - 9));
+    L.slice(top, top + 9).forEach((sp, j) => {
       const i = top + j;
       const seen = G.dex.seen[sp], caught = G.dex.caught[sp];
-      text(g, String(SPECIES[sp].no).padStart(3, '0'), 20, 10 + j * 16, '#606068');
+      text(g, String(SPECIES[sp].rno).padStart(3, '0'), 20, 10 + j * 16, '#606068');
       text(g, seen ? SPECIES[sp].name : '-----', 44, 10 + j * 16);
       if (caught) { g.fillStyle = '#2aa89a'; g.fillRect(122, 13 + j * 16, 5, 3); g.fillStyle = '#f0e6c8'; g.fillRect(122, 16 + j * 16, 5, 2); g.fillStyle = '#e0b030'; g.fillRect(124, 15 + j * 16, 1, 2); }
       if (i === this.index) cursor(g, 10, 11 + j * 16);
     });
     box(g, 134, 4, 102, 152);
-    const sp = SPECIES_LIST[this.index];
+    const sp = L[this.index];
     if (G.dex.seen[sp]) drawCreature(g, sp, 56, 157, 12);
     else blit(g, silhouette(sp, 56, '#303040'), 157, 12, 56, 56);
     if (G.dex.seen[sp]) SPECIES[sp].types.forEach((t, k) => typeTag(g, t, 145 + k * 40, 72));
-    const s = Object.keys(G.dex.seen).length, c = Object.keys(G.dex.caught).length;
+    const s = L.filter((x) => G.dex.seen[x]).length, c = L.filter((x) => G.dex.caught[x]).length;
     text(g, `SEEN ${s}`, 144, 90); text(g, `CAUGHT ${c}`, 144, 104);
-    text(g, `of ${SPECIES_LIST.length}`, 144, 118, '#606068');
+    text(g, `of ${L.length}`, 144, 118, '#606068');
     text(g, 'A: entry', 144, 138, '#606068', null, FONT_SMALL);
   }
 }
@@ -277,7 +280,7 @@ class DexEntry {
     bg(g, '#c04848');
     box(g, 4, 4, 232, 152);
     drawCreature(g, this.sp, 64, 10, 8);
-    text(g, `No.${String(S.no).padStart(3, '0')}  ${S.name}`, 78, 14, '#383840', '#d0d0c8', FONT_BIG);
+    text(g, `No.${String(S.rno).padStart(3, '0')}  ${S.name}`, 78, 14, '#383840', '#d0d0c8', FONT_BIG);
     S.types.forEach((t, k) => typeTag(g, t, 78 + k * 40, 34));
     const evo = S.evo ? `Evolves into ${SPECIES[S.evo.to].name} ${S.evo.level ? 'at Lv. ' + S.evo.level : 'with a ' + ITEMS[S.evo.item].name}.` : '';
     if (evo) wrap(g, evo, 150, FONT_SMALL).forEach((l, j) => text(g, l, 78, 50 + j * 10, '#606068', null, FONT_SMALL));
@@ -287,7 +290,7 @@ class DexEntry {
 }
 export async function dexScreen() {
   const w = new DexList({});
-  w.onPick = async (i) => { const sp = SPECIES_LIST[i]; if (G.dex.seen[sp]) await open(new DexEntry(sp)); return undefined; };
+  w.onPick = async (i) => { const sp = dexList()[i]; if (G.dex.seen[sp]) await open(new DexEntry(sp)); return undefined; };
   await open(w);
 }
 

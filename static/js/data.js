@@ -1,6 +1,7 @@
 // Game data: types, moves, items, and the creature list (built from species.js).
 // Everything here is original.
 import { RAW_SPECIES, HAND_LEARNSETS } from './species.js';
+import { RAW_SPECIES2, HAND_LEARNSETS2 } from './species2.js';
 
 export const TYPES = ['Normal', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Brawl', 'Toxic', 'Ground', 'Flying', 'Mind', 'Bug', 'Rock', 'Spirit', 'Dragon', 'Shadow', 'Metal', 'Fae'];
 export const TYPE_COLORS = {
@@ -114,6 +115,21 @@ export const MOVES = {
   pixiebreeze: M('Pixie Breeze', 'Fae', 40, 100, 30), spritekiss: M('Sprite Kiss', 'Fae', 50, 100, 10, { drain: 75 }),
   moonbeam: M('Moonbeam', 'Fae', 90, 100, 15), starfall: M('Starfall', 'Fae', 110, 85, 5),
   sweetgaze: M('Sweet Gaze', 'Fae', 0, 100, 20, { stat: { target: 'foe', stat: 'atk', n: -2 } }),
+  // ---- Meridia's variations: familiar attacks with a local twist ----
+  tumblerush: M('Tumble Rush', 'Normal', 65, 100, 20), forgeflare: M('Forge Flare', 'Fire', 80, 100, 15, { burn: 20 }),
+  sunflare: M('Sun Flare', 'Fire', 120, 85, 5, { burn: 30 }), tidalspin: M('Tidal Spin', 'Water', 70, 100, 15, { stat: { target: 'self', stat: 'spe', n: 1, chance: 50 } }),
+  thornjab: M('Thorn Jab', 'Grass', 70, 100, 15), mossguard: M('Moss Guard', 'Grass', 0, 0, 20, { stat: { target: 'self', stat: 'def', n: 2 } }),
+  stormbolt: M('Storm Bolt', 'Electric', 95, 85, 10, { par: 20 }), rimefang: M('Rime Fang', 'Ice', 65, 95, 15, { stat: { target: 'foe', stat: 'spe', n: -1, chance: 30 } }),
+  hailstorm: M('Hailstorm', 'Ice', 95, 85, 10), glacialdirge: M('Glacial Dirge', 'Ice', 120, 85, 5, { stat: { target: 'foe', stat: 'spe', n: -1, chance: 50 } }),
+  rumblepunch: M('Rumble Punch', 'Brawl', 75, 100, 15), mirespit: M('Mire Spit', 'Toxic', 55, 100, 20, { stat: { target: 'foe', stat: 'spe', n: -1, chance: 30 } }),
+  blightcloud: M('Blight Cloud', 'Toxic', 95, 90, 10, { poison: 30 }), sandlash: M('Sand Lash', 'Ground', 55, 100, 20, { stat: { target: 'foe', stat: 'acc', n: -1, chance: 20 } }),
+  dunecrash: M('Dune Crash', 'Ground', 95, 90, 10), featherdart: M('Feather Dart', 'Flying', 50, 100, 25, { priority: 1 }),
+  galeburst: M('Gale Burst', 'Flying', 80, 100, 15), mirage: M('Mirage', 'Mind', 70, 100, 15, { stat: { target: 'foe', stat: 'acc', n: -1, chance: 30 } }),
+  hivesting: M('Hive Sting', 'Bug', 60, 100, 20, { poison: 20 }), crystalshard: M('Crystal Shard', 'Rock', 60, 95, 20),
+  wail: M('Wail', 'Spirit', 50, 100, 20, { stat: { target: 'foe', stat: 'atk', n: -1, chance: 30 } }), gravechill: M('Grave Chill', 'Spirit', 80, 100, 15),
+  rimebreath: M('Rime Breath', 'Dragon', 75, 100, 15, { stat: { target: 'foe', stat: 'spe', n: -1, chance: 20 } }), duskclaw: M('Dusk Claw', 'Shadow', 70, 100, 15),
+  gearsaw: M('Gear Saw', 'Metal', 70, 100, 15), magnetbash: M('Magnet Bash', 'Metal', 90, 90, 10),
+  prismbeam: M('Prism Beam', 'Fae', 80, 100, 15), meridianray: M('Meridian Ray', 'Fae', 120, 90, 5),
 };
 
 // damaging moves of each type, weakest to strongest, and a signature status move
@@ -128,13 +144,26 @@ const POOL = {
   Dragon: ['galecoil', 'drakebreath', 'wyrmclaw', 'dracosurge'], Shadow: ['ambush', 'nightbite', 'umbralpulse', 'nightfall'],
   Metal: ['ironclaw', 'steeltail', 'chromebeam', 'meteorfist'], Fae: ['pixiebreeze', 'spritekiss', 'moonbeam', 'starfall'],
 };
+// Meridia's creatures learn a mix of the familiar moves and the local variations
+const POOL2 = {
+  Normal: ['quickjab', 'chomp', 'tumblerush', 'bodyslam', 'megaimpact'], Fire: ['ember', 'flamefang', 'forgeflare', 'inferno'],
+  Water: ['waterjet', 'bubbleburst', 'tidalspin', 'torrent'], Grass: ['leafflick', 'vinelash', 'thornjab', 'solarlance'],
+  Electric: ['spark', 'zapbolt', 'voltdive', 'stormbolt'], Ice: ['frostnip', 'rimefang', 'glacierbeam', 'hailstorm'],
+  Brawl: ['palmstrike', 'kneestrike', 'rumblepunch', 'titanfist'], Toxic: ['acidspit', 'mirespit', 'sludgewave', 'blightcloud'],
+  Ground: ['mudslap', 'sandlash', 'tremor', 'dunecrash'], Flying: ['gust', 'featherdart', 'galeburst', 'hurricane'],
+  Mind: ['mindpulse', 'psywave', 'mirage', 'psystorm'], Bug: ['bugnip', 'hivesting', 'swarmrush', 'lancehorn'],
+  Rock: ['rocktoss', 'crystalshard', 'rockslam', 'bouldercrash'], Spirit: ['phantomtouch', 'wail', 'gravechill', 'soulrend'],
+  Dragon: ['galecoil', 'drakebreath', 'rimebreath', 'dracosurge'], Shadow: ['ambush', 'nightbite', 'duskclaw', 'nightfall'],
+  Metal: ['ironclaw', 'gearsaw', 'chromebeam', 'magnetbash'], Fae: ['pixiebreeze', 'spritekiss', 'prismbeam', 'starfall'],
+};
 const STATUS = {
   Normal: 'powerup', Fire: 'scorchhaze', Water: 'tailwag', Grass: 'stunpollen', Electric: 'staticwave', Ice: 'chillmist', Brawl: 'brace',
   Toxic: 'poisonmist', Ground: 'sandtoss', Flying: 'quickstep', Mind: 'trance', Bug: 'silkshot', Rock: 'harden', Spirit: 'lullaby',
   Dragon: 'quickstep', Shadow: 'glare', Metal: 'ironwall', Fae: 'sweetgaze',
 };
 
-function autoLearnset(types) {
+function autoLearnset(types, pool = POOL) {
+  const POOL = pool;
   const [a, b] = types;
   const out = [[1, a === 'Normal' || !b ? 'tackle' : 'scratch'], [1, 'growl']];
   POOL[a].forEach((m, i) => out.push([[4, 14, 26, 40][i] ?? 50, m]));
@@ -149,20 +178,24 @@ function autoLearnset(types) {
 
 // ---- build SPECIES from the compact table ----
 export const SPECIES = {};
-RAW_SPECIES.forEach((r, i) => {
+const REGION_ROWS = [['aldermoor', RAW_SPECIES, HAND_LEARNSETS, POOL], ['meridia', RAW_SPECIES2, HAND_LEARNSETS2, POOL2]];
+let dexNo = 0;
+for (const [region, rows, hand, pool] of REGION_ROWS) rows.forEach((r, i) => {
   const [id, name, types, base, evo, where, art, dex] = r;
   const tps = types.split('/');
   const total = base.reduce((s, x) => s + x, 0);
   const s = {
-    no: i + 1, name, types: tps, base, art, where: where || '', dex,
+    no: ++dexNo, rno: i + 1, region, name, types: tps, base, art, where: where || '', dex,
     family: art.family, stage: art.stage || 1, legend: !!art.legend,
     exp: Math.round(total / 6.5), rate: art.legend ? 3 : total < 330 ? 255 : total < 420 ? 120 : total < 500 ? 60 : 45,
-    learn: HAND_LEARNSETS[id] || autoLearnset(tps),
+    learn: hand[id] || autoLearnset(tps, pool),
   };
   if (evo) { const [to, how] = evo.split(':'); s.evo = /^\d+$/.test(how) ? { to, level: +how } : { to, item: how }; }
   SPECIES[id] = s;
 });
 export const SPECIES_LIST = Object.keys(SPECIES).sort((a, b) => SPECIES[a].no - SPECIES[b].no);
+// each region has its own Dex
+export const regionDex = (region) => SPECIES_LIST.filter((sp) => SPECIES[sp].region === region);
 
 // Field moves ("Trail Discs"): what they unlock, which badge count lets you use them outside battle,
 // and which creature types can learn them.
@@ -195,6 +228,8 @@ export const ITEMS = {
   moonshard: { name: 'Moon Shard', price: 2100, desc: 'A glittering shard. Makes certain creatures evolve.', kind: 'evo' },
   duskstone: { name: 'Dusk Stone', price: 2100, desc: 'A dark, cold stone. Makes certain creatures evolve.', kind: 'evo' },
   leafstone: { name: 'Leaf Stone', price: 2100, desc: 'A stone with a leaf pattern. Makes certain creatures evolve.', kind: 'evo' },
+  sunstone: { name: 'Sun Stone', price: 2100, desc: 'A stone as warm as desert noon. Makes certain creatures evolve.', kind: 'evo' },
+  ironcore: { name: 'Iron Core', price: 2100, desc: 'A heavy, humming core of metal. Makes certain creatures evolve.', kind: 'evo' },
   froststone: { name: 'Frost Stone', price: 2100, desc: 'An icy stone. Makes certain creatures evolve.', kind: 'evo' },
   townmap: { name: 'Town Map', price: 0, desc: 'A map of the region from Mom. Shows where you are. (Shortcut: SELECT)', kind: 'map', key: true },
   td_slash: { name: 'TD01 Slash', price: 0, desc: 'Trail Disc. Teaches Slash. Out of battle it cuts thorny bushes. Needs 2 badges.', kind: 'td', move: 'slash', key: true },

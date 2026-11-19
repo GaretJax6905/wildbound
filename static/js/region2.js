@@ -79,7 +79,7 @@ export function buildMeridia(A) {
     base: 'sand', style: 'desert', border: 'rock', path: 'dirt', decor: ['cactus', 'barrelcactus', 'rock', 'barrelcactus'], density: 22,
     post(m) { fill(m, 18, 1, 5, 2, 'water'); dots(m, 'palm', [[17, 1], [23, 1], [17, 3], [23, 3]]); fill(m, 18, 3, 5, 1, 'grass'); },
     streets: [[8, 1, 24], [15, 3, 21]], vstreets: [[12, 0, 16]], open: [['west', 8], ['north', 12]],
-    stock: ['orb', 'greatorb', 'superpotion', 'fullheal', 'repel', 'revive'],
+    stock: ['orb', 'greatorb', 'superpotion', 'fullheal', 'repel', 'revive', 'sunstone'],
     b: [['center', 2, 8], ['mart', 7, 8], ['house', 15, 8, { name: 'Water Seller', npcs: [{ look: 'hiker', text: ['Out here, a full canteen is worth more than gold.', 'The sandstorms on Route 12 never really stop.'] }] }],
       ['house2', 20, 8, { name: 'Adobe House', npcs: [{ look: 'beauty', text: ['North of town the desert turns into a canyon full of thorny scrub.', 'Bring a creature that can Slash through it!'] }] }],
       ['gym', 4, 15, { gym: G.dune }], ['house', 15, 15, { name: 'Fossil Digger', npcs: [{ look: 'scientist', text: ['Echo Canyon is full of ancient bones.', 'Some say ancient creatures still live deep inside.'] }] }]],
@@ -101,7 +101,7 @@ export function buildMeridia(A) {
     border: 'rock', decor: ['rock', 'rock', 'stump', 'flower', 'fence'], density: 20,
     post(m) { fill(m, 15, 2, 9, 1, 'fence'); fill(m, 1, 17, 4, 2, 'rock'); },
     streets: [[8, 1, 24], [15, 3, 21]], vstreets: [[12, 8, 19]], open: [['south', 12], ['east', 8]],
-    stock: ['greatorb', 'superpotion', 'hyperpotion', 'fullheal', 'revive', 'repel'],
+    stock: ['greatorb', 'superpotion', 'hyperpotion', 'fullheal', 'revive', 'repel', 'moonshard'],
     b: [['center', 2, 8], ['mart', 7, 8], ['house', 15, 8, { name: 'Windmill House', npcs: [{ look: 'birdkeeper', text: ['The wind on the mesa never stops. Bird creatures love it here.'] }] }],
       ['house2', 20, 8, { name: 'Ranch House', npcs: [{ look: 'boy', text: ['Cracked boulders block Route 14 to the east.', 'You\'ll need a creature that can Shatter them.'] }] }],
       ['gym', 4, 15, { gym: G.gale }], ['house', 15, 15, { name: 'Lookout', npcs: [{ look: 'oldman', text: ['From up here you can see all the way to Fenmoor\'s marshes.'] }] }]],
@@ -135,7 +135,7 @@ export function buildMeridia(A) {
   mkTown('kingsgate', 'Kingsgate', 26, 20, {
     style: 'ruins', decor: ['pillar', 'mapletree', 'goldtree', 'flower', 'pillar'], density: 18,
     streets: [[8, 1, 24], [15, 3, 21]], vstreets: [[12, 0, 16]], open: [['north', 12], ['east', 8]],
-    stock: ['greatorb', 'ultraorb', 'hyperpotion', 'fullheal', 'revive', 'maxrepel'],
+    stock: ['greatorb', 'ultraorb', 'hyperpotion', 'fullheal', 'revive', 'maxrepel', 'duskstone'],
     pre(m) { fill(m, 1, 0, 24, 3, 'water'); fill(m, 1, 3, 24, 1, 'sand'); carve(m, 'north', 12, 'water'); fill(m, 12, 0, 2, 3, 'water'); },
     b: [['center', 2, 8], ['mart', 7, 8], ['house', 15, 8, { name: 'Castle Archive', npcs: [{ look: 'scientist', text: ['Kingsgate was a royal city a thousand years ago.', 'The pillars around town are all that\'s left of the old walls.'] }] }],
       ['house2', 20, 8, { name: 'Graveyard Keeper', npcs: [{ look: 'oldman', text: ['Mist rolls in every night. Spirit creatures wander out with it.'] }] }],
@@ -155,7 +155,7 @@ export function buildMeridia(A) {
     style: 'city', decor: ['lamp', 'barrel', 'crate', 'lamp'], density: 22,
     post(m) { for (let x = 2; x < 26; x += 4) { if (m.tiles[10][x] === 'grass') m.tiles[10][x] = 'lamp'; } },
     streets: [[8, 1, 26], [15, 1, 26]], vstreets: [[12, 8, 21]], open: [['west', 8], ['south', 12]],
-    stock: ['greatorb', 'ultraorb', 'hyperpotion', 'maxpotion', 'fullheal', 'revive', 'maxrepel'],
+    stock: ['greatorb', 'ultraorb', 'hyperpotion', 'maxpotion', 'fullheal', 'revive', 'maxrepel', 'ironcore'],
     b: [['center', 2, 8], ['mart', 7, 8], ['tower', 17, 8, { to: 'eclipsebase' }],
       ['gym', 3, 15, { gym: G.forge }], ['house', 16, 15, { name: 'Foundry Office', npcs: [{ look: 'hiker', text: ['Strange folks in dark uniforms bought the old factory.', 'Lights stay on there all night.'] }] }],
       ['house2', 22, 15, { name: 'Workers\' Flats', npcs: [{ look: 'girl', text: ['Route 17 south of here is buried in snow.', 'Big boulders block the way. You\'d need to Heave them!'] }] }]],
@@ -184,7 +184,7 @@ export function buildMeridia(A) {
     base: 'snow', style: 'snow', border: 'pine', path: 'snowpath', decor: ['pine', 'pine', 'rock', 'snowgrass'], density: 20,
     post(m) { fill(m, 15, 1, 6, 2, 'icefloor'); fill(m, 2, 17, 4, 2, 'icefloor'); },
     streets: [[8, 1, 22], [15, 3, 20]], vstreets: [[11, 0, 16]], open: [['north', 11], ['west', 8]],
-    stock: ['ultraorb', 'hyperpotion', 'maxpotion', 'fullheal', 'revive', 'maxrepel'],
+    stock: ['ultraorb', 'hyperpotion', 'maxpotion', 'fullheal', 'revive', 'maxrepel', 'sparkstone'],
     b: [['center', 2, 8], ['mart', 6, 8], ['house', 15, 8, { name: 'Lodge', npcs: [{ look: 'skier', text: ['The peaks west of here get hit by thunderstorms every afternoon.'] }] }],
       ['gym', 2, 15, { gym: G.rime }], ['house2', 15, 15, { name: 'Hot Spring Inn', npcs: [{ look: 'beauty', text: ['Storm Cave on the way to Skyspire is pitch black. Bring a creature that can Glow!'] }] }]],
   });
@@ -239,6 +239,30 @@ export function buildMeridia(A) {
       r.exitTo = { map: 'league2_lobby', x: 5, y: 7, dir: 'down' };
     });
   }
+
+  // ---- special encounters: the starters gather in Whisperwood; four legends hide around Meridia ----
+  const SOLIDISH = new Set(['tree', 'water', 'rock', 'cavewall', 'pine', 'cactus', 'barrelcactus', 'mapletree', 'goldtree', 'bush', 'crack', 'sign', 'fence', 'lava']);
+  const spot = (m, prefer, skip = []) => {
+    // a walkable tile right beside the trail, far from the map edges, not already taken
+    const taken = new Set([...m.npcs.map((n) => `${n.x},${n.y}`), ...m.items.map((i) => `${i.x},${i.y}`), ...skip]);
+    const trail = new Set(['path', 'dirt', 'cavepath', 'snowpath', 'sand']);
+    const cands = [];
+    for (let y = 3; y < m.h - 3; y++) for (let x = 3; x < m.w - 3; x++) {
+      const t = m.tiles[y][x];
+      if (SOLIDISH.has(t) || trail.has(t) || taken.has(`${x},${y}`) || m.boulders.some((b) => b.x === x && b.y === y)) continue;
+      const nearTrail = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => trail.has(m.tiles[y + dy][x + dx]));
+      if (nearTrail) cands.push([x, y]);
+    }
+    cands.sort((a, b) => Math.abs(a[0] - prefer[0]) + Math.abs(a[1] - prefer[1]) - Math.abs(b[0] - prefer[0]) - Math.abs(b[1] - prefer[1]));
+    return cands[0];
+  };
+  const special = (mapId, sp, level, prefer) => {
+    const m = MAPS[mapId]; const at = spot(m, prefer);
+    npc(m, { id: `legend_${sp}`, creature: sp, level, x: at[0], y: at[1], dir: 'down', move: 'static', script: 'legend', show: `!caught_${sp}` });
+  };
+  special('whisperwood', 'bramblecub', 10, [6, 4]); special('whisperwood', 'cindergecko', 10, [15, 4]); special('whisperwood', 'splotter', 10, [24, 4]);
+  special('echocanyon', 'solkhan', 50, [13, 4]); special('route17', 'glacieth', 55, [4, 4]);
+  special('route18', 'thundrael', 55, [18, 3]); special('summitpass', 'meridion', 60, [15, 4]);
 
   // every trainer in Meridia waits for its roster (Meridia's own creatures come later)
   for (const m of Object.values(MAPS)) if (m.region === 'meridia') for (const n of m.npcs) if (n.trainer) n.pending = true;

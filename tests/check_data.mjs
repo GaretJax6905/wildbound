@@ -4,7 +4,7 @@
 //  - moves, items, maps, connections and doors all point at things that exist
 //  - every outdoor map can be walked into from its connections, and doors land on walkable tiles
 import { SPECIES, MOVES, ITEMS, SPECIES_LIST } from '../static/js/data.js';
-import { MAPS, SOLID } from '../static/js/maps.js';
+import { MAPS, SOLID, GRASSY } from '../static/js/maps.js';
 
 const errors = [];
 const catchable = new Set();
@@ -40,7 +40,7 @@ for (const m of Object.values(MAPS)) {
 }
 for (const m of Object.values(MAPS)) {
   if (!(m.encounters || []).length || m.cave) continue;
-  if (!m.tiles.some((row) => row.some((t) => t === 'tall' || t === 'snowgrass'))) errors.push(`${m.id}: has land creatures but no tall grass to find them in`);
+  if (!m.tiles.some((row) => row.some((t) => GRASSY.has(t)))) errors.push(`${m.id}: has land creatures but no tall grass to find them in`);
 }
 const homes = {};
 for (const m of Object.values(MAPS)) for (const [sp] of m.encounters || []) (homes[sp] = homes[sp] || []).push(m.id);
