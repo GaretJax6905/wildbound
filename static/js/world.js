@@ -1,17 +1,17 @@
 // Overworld: tile movement, NPCs, doors/edges, tall grass, trainers' line of sight,
 // and field moves (Slash bushes, Shatter rocks, Wave Ride water, Heave boulders, Glow dark caves).
 import { W, H, T, input, wait, fadeOut, fadeIn, setScene, frame, chance, pick } from './engine.js';
-import { MAPS, SOLID, GRASSY, buildingSolid } from './maps.js';
+import { MAPS, SOLID, GRASSY, buildingSolid, GYMS } from './maps.js';
 import { tile, prop, person, building, itemBall, creature, setPlayerLook, pathEdge, drawPerson } from './art.js';
 const LAWN = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush']);
 const SNOWY = new Set(['snow', 'pine', 'snowgrass']);
 const SHORE = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush', 'sand', 'path', 'snow', 'pine', 'snowgrass', 'ash', 'dock', 'cavefloor', 'cavepath', 'dirt']);
 // the ground a map is mostly made of: painted props (trees, signs, furniture) stand on it
-const GROUNDS = ['grass', 'snow', 'ash', 'sand', 'cavefloor', 'gymfloor', 'dkfloor', 'floor', 'icefloor', 'path'];
+const GROUNDS = ['grass', 'snow', 'ash', 'sand', 'cavefloor', 'gymfloor', 'dkfloor', 'floor', 'icefloor', 'carpet'];
 function groundOf(m) {
   if (m._ground) return m._ground;
   const n = {};
-  for (const row of m.tiles) for (const t of row) if (GROUNDS.includes(t)) n[t] = (n[t] || 0) + 1;
+  for (const row of m.tiles) for (const t0 of row) { const t = t0 === 'tall' || t0 === 'flower' ? 'grass' : t0 === 'snowgrass' ? 'snow' : t0; if (GROUNDS.includes(t)) n[t] = (n[t] || 0) + 1; }
   let best = m.interior ? 'floor' : 'grass';
   for (const t of GROUNDS) if ((n[t] || 0) > (n[best] || 0)) best = t;
   m._ground = best === 'floor' ? floorOf(m) : best;
@@ -61,8 +61,13 @@ function drawWeather(g, kind, cx, cy) {
     }
   }
 }
-// homes have wooden floors; the healing centre, mart and lab are tiled
-function floorOf(m) { return /^(center|mart|lab)/.test(m.id) ? 'tilefloor' : 'floor'; }
+// homes have wooden floors; the healing centre, mart and lab are tiled; the league is marble
+function floorOf(m) { return /^(center|mart|lab)/.test(m.id) ? 'tilefloor' : /^(league|e4_|champ|halloffame)/.test(m.id) ? 'marble' : 'floor'; }
+// gyms have stone walls, the Eclipse base steel, the league marble; everywhere else wallpaper
+function wallOf(m) { return m.gym ? 'stone' : m.id === 'eclipsehq' ? 'metal' : /^(league|e4_|champ|halloffame)/.test(m.id) ? 'marble' : ''; }
+const CAVEFLOOR = new Set(['cavefloor', 'rock', 'crack']);
+function hasLava(m) { if (m._lava === undefined) m._lava = m.tiles.some((r) => r.includes('lava')); return m._lava; }
+const LAVA_BANK = new Set(['ash', 'cavefloor', 'cavepath', 'rock', 'path', 'gymfloor', 'cavewall']);
 import { G, flag, setFlag, save, addItem } from './state.js';
 import { ITEMS, FIELD, SPECIES } from './data.js';
 import { say, box, text, yesNo } from './ui.js';
@@ -452,10 +457,26 @@ export const worldScene = {
         // towns are paved with cobblestones; routes keep a dirt trail
         let shown = tn === 'path' && !town ? 'dirt' : tn;
         if (tn === 'floor') shown = floorOf(m);
-        else if (tn === 'wall') shown = tileAt(tx, ty + 1) !== 'wall' ? 'walllow' : ((tx + 2) % 5 === 0 ? 'wallwin' : 'wall');
+        else if (tn === 'gymfloor' && m.gym && GYMS[m.gym]) shown = 'gf_' + GYMS[m.gym].type;
+        else if (tn === 'wall') {
+          const ws = wallOf(m), low = tileAt(tx, ty + 1) !== 'wall';
+          shown = ws + (low ? 'walllow' : !ws && (tx + 2) % 5 === 0 ? 'wallwin' : 'wall');
+        } else if (tn === 'cavewall' && !SOLID.has(tileAt(tx, ty + 1)) && ty + 1 < m.h) shown = 'cliff';
+        if (m.cave || m.id === 'seacave') {
+          // caves swap in their own rocks; Ember Tunnel's glow with magma
+          if (tn === 'rock') shown = hasLava(m) ? 'magmarock' : ['stalagmite', 'caveboulder', 'rockpile', 'stalagmite'][(tx * 3 + ty * 5) & 3];
+          else if (tn === 'crack') shown = 'cavecrack';
+        }
         const pr = prop(shown, vr);
-        if (pr) { g.drawImage(tile(groundOf(m), vr, af), X, Y); g.drawImage(pr, X, Y); }
-        else g.drawImage(tile(shown, vr, af), X, Y);
+        if (pr) { const gr = groundOf(m); g.drawImage(tile(gr === 'gymfloor' && m.gym && GYMS[m.gym] ? 'gf_' + GYMS[m.gym].type : gr, vr, af), X, Y); g.drawImage(pr, X, Y); }
+        else {
+          g.drawImage(tile(shown, vr, af), X, Y);
+          // a sprinkle of walk-over decoration on cave floors
+          if (tn === 'cavefloor') {
+            const h = (tx * 73856093 ^ ty * 19349663) >>> 0;
+            if (h % 29 === 0) { const d = prop(hasLava(m) ? 'pebbles' : ['pebbles', 'mushroom', 'redshroom', 'crystal2'][(h >>> 5) & 3]); if (d) g.drawImage(d, X, Y); }
+          }
+        }
         const edge = (set, kind) => {
           const bits = (set.has(tileAt(tx, ty - 1)) ? 1 : 0) | (set.has(tileAt(tx + 1, ty)) ? 2 : 0) | (set.has(tileAt(tx, ty + 1)) ? 4 : 0) | (set.has(tileAt(tx - 1, ty)) ? 8 : 0);
           if (bits) g.drawImage(pathEdge(bits, kind), X, Y);
@@ -463,6 +484,8 @@ export const worldScene = {
         if (tn === 'path' && groundOf(m) === 'grass') edge(LAWN, 'grass');
         else if (tn === 'snowpath') edge(SNOWY, 'snow');
         else if (tn === 'water') edge(SHORE, 'shore');
+        else if (tn === 'cavepath') edge(CAVEFLOOR, 'cave');
+        else if (tn === 'lava') edge(LAVA_BANK, 'lava');
       }
     }
     for (const b of m.buildings) { const bi = building(b.kind, b.w, b.h, b.door, m.style === 'snow'); g.drawImage(bi, b.x * T - cx, b.y * T - cy - (bi.over || 0)); }

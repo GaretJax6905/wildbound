@@ -1039,8 +1039,11 @@ const PROP_TILES = {
   plant: ['floor', 'plant'], healer: ['floor', 'healer'], mat: ['floor', 'mat'],
   statue: ['gymfloor', 'statue'], console: ['dkfloor', 'console'], stove: ['floor', 'stove'], fridge: ['floor', 'fridge'],
   chair: ['floor', 'chair'], crate: ['floor', 'crate'], armchair: ['floor', 'armchair'],
+  stalagmite: ['cavefloor', 'stalagmite'], caveboulder: ['cavefloor', 'caveboulder'], rockpile: ['cavefloor', 'rockpile'],
+  magmarock: ['cavefloor', 'magmarock'], cavecrack: ['cavefloor', 'cavecrack'], boulder: ['gymfloor', 'caveboulder'],
+  crystal: ['cavefloor', 'crystal'], crystal2: ['cavefloor', 'crystal2'], mushroom: ['cavefloor', 'mushroom'], redshroom: ['cavefloor', 'redshroom'], pebbles: ['cavefloor', 'pebbles'],
 };
-const CENTERED_PROPS = new Set(['mat', 'crack', 'pushrock', 'table']);
+const CENTERED_PROPS = new Set(['mat', 'crack', 'pushrock', 'table', 'cavecrack', 'pebbles', 'mushroom', 'redshroom']);
 
 const TILE_DRAW = {
   grass(px, r) {
@@ -1140,7 +1143,6 @@ const TILE_DRAW = {
     TILE_DRAW.grass(px, srand(11));
     px(2, 4, 12, 10, '#9a9a9a'); px(3, 3, 9, 1, '#9a9a9a'); px(3, 5, 5, 3, '#c0c0c0'); px(8, 10, 6, 4, '#707070');
   },
-  dock(px) { px(0, 0, 16, 16, '#b08050'); for (let y = 3; y < 16; y += 4) px(0, y, 16, 1, '#806030'); px(4, 0, 1, 3, '#806030'); px(11, 4, 1, 3, '#806030'); px(6, 8, 1, 3, '#806030'); px(13, 12, 1, 3, '#806030'); },
   floor(px) {
     // honey-coloured wooden planks, ends staggered
     const tones = ['#c09468', '#b98d61', '#c59a6e', '#bc9064'];
@@ -1197,6 +1199,98 @@ const TILE_DRAW = {
   plant(px) { TILE_DRAW.floor(px); px(4, 10, 8, 5, '#c06030'); px(3, 9, 10, 2, '#d87848'); px(3, 2, 10, 7, '#38a048'); px(5, 1, 6, 2, '#58c060'); px(2, 5, 2, 3, '#38a048'); px(12, 5, 2, 3, '#38a048'); },
   bed(px) { TILE_DRAW.floor(px); px(1, 1, 14, 15, '#8a6038'); px(2, 2, 12, 4, '#f8f8f8'); px(2, 6, 12, 9, '#4878c8'); px(2, 6, 12, 1, '#88a8e0'); },
   tv(px) { TILE_DRAW.floor(px); px(2, 3, 12, 10, '#404048'); px(3, 4, 10, 7, '#60a0c0'); px(4, 5, 3, 2, '#a0d8f0'); px(5, 13, 6, 2, '#404048'); },
+  cavefloor(px, r) {
+    // earthy cave floor: darker patches, loose pebbles, a hairline crack now and then
+    px(0, 0, 16, 16, '#8a6e52');
+    for (let i = 0; i < 2; i++) { const x = Math.floor(r() * 12), y = Math.floor(r() * 13); px(x, y, 4, 2, '#7e6248'); px(x + 1, y + 2, 2, 1, '#7e6248'); }
+    for (let i = 0; i < 3; i++) { const x = Math.floor(r() * 14), y = Math.floor(r() * 14); px(x, y, 2, 1, '#a88a6a'); px(x, y + 1, 2, 1, '#5e4a36'); }
+    if (r() < 0.4) { const x = 2 + Math.floor(r() * 10), y = 2 + Math.floor(r() * 10); px(x, y, 3, 1, '#5e4a36'); px(x + 3, y + 1, 2, 1, '#5e4a36'); }
+  },
+  cavepath(px, r) {
+    // packed, lighter dirt where feet have worn a trail
+    px(0, 0, 16, 16, '#b0916c');
+    for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#9a7c5c');
+    for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#c4a580');
+  },
+  cavewall(px, r) {
+    // solid rock from above: a jumble of boulders of different sizes in deep shadow
+    px(0, 0, 16, 16, '#3e2e22');
+    const lump = (x, y, w, h) => {
+      px(x + 1, y, w - 2, h, '#634a36'); px(x, y + 1, w, h - 2, '#634a36');
+      px(x + 1, y, w - 3, 1, '#7e644a'); px(x, y + 1, 1, h - 3, '#7e644a'); px(x + 1, y + 1, 2, 1, '#9a7e5e');
+      px(x + 2, y + h - 1, w - 3, 1, '#3a2a1e'); px(x + w - 1, y + 2, 1, h - 3, '#4a3828');
+    };
+    const sets = [
+      [[0, 0, 8, 7], [8, 0, 8, 6], [-2, 7, 7, 9], [5, 6, 7, 7], [11, 6, 6, 10], [4, 12, 7, 5]],
+      [[-1, -1, 7, 8], [6, 0, 10, 7], [0, 7, 9, 9], [9, 7, 8, 6], [10, 12, 6, 5]],
+      [[0, 0, 6, 6], [6, -1, 6, 8], [12, 1, 5, 7], [-1, 6, 8, 6], [7, 7, 9, 9], [0, 12, 7, 5]],
+      [[1, 0, 9, 8], [10, 0, 7, 7], [-2, 8, 6, 8], [4, 8, 6, 8], [10, 7, 7, 9]],
+    ];
+    sets[Math.floor(r() * 4)].forEach(([x, y, w, h]) => lump(x, y, w, h));
+  },
+  cliff(px, r) {
+    // rock face where a wall meets walkable floor: boulder rim, layered face, deep shadow at the foot
+    TILE_DRAW.cavewall(px, r);
+    px(0, 7, 16, 9, '#6e543c');
+    px(0, 7, 16, 1, '#94785a'); px(0, 8, 16, 1, '#82684c');
+    px(0, 11, 16, 1, '#5e4632');
+    for (const x of [3, 9, 13]) px(x, 9, 1, 5, '#4a3626');
+    px(5, 12, 2, 1, '#8a6e52'); px(11, 10, 1, 1, '#8a6e52');
+    px(0, 14, 16, 2, '#2e2218');
+  },
+  lava(px, r, f) {
+    // molten rock: glowing veins that drift, with a few cooling crust islands
+    px(0, 0, 16, 16, '#d0401a');
+    const o = f % 2 ? 2 : 0;
+    const vein = (x, y, w, c) => px((x + o) % 16, y, w, 1, c);
+    vein(1, 2, 6, '#f07a28'); vein(9, 3, 5, '#f07a28'); vein(3, 7, 7, '#f8a838'); vein(11, 9, 4, '#f07a28'); vein(0, 12, 5, '#f8a838'); vein(7, 13, 6, '#f07a28');
+    vein(4, 7, 3, '#ffe070'); vein(1, 12, 2, '#ffe070');
+    px(12, 5, 3, 2, '#6a2a18'); px(5, 10, 2, 2, '#6a2a18'); px(12, 5, 1, 1, '#8a3a20');
+  },
+  dkfloor(px, r) {
+    // Eclipse steel: dark plates and rivets, with a faint cyan seam light here and there
+    px(0, 0, 16, 16, '#3a3c4e');
+    px(0, 0, 16, 1, '#4a4e64'); px(0, 0, 1, 16, '#4a4e64'); px(0, 15, 16, 1, '#26283a'); px(15, 0, 1, 16, '#26283a');
+    for (const [x, y] of [[2, 2], [13, 2], [2, 13], [13, 13]]) px(x, y, 1, 1, '#6a6e88');
+    if (r() < 0.3) { px(5, 8, 6, 1, '#2e6e90'); px(7, 8, 2, 1, '#5ab8d8'); }
+  },
+  icefloor(px, r) {
+    // polished ice: pale blue, a sheen on some tiles, faint cracks on others
+    px(0, 0, 16, 16, '#cfeaf8');
+    const k = Math.floor(r() * 4);
+    if (k === 0) for (let i = 0; i < 5; i++) px(3 + i, 9 - i, 2, 1, '#eef8ff');
+    if (k === 1) { px(2, 4, 3, 1, '#a8d0e8'); px(5, 5, 2, 1, '#a8d0e8'); px(7, 6, 1, 2, '#a8d0e8'); }
+    if (k === 2) px(10, 11, 3, 1, '#ffffff');
+    px(0, 15, 16, 1, '#bfe0f2'); px(15, 0, 1, 16, '#bfe0f2');
+  },
+  marble(px) {
+    // league marble: alternating cream squares, grey veining, gold studs at the joins
+    px(0, 0, 16, 16, '#ece6da'); px(8, 0, 8, 8, '#e0d8c8'); px(0, 8, 8, 8, '#e0d8c8');
+    px(1, 3, 4, 1, '#cfc6b4'); px(4, 4, 2, 1, '#cfc6b4'); px(10, 11, 4, 1, '#cfc6b4');
+    px(0, 0, 1, 1, '#c8a040'); px(8, 8, 1, 1, '#c8a040'); px(8, 0, 1, 1, '#d8b858'); px(0, 8, 1, 1, '#d8b858');
+  },
+  dock(px) {
+    // pier: weathered planks across, a dark gap between each, posts at the ends
+    px(0, 0, 16, 16, '#a87a4c');
+    for (let y = 0; y < 16; y += 4) { px(0, y, 16, 3, y % 8 ? '#b4865a' : '#a87a4c'); px(0, y + 3, 16, 1, '#5e3e22'); px(0, y, 16, 1, '#c89a6a'); }
+    px(3, 1, 1, 1, '#5e3e22'); px(12, 5, 1, 1, '#5e3e22'); px(6, 9, 1, 1, '#5e3e22'); px(10, 13, 1, 1, '#5e3e22');
+  },
+  // ---- themed gym floors (one per gym type) ----
+  gf_Rock(px) { px(0, 0, 16, 16, '#c8b48c'); px(0, 7, 16, 1, '#9c8662'); px(0, 15, 16, 1, '#9c8662'); px(5, 0, 1, 7, '#9c8662'); px(12, 8, 1, 7, '#9c8662'); px(1, 1, 3, 1, '#dccaa4'); px(7, 9, 4, 1, '#dccaa4'); px(9, 3, 2, 1, '#b09a72'); },
+  gf_Grass(px) { TILE_DRAW.gf_Rock(px); px(0, 0, 16, 16, 'rgba(0,0,0,0)'); px(0, 0, 16, 16, '#a8bc8c'); px(0, 7, 16, 1, '#6f8c5a'); px(0, 15, 16, 1, '#6f8c5a'); px(5, 0, 1, 7, '#6f8c5a'); px(12, 8, 1, 7, '#6f8c5a'); px(4, 6, 3, 1, '#5f9a4a'); px(5, 5, 1, 1, '#7cc05a'); px(11, 14, 3, 1, '#5f9a4a'); px(12, 13, 1, 1, '#7cc05a'); px(1, 1, 3, 1, '#c0d4a4'); },
+  gf_Electric(px, r) { px(0, 0, 16, 16, '#a4acb8'); px(0, 0, 16, 1, '#c4ccd8'); px(0, 0, 1, 16, '#c4ccd8'); px(0, 15, 16, 1, '#6c7480'); px(15, 0, 1, 16, '#6c7480'); for (const [x, y] of [[2, 2], [13, 2], [2, 13], [13, 13]]) px(x, y, 1, 1, '#5c6470'); if (r() < 0.25) { px(5, 7, 6, 2, '#2c3038'); px(6, 7, 1, 2, '#f0c838'); px(9, 7, 1, 2, '#f0c838'); } },
+  gf_Water(px) { px(0, 0, 16, 16, '#d8f0f8'); px(0, 0, 8, 8, '#b8e0f0'); px(8, 8, 8, 8, '#b8e0f0'); px(0, 15, 16, 1, '#98c8e0'); px(15, 0, 1, 16, '#98c8e0'); px(2, 2, 2, 1, '#ffffff'); px(10, 10, 2, 1, '#ffffff'); },
+  gf_Brawl(px) { px(0, 0, 16, 16, '#d8cc8c'); for (let y = 0; y < 16; y += 2) px(0, y, 16, 1, '#ccc080'); px(0, 0, 16, 1, '#4e5e34'); px(0, 8, 16, 1, '#4e5e34'); px(0, 0, 1, 8, '#4e5e34'); px(8, 8, 1, 8, '#4e5e34'); },
+  gf_Mind(px) { px(0, 0, 16, 16, '#8a6aa8'); px(8, 0, 8, 8, '#7e5e9c'); px(0, 8, 8, 8, '#7e5e9c'); px(1, 4, 4, 1, '#b8a0d0'); px(5, 5, 2, 1, '#b8a0d0'); px(10, 12, 4, 1, '#b8a0d0'); px(8, 8, 1, 1, '#f0d070'); },
+  gf_Fire(px) { px(0, 0, 16, 16, '#5a3a34'); px(1, 1, 6, 6, '#644440'); px(9, 9, 6, 6, '#644440'); px(0, 7, 16, 1, '#3a2420'); px(7, 0, 1, 16, '#3a2420'); px(0, 15, 16, 1, '#3a2420'); px(15, 0, 1, 16, '#3a2420'); px(6, 7, 3, 1, '#c8542a'); px(7, 6, 1, 3, '#c8542a'); px(7, 7, 1, 1, '#ffb040'); },
+  gf_Dragon(px) { px(0, 0, 16, 16, '#4a5468'); px(0, 0, 16, 1, '#5c6880'); px(0, 0, 1, 16, '#5c6880'); px(0, 15, 16, 1, '#343c4c'); px(15, 0, 1, 16, '#343c4c'); px(6, 6, 4, 4, '#3c4456'); px(7, 5, 2, 6, '#c8a040'); px(5, 7, 6, 2, '#c8a040'); px(7, 7, 2, 2, '#f0d070'); },
+  // ---- interior wall styles ----
+  stonewall(px) { px(0, 0, 16, 16, '#8c8a86'); for (let y = 3, row = 0; y < 16; y += 4, row++) { px(0, y, 16, 1, '#6a6864'); for (let x = (row % 2) * 4; x < 16; x += 8) px(x, y, 1, 4, '#6a6864'); px((row % 2) * 4 + 2, y + 1, 3, 1, '#a4a29c'); } px(0, 0, 16, 3, '#55524e'); px(0, 0, 16, 1, '#76736e'); },
+  stonewalllow(px) { TILE_DRAW.stonewall(px); px(0, 0, 16, 3, '#8c8a86'); px(0, 0, 16, 1, '#6a6864'); px(0, 12, 16, 4, '#55524e'); px(0, 12, 16, 1, '#a4a29c'); },
+  metalwall(px) { px(0, 0, 16, 16, '#3a3c4c'); px(0, 0, 16, 2, '#24263a'); px(1, 3, 6, 11, '#44465a'); px(9, 3, 6, 11, '#44465a'); px(1, 3, 6, 1, '#56586e'); px(9, 3, 6, 1, '#56586e'); px(7, 2, 2, 14, '#2a2c3c'); px(3, 7, 2, 1, '#6ad0f0'); },
+  metalwalllow(px) { TILE_DRAW.metalwall(px); px(0, 12, 16, 4, '#24263a'); px(0, 12, 16, 1, '#3a8ab0'); },
+  marblewall(px) { px(0, 0, 16, 16, '#ece6da'); px(0, 0, 16, 3, '#c8a040'); px(0, 2, 16, 1, '#a07c28'); px(1, 3, 3, 13, '#f8f4ec'); px(4, 3, 1, 13, '#cfc6b4'); px(9, 6, 4, 1, '#ddd4c2'); },
+  marblewalllow(px) { TILE_DRAW.marblewall(px); px(0, 0, 16, 3, '#ece6da'); px(0, 11, 16, 5, '#b8ae98'); px(0, 11, 16, 1, '#c8a040'); px(0, 15, 16, 1, '#8a8270'); },
   gymfloor(px) { px(0, 0, 16, 16, '#c8c0b0'); px(0, 0, 16, 1, '#a8a090'); px(0, 0, 1, 16, '#a8a090'); px(4, 5, 2, 1, '#b0a898'); px(10, 11, 3, 1, '#b0a898'); },
   statue(px) { TILE_DRAW.gymfloor(px); px(3, 12, 10, 4, '#787878'); px(4, 3, 8, 9, '#a0a0a0'); px(5, 2, 6, 1, '#a0a0a0'); px(5, 4, 3, 3, '#c8c8c8'); px(9, 8, 3, 4, '#787878'); },
   boulder(px) { TILE_DRAW.gymfloor(px); px(2, 4, 12, 10, '#8a8070'); px(3, 3, 9, 1, '#8a8070'); px(3, 5, 5, 3, '#b0a890'); px(8, 10, 6, 4, '#605848'); },
@@ -1215,9 +1309,6 @@ const TILE_DRAW = {
     px(7, 0, 2, 1, '#245a28'); px(6, 11, 4, 1, '#245a28');
   },
   crack(px) { TILE_DRAW.path(px, srand(19)); px(1, 2, 14, 13, '#8a8478'); px(2, 1, 11, 1, '#8a8478'); px(3, 3, 5, 3, '#aca698'); px(7, 2, 1, 5, '#504840'); px(8, 6, 4, 1, '#504840'); px(5, 8, 1, 5, '#504840'); px(10, 9, 3, 4, '#686258'); },
-  cavefloor(px, r) { px(0, 0, 16, 16, '#9a8268'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#86705a'); },
-  cavepath(px, r) { px(0, 0, 16, 16, '#a88e72'); for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#94806a'); },
-  cavewall(px) { px(0, 0, 16, 16, '#5a4838'); px(0, 0, 16, 3, '#6e5a46'); px(2, 5, 5, 3, '#6e5a46'); px(9, 9, 5, 3, '#6e5a46'); px(0, 14, 16, 2, '#3e3026'); px(7, 4, 1, 5, '#3e3026'); },
   snow(px, r) {
     px(0, 0, 16, 16, '#f2f6fb');
     for (let i = 0; i < 2; i++) { const x = Math.floor(r() * 11), y = 2 + Math.floor(r() * 11); px(x, y, 6, 1, '#dce6f2'); px(x + 1, y + 1, 4, 1, '#e6eef8'); }
@@ -1245,14 +1336,11 @@ const TILE_DRAW = {
     for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#a49c96');
     if (r() < 0.25) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#e07838');
   },
-  lava(px, r, f) { px(0, 0, 16, 16, '#e04818'); const o = f % 2 ? 3 : 0; px((3 + o) % 14, 3, 4, 2, '#f8a030'); px((9 + o) % 14, 9, 5, 2, '#f8d040'); px((1 + o) % 14, 12, 3, 1, '#f8a030'); },
   console(px) { px(0, 0, 16, 16, '#383848'); px(1, 2, 14, 8, '#202028'); px(2, 3, 12, 6, '#30a070'); px(3, 4, 5, 1, '#70f0b0'); px(3, 6, 8, 1, '#70f0b0'); px(1, 11, 14, 4, '#585868'); px(3, 12, 2, 2, '#e04040'); px(7, 12, 2, 2, '#f0d040'); },
-  dkfloor(px) { px(0, 0, 16, 16, '#404058'); px(0, 0, 16, 1, '#50506a'); px(0, 0, 1, 16, '#50506a'); px(7, 7, 2, 2, '#58587a'); },
-  icefloor(px) { px(0, 0, 16, 16, '#c8e8f8'); px(0, 0, 16, 1, '#a8d0e8'); px(0, 0, 1, 16, '#a8d0e8'); px(3, 4, 4, 1, '#ffffff'); px(9, 11, 3, 1, '#ffffff'); },
   pushrock(px) { px(2, 3, 12, 12, '#7a6e5e'); px(3, 2, 10, 1, '#7a6e5e'); px(1, 5, 14, 8, '#7a6e5e'); px(3, 4, 5, 4, '#a09482'); px(9, 10, 4, 3, '#584e40'); px(2, 14, 12, 1, '#3e3628'); },
   ledge(px) { TILE_DRAW.grass(px, srand(13)); px(0, 10, 16, 3, '#609848'); px(0, 13, 16, 1, '#407030'); },
 };
-export const TILE_FRAMES = { water: 2, flower: 2, lava: 2 };
+export const TILE_FRAMES = { water: 2, lava: 2 };
 
 // a painted prop on a transparent tile, so the map can put its own ground underneath
 // (snow, ash, sand, wood...). Returns null when there is no painted art for it.
@@ -1273,7 +1361,7 @@ export function prop(name, variant = 0) {
 export function tile(name, variant = 0, f = 0) {
   const frames = TILE_FRAMES[name] || 1;
   const ff = f % frames;
-  const v = ['grass', 'path', 'dirt', 'sand', 'cavefloor', 'cavepath', 'snow', 'snowpath', 'ash', 'flower', 'tall'].includes(name) ? variant % 4 : 0;
+  const v = ['grass', 'path', 'dirt', 'sand', 'cavefloor', 'cavepath', 'snow', 'snowpath', 'ash', 'flower', 'tall', 'cavewall', 'cliff', 'icefloor', 'dkfloor', 'gf_Electric'].includes(name) ? variant % 4 : 0;
   const key = `t:${name}:${v}:${ff}`;
   if (cache.has(key)) return cache.get(key);
   const c = mk(16, 16); const g = c.getContext('2d');
@@ -1305,9 +1393,9 @@ export function pathEdge(bits, kind = 'grass') {
   const r = srand(bits + 40);
   const side = (horiz, at, inward) => {
     for (let i = 0; i < 16; i++) {
-      const d = kind === 'shore' ? 2 : 1 + (r() < 0.45 ? 1 : 0) + (r() < 0.15 ? 1 : 0);
+      const d = kind === 'shore' || kind === 'lava' ? 2 : 1 + (r() < 0.45 ? 1 : 0) + (r() < 0.15 ? 1 : 0);
       for (let k = 0; k < d; k++) {
-        const col = kind === 'snow' ? (k === d - 1 ? '#ffffff' : '#f2f6fb') : kind === 'shore' ? (k === 0 ? '#d4ecfc' : '#78b6ea') : (k === d - 1 ? '#a6c878' : '#8ab45c');
+        const col = kind === 'cave' ? (k === d - 1 ? '#9a7e60' : '#8a6e52') : kind === 'lava' ? (k === 0 ? '#3a2a24' : '#6a3420') : kind === 'snow' ? (k === d - 1 ? '#ffffff' : '#f2f6fb') : kind === 'shore' ? (k === 0 ? '#d4ecfc' : '#78b6ea') : (k === d - 1 ? '#a6c878' : '#8ab45c');
         const o = at + inward * k;
         if (horiz) px(i, o, 1, 1, col); else px(o, i, 1, 1, col);
       }
