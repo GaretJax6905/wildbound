@@ -740,8 +740,11 @@ export function setPlayerLook(gender) {
 // sits inside the tile and only the very top of the head pokes above it (drawn 3px up).
 // Hand-made pixel sprites for the player: static/art/player/<gender>_<down|up|right0|right1>.png
 const PLAYER_PIX = {};
+// overworld pixel frames: a standing pose plus two steps (left foot, right foot) per direction;
+// sheets without walk frames fall back to down/up/right0/right1
+const PIX_FRAMES = ['down', 'up', 'right0', 'right1', 'down0', 'down1', 'down2', 'up0', 'up1', 'up2', 'right2'];
 export function loadPlayerSprites() {
-  for (const gd of ['boy', 'girl']) for (const f of ['down', 'up', 'right0', 'right1']) {
+  for (const gd of ['boy', 'girl']) for (const f of PIX_FRAMES) {
     const im = new Image();
     im.onload = () => { (PLAYER_PIX[gd] ||= {})[f] = im; for (const k of [...cache.keys()]) if (k.startsWith('p:player:')) cache.delete(k); };
     im.src = `/static/art/player/${gd}_${f}.png`;
@@ -752,21 +755,29 @@ export function loadPlayerSprites() {
 const NPC_PIX = {};
 export function loadNpcSprites() {
   return fetch('/static/art/npc/index.json').then((r) => (r.ok ? r.json() : {})).then((idx) => {
-    for (const look of Object.keys(idx)) for (const f of ['down', 'up', 'right0', 'right1']) {
+    // looks marked walk:true in index.json also ship the 3-frame walk cycle for every direction
+    for (const look of Object.keys(idx)) for (const f of (idx[look].walk ? PIX_FRAMES : ['down', 'up', 'right0', 'right1'])) {
       const im = new Image();
       im.onload = () => { (NPC_PIX[look] ||= {})[f] = im; for (const k of [...cache.keys()]) if (k.startsWith(`p:${look}:`)) cache.delete(k); };
       im.src = `/static/art/npc/${look}_${f}.png`;
     }
   }).catch(() => {});
 }
-// the player's sheet is 30 px tall, the NPC sheets about 44: both end up roughly 21 px on screen,
-// a tile and a bit, like the rest of the cast
-const PIX_SCALE = 0.7;
+// every sheet is drawn at its own pixel size, so each is scaled to a common on-screen height:
+// about 21 px for adults (a tile and a bit), 18 for kids; the hero sits between the two
+const PLAYER_TALL = 20;
 const KID_LOOKS = new Set(['lass', 'girl', 'boy', 'bugkid', 'kai', 'juno']);
+function pixFrame(P, dir, step) {
+  const side = dir === 'left' || dir === 'right';
+  if (side) return step === 2 ? (P.right2 || P.right1 || P.right0) : step ? (P.right1 || P.right0) : P.right0;
+  const d = dir === 'up' ? 'up' : 'down';
+  return (step && P[d + step]) || P[d + '0'] || P[d];
+}
 function pixSprite(P, dir, step, scale) {
   if (!P || !P.down || !P.up || !P.right0) return null;
   const side = dir === 'left' || dir === 'right';
-  const src = side ? (step && P.right1 ? P.right1 : P.right0) : P[dir === 'up' ? 'up' : 'down'];
+  const src = pixFrame(P, dir, step);
+  const walking = side ? !!P.right1 : !!P[(dir === 'up' ? 'up' : 'down') + '1'];
   const U = 4;
   const c = mk(src.width * U, src.height * U); const g = c.getContext('2d');
   g.imageSmoothingEnabled = false;
@@ -774,10 +785,14 @@ function pixSprite(P, dir, step, scale) {
   g.drawImage(src, 0, 0, c.width, c.height);
   c.lw = src.width * scale; c.lh = src.height * scale;
   c.ox = (16 - c.lw) / 2;
-  c.oy = 19 - c.lh - (!side && step ? 1 : 0);
+  // sheets with no walk frames for this direction bob a pixel instead
+  c.oy = 19 - c.lh - (!walking && step ? 1 : 0);
   return c;
 }
-function playerPixel(dir, step) { return pixSprite(PLAYER_PIX[PLAYER_GENDER], dir, step, PIX_SCALE); }
+function playerPixel(dir, step) {
+  const P = PLAYER_PIX[PLAYER_GENDER];
+  return P && P.down ? pixSprite(P, dir, step, PLAYER_TALL / P.down.height) : null;
+}
 export function person(lookId, dir = 'down', step = 0) {
   const key = `p:${lookId}:${dir}:${step}`;
   if (cache.has(key)) return cache.get(key);
