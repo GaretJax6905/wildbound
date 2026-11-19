@@ -1016,6 +1016,32 @@ export function trainerPortrait(lookId, pose = 'ready') {
 // ---------------- tiles (16x16) ----------------
 function srand(seed) { let s = seed * 9301 + 49297; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
 
+// ---- painted world art (static/art/world): whole-building sprites and one-tile props ----
+const WORLD = { b: {}, t: {} };
+export function loadWorldArt() {
+  return fetch('/static/art/world/index.json').then((r) => (r.ok ? r.json() : null)).then((idx) => {
+    if (!idx) return;
+    const load = (src, put) => {
+      const im = new Image();
+      im.onload = () => { put(im); for (const k of [...cache.keys()]) if (k.startsWith('t:') || k.startsWith('b:')) cache.delete(k); };
+      im.src = src;
+    };
+    for (const k of Object.keys(idx.buildings || {})) load(`/static/art/world/b_${k}.png`, (im) => { WORLD.b[k] = im; });
+    for (const k of Object.keys(idx.tiles || {})) load(`/static/art/world/t_${k}.png`, (im) => { WORLD.t[k] = im; });
+  }).catch(() => {});
+}
+// tile name -> [ground drawn underneath, painted prop on top]
+const PROP_TILES = {
+  tree: ['grass', 'tree'], pine: ['snow', 'pine'], palm: ['grass', 'palm'], deadtree: ['ash', 'deadtree'], stump: ['grass', 'stump'],
+  bush: ['grass', 'bush'], rock: ['grass', 'rock'], crack: ['path', 'crack'], pushrock: [null, 'pushrock'],
+  fence: ['grass', 'fence'], sign: ['grass', 'sign'],
+  bed: ['floor', 'bed'], tv: ['floor', 'tv'], shelf: ['floor', 'shelf'], table: ['floor', 'table'], pc: ['floor', 'pc'],
+  plant: ['floor', 'plant'], healer: ['floor', 'healer'], mat: ['floor', 'mat'],
+  statue: ['gymfloor', 'statue'], console: ['dkfloor', 'console'], stove: ['floor', 'stove'], fridge: ['floor', 'fridge'],
+  chair: ['floor', 'chair'], crate: ['floor', 'crate'], armchair: ['floor', 'armchair'],
+};
+const CENTERED_PROPS = new Set(['mat', 'crack', 'pushrock', 'table']);
+
 const TILE_DRAW = {
   grass(px, r) {
     // olive meadow grass with soft tufts; some tiles get a little clover
@@ -1025,16 +1051,14 @@ const TILE_DRAW = {
     for (let i = 0; i < 2; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#7ea852');
     if (r() < 0.35) { const x = Math.floor(r() * 10) + 3, y = Math.floor(r() * 9) + 4; px(x, y, 2, 2, '#5c9446'); px(x + 2, y, 2, 2, '#5c9446'); px(x + 1, y - 2, 2, 2, '#5c9446'); px(x + 1, y + 2, 1, 2, '#4a7c38'); px(x, y, 1, 1, '#7cb85a'); px(x + 2, y, 1, 1, '#7cb85a'); px(x + 1, y - 2, 1, 1, '#7cb85a'); }
   },
-  tall(px) {
-    px(0, 0, 16, 16, '#5f9e46');
-    const tuft = (x, y) => {
-      px(x, y + 3, 5, 3, '#3e7a32');
-      px(x, y + 1, 1, 3, '#4e8c3e'); px(x + 1, y, 1, 4, '#6cae50'); px(x + 2, y + 2, 1, 2, '#4e8c3e');
-      px(x + 3, y - 1, 1, 5, '#6cae50'); px(x + 4, y + 1, 1, 3, '#4e8c3e');
-      px(x + 1, y, 1, 1, '#b0d888'); px(x + 3, y - 1, 1, 1, '#b0d888');
-      px(x, y + 5, 5, 1, '#2e5e28');
-    };
-    tuft(0, 2); tuft(8, 1); tuft(4, 8); tuft(11, 9); tuft(-3, 9);
+  tall(px, r) {
+    // wild grass: leafy tufts fanning out of dark roots, staggered so the field reads as one mass
+    px(0, 0, 16, 16, '#4c8c3e');
+    px(0, 6, 16, 2, '#447f38'); px(0, 14, 16, 2, '#447f38');
+    const TUFT = ['...h....', '..hm..h.', '.lm.hml.', '.mm.mml.', 'lmmdmmm.', 'mmddmdml', 'dmdddmmd', '.dddddd.'];
+    const C = { d: '#2c6228', m: '#5aa346', l: '#7cc25a', h: '#bce68c' };
+    const tuft = (x0, y0) => TUFT.forEach((row, y) => [...row].forEach((ch, x) => { if (C[ch]) px(x0 + x, y0 + y, 1, 1, C[ch]); }));
+    for (const [x, y] of [[0, 0], [8, 0], [-4, 8], [4, 8], [12, 8]]) tuft(x, y);
   },
   path(px, r) {
     // cobblestones: irregular stones set in mossy mortar
@@ -1063,7 +1087,12 @@ const TILE_DRAW = {
     for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#c0a46c');
     for (let i = 0; i < 2; i++) { const x = Math.floor(r() * 13), y = Math.floor(r() * 13); px(x, y, 2, 1, '#e8d4a0'); px(x, y + 1, 2, 1, '#a88c58'); }
   },
-  sand(px, r) { px(0, 0, 16, 16, '#f0e0a8'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#d8c488'); },
+  sand(px, r) {
+    px(0, 0, 16, 16, '#ecd8a0');
+    for (let i = 0; i < 2; i++) { const x = Math.floor(r() * 10), y = 3 + Math.floor(r() * 10); px(x, y, 5, 1, '#d8c084'); px(x + 1, y - 1, 3, 1, '#f6e8c0'); }
+    for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#d4bc80');
+    if (r() < 0.2) { const x = 3 + Math.floor(r() * 9), y = 3 + Math.floor(r() * 9); px(x, y, 2, 1, '#f8f0e8'); px(x, y + 1, 2, 1, '#e8b8a0'); }
+  },
   tree(px) {
     TILE_DRAW.grass(px, srand(3));
     px(2, 13, 12, 3, '#5a9a48'); // ground shadow
@@ -1077,9 +1106,13 @@ const TILE_DRAW = {
     px(5, 0, 6, 1, '#1e5228'); px(5, 11, 6, 1, '#1e5228');
   },
   water(px, r, f) {
-    px(0, 0, 16, 16, '#5898f0');
-    const o = f % 2 ? 4 : 0;
-    px((2 + o) % 16, 4, 5, 1, '#90c8f8'); px((10 + o) % 16, 10, 4, 1, '#90c8f8'); px((5 + o) % 16, 13, 3, 1, '#90c8f8');
+    // deep blue with drifting light crests (two frames)
+    px(0, 0, 16, 16, '#3f86d8');
+    px(0, 0, 16, 2, '#4a92e0'); px(0, 8, 16, 2, '#4a92e0');
+    px(0, 5, 16, 1, '#3676c4'); px(0, 13, 16, 1, '#3676c4');
+    const o = f % 2 ? 3 : 0;
+    const crest = (x, y) => { px((x + o) % 16, y, 4, 1, '#9cd0f8'); px((x + o + 1) % 16, y - 1, 2, 1, '#d8f0ff'); };
+    crest(2, 3); crest(10, 7); crest(5, 12);
   },
   flower(px, r, f) {
     // a little flower bed: dark soil, a leafy bush and blossoms that sway
@@ -1108,15 +1141,59 @@ const TILE_DRAW = {
     px(2, 4, 12, 10, '#9a9a9a'); px(3, 3, 9, 1, '#9a9a9a'); px(3, 5, 5, 3, '#c0c0c0'); px(8, 10, 6, 4, '#707070');
   },
   dock(px) { px(0, 0, 16, 16, '#b08050'); for (let y = 3; y < 16; y += 4) px(0, y, 16, 1, '#806030'); px(4, 0, 1, 3, '#806030'); px(11, 4, 1, 3, '#806030'); px(6, 8, 1, 3, '#806030'); px(13, 12, 1, 3, '#806030'); },
-  floor(px) { px(0, 0, 16, 16, '#e0c090'); px(0, 7, 16, 1, '#c8a070'); px(0, 15, 16, 1, '#c8a070'); px(5, 0, 1, 7, '#c8a070'); px(11, 8, 1, 7, '#c8a070'); },
-  wall(px) { px(0, 0, 16, 16, '#e8e0f0'); for (let x = 1; x < 16; x += 4) px(x, 0, 1, 13, '#d0c8e0'); px(0, 13, 16, 3, '#8890a8'); px(0, 13, 16, 1, '#a8b0c8'); },
-  counter(px) { px(0, 0, 16, 16, '#c07848'); px(0, 0, 16, 5, '#e8a868'); px(0, 5, 16, 1, '#8a4828'); px(0, 15, 16, 1, '#8a4828'); },
+  floor(px) {
+    // honey-coloured wooden planks, ends staggered
+    const tones = ['#c09468', '#b98d61', '#c59a6e', '#bc9064'];
+    for (let row = 0; row < 4; row++) {
+      const y = row * 4;
+      px(0, y, 16, 4, tones[row]); px(0, y + 3, 16, 1, '#94693f'); px(0, y, 16, 1, shade(tones[row], 1.06));
+      const j = (row * 9 + 4) % 16; px(j, y, 1, 3, '#94693f');
+    }
+  },
+  tilefloor(px) {
+    // polished cream tiles with soft grout
+    px(0, 0, 16, 16, '#f0ead8');
+    px(0, 7, 16, 1, '#d4ccb4'); px(7, 0, 1, 16, '#d4ccb4'); px(0, 15, 16, 1, '#d4ccb4'); px(15, 0, 1, 16, '#d4ccb4');
+    px(1, 1, 3, 1, '#ffffff'); px(9, 9, 3, 1, '#ffffff'); px(1, 1, 1, 2, '#ffffff'); px(9, 9, 1, 2, '#ffffff');
+  },
+  wall(px) {
+    // upper wall: cream wallpaper with a faint stripe and crown moulding
+    px(0, 0, 16, 16, '#efe2c8');
+    for (let x = 1; x < 16; x += 4) px(x, 3, 1, 13, '#e4d4b4');
+    px(0, 0, 16, 3, '#8a5a34'); px(0, 2, 16, 1, '#6a4226'); px(0, 0, 16, 1, '#a8744a');
+  },
+  wallwin(px) {
+    TILE_DRAW.wall(px);
+    px(2, 4, 12, 11, '#6a4226'); px(3, 5, 10, 9, '#9ed4f4'); px(3, 5, 10, 3, '#c4e8fc');
+    px(7, 5, 2, 9, '#6a4226'); px(3, 9, 10, 1, '#6a4226'); px(4, 6, 2, 1, '#ffffff');
+    px(1, 4, 2, 11, '#c85c50'); px(13, 4, 2, 11, '#c85c50'); px(1, 14, 14, 1, '#8a5a34');
+  },
+  walllow(px) {
+    // lower wall: wooden wainscot and a dark skirting board
+    px(0, 0, 16, 16, '#efe2c8');
+    for (let x = 1; x < 16; x += 4) px(x, 0, 1, 4, '#e4d4b4');
+    px(0, 4, 16, 2, '#8a5a34'); px(0, 4, 16, 1, '#a8744a');
+    px(0, 6, 16, 8, '#a06a3e'); for (let x = 0; x < 16; x += 8) { px(x + 1, 7, 6, 6, '#b07a4a'); px(x + 1, 7, 6, 1, '#c08a58'); }
+    px(0, 14, 16, 2, '#5a3a20');
+  },
+  counter(px) {
+    // shop counter: polished top, panelled front
+    px(0, 0, 16, 16, '#8a5a34');
+    px(0, 0, 16, 6, '#d8a870'); px(0, 0, 16, 1, '#f0c890'); px(0, 5, 16, 1, '#a87442');
+    px(0, 6, 16, 9, '#9a6a3e'); px(2, 8, 5, 5, '#ac7a4a'); px(9, 8, 5, 5, '#ac7a4a'); px(2, 8, 5, 1, '#bc8a58'); px(9, 8, 5, 1, '#bc8a58');
+    px(0, 15, 16, 1, '#5a3a20');
+  },
   shelf(px) { px(0, 0, 16, 16, '#8a5a30'); px(1, 1, 14, 6, '#5a3818'); px(1, 9, 14, 6, '#5a3818'); ['#d04040', '#4070d0', '#40a050', '#e0c040', '#a060c0', '#e08030', '#4070d0'].forEach((c, i) => { px(1 + i * 2, 2, 2, 5, c); px(15 - (i + 1) * 2, 10, 2, 5, c); }); },
   table(px) { TILE_DRAW.floor(px); px(1, 3, 14, 8, '#a87040'); px(1, 3, 14, 2, '#c89060'); px(2, 11, 2, 4, '#7a4820'); px(12, 11, 2, 4, '#7a4820'); },
   pc(px) { TILE_DRAW.floor(px); px(2, 2, 12, 9, '#9098a8'); px(3, 3, 10, 6, '#40c0f0'); px(4, 4, 3, 1, '#c0f0ff'); px(5, 11, 6, 3, '#9098a8'); px(3, 14, 10, 1, '#606878'); },
   healer(px) { px(0, 0, 16, 16, '#e8a868'); px(1, 2, 14, 10, '#f8f8f8'); for (let i = 0; i < 3; i++) { px(2 + i * 4, 4, 3, 3, '#f05050'); px(2 + i * 4, 7, 3, 3, '#f8f8f8'); } px(1, 12, 14, 4, '#c07848'); },
   mat(px) { TILE_DRAW.floor(px); px(1, 3, 14, 11, '#d05050'); px(3, 5, 10, 7, '#e87070'); },
-  carpet(px) { px(0, 0, 16, 16, '#c05858'); px(0, 0, 16, 1, '#a04040'); px(2, 2, 12, 12, '#d06868'); },
+  carpet(px) {
+    // red rug with a small gold diamond motif that repeats seamlessly
+    px(0, 0, 16, 16, '#b84848');
+    px(0, 0, 16, 1, '#a63c3c'); px(0, 8, 16, 1, '#a63c3c');
+    for (const [x, y] of [[4, 4], [12, 12]]) { px(x - 1, y, 3, 1, '#e8b860'); px(x, y - 1, 1, 3, '#e8b860'); px(x, y, 1, 1, '#f8e0a0'); }
+  },
   plant(px) { TILE_DRAW.floor(px); px(4, 10, 8, 5, '#c06030'); px(3, 9, 10, 2, '#d87848'); px(3, 2, 10, 7, '#38a048'); px(5, 1, 6, 2, '#58c060'); px(2, 5, 2, 3, '#38a048'); px(12, 5, 2, 3, '#38a048'); },
   bed(px) { TILE_DRAW.floor(px); px(1, 1, 14, 15, '#8a6038'); px(2, 2, 12, 4, '#f8f8f8'); px(2, 6, 12, 9, '#4878c8'); px(2, 6, 12, 1, '#88a8e0'); },
   tv(px) { TILE_DRAW.floor(px); px(2, 3, 12, 10, '#404048'); px(3, 4, 10, 7, '#60a0c0'); px(4, 5, 3, 2, '#a0d8f0'); px(5, 13, 6, 2, '#404048'); },
@@ -1141,11 +1218,33 @@ const TILE_DRAW = {
   cavefloor(px, r) { px(0, 0, 16, 16, '#9a8268'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#86705a'); },
   cavepath(px, r) { px(0, 0, 16, 16, '#a88e72'); for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#94806a'); },
   cavewall(px) { px(0, 0, 16, 16, '#5a4838'); px(0, 0, 16, 3, '#6e5a46'); px(2, 5, 5, 3, '#6e5a46'); px(9, 9, 5, 3, '#6e5a46'); px(0, 14, 16, 2, '#3e3026'); px(7, 4, 1, 5, '#3e3026'); },
-  snow(px, r) { px(0, 0, 16, 16, '#eef4fa'); for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#d4e0ec'); },
-  snowpath(px, r) { px(0, 0, 16, 16, '#d8e2ea'); for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#b8c6d4'); },
-  snowgrass(px) { px(0, 0, 16, 16, '#d8ecf4'); for (const [x, y] of [[1, 2], [6, 0], [11, 3], [3, 8], [9, 9], [13, 10]]) { px(x, y + 2, 1, 5, '#5a8a78'); px(x + 1, y, 1, 7, '#6a9a88'); px(x + 2, y + 2, 1, 5, '#5a8a78'); px(x + 1, y, 1, 1, '#ffffff'); } },
+  snow(px, r) {
+    px(0, 0, 16, 16, '#f2f6fb');
+    for (let i = 0; i < 2; i++) { const x = Math.floor(r() * 11), y = 2 + Math.floor(r() * 11); px(x, y, 6, 1, '#dce6f2'); px(x + 1, y + 1, 4, 1, '#e6eef8'); }
+    for (let i = 0; i < 3; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#c8d6e8');
+    for (let i = 0; i < 2; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#ffffff');
+  },
+  snowpath(px, r) {
+    // trodden snow: greyer, with a few boot prints
+    px(0, 0, 16, 16, '#dbe3ec');
+    for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#cbd5e1');
+    if (r() < 0.6) { const x = 3 + Math.floor(r() * 8), y = 2 + Math.floor(r() * 8); px(x, y, 2, 3, '#bcc8d6'); px(x + 3, y + 3, 2, 3, '#bcc8d6'); }
+  },
+  snowgrass(px) {
+    // the same wild-grass tufts, frosted and half buried in snow
+    px(0, 0, 16, 16, '#e4edf6');
+    const TUFT = ['...h....', '..hm..h.', '.lm.hml.', '.mm.mml.', 'lmmdmmm.', 'mmddmdml', 'dmdddmmd', '.ssssss.'];
+    const C = { d: '#3c6a5a', m: '#5e9480', l: '#8ab8a4', h: '#ffffff', s: '#f6f9fc' };
+    const tuft = (x0, y0) => TUFT.forEach((row, y) => [...row].forEach((ch, x) => { if (C[ch]) px(x0 + x, y0 + y, 1, 1, C[ch]); }));
+    for (const [x, y] of [[0, 0], [8, 0], [-4, 8], [4, 8], [12, 8]]) tuft(x, y);
+  },
   pine(px) { TILE_DRAW.snow(px, srand(21)); px(7, 12, 2, 4, '#6a4a2a'); px(6, 1, 4, 3, '#2a6a4a'); px(4, 4, 8, 4, '#2a6a4a'); px(2, 8, 12, 4, '#2a6a4a'); px(6, 1, 2, 1, '#ffffff'); px(4, 4, 3, 1, '#ffffff'); px(2, 8, 4, 1, '#ffffff'); },
-  ash(px, r) { px(0, 0, 16, 16, '#9a9090'); for (let i = 0; i < 5; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#7a7070'); },
+  ash(px, r) {
+    px(0, 0, 16, 16, '#8e8682');
+    for (let i = 0; i < 2; i++) { const x = Math.floor(r() * 12), y = 2 + Math.floor(r() * 12); px(x, y, 3, 1, '#6e6662'); px(x + 3, y + 1, 2, 1, '#6e6662'); }
+    for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#a49c96');
+    if (r() < 0.25) px(Math.floor(r() * 15), Math.floor(r() * 15), 1, 1, '#e07838');
+  },
   lava(px, r, f) { px(0, 0, 16, 16, '#e04818'); const o = f % 2 ? 3 : 0; px((3 + o) % 14, 3, 4, 2, '#f8a030'); px((9 + o) % 14, 9, 5, 2, '#f8d040'); px((1 + o) % 14, 12, 3, 1, '#f8a030'); },
   console(px) { px(0, 0, 16, 16, '#383848'); px(1, 2, 14, 8, '#202028'); px(2, 3, 12, 6, '#30a070'); px(3, 4, 5, 1, '#70f0b0'); px(3, 6, 8, 1, '#70f0b0'); px(1, 11, 14, 4, '#585868'); px(3, 12, 2, 2, '#e04040'); px(7, 12, 2, 2, '#f0d040'); },
   dkfloor(px) { px(0, 0, 16, 16, '#404058'); px(0, 0, 16, 1, '#50506a'); px(0, 0, 1, 16, '#50506a'); px(7, 7, 2, 2, '#58587a'); },
@@ -1155,15 +1254,38 @@ const TILE_DRAW = {
 };
 export const TILE_FRAMES = { water: 2, flower: 2, lava: 2 };
 
+// a painted prop on a transparent tile, so the map can put its own ground underneath
+// (snow, ash, sand, wood...). Returns null when there is no painted art for it.
+export function prop(name, variant = 0) {
+  const v = name === 'flower' ? variant % 2 : 0;
+  const P = name === 'flower' ? [null, v ? 'flower_y' : 'flower_r'] : PROP_TILES[name];
+  const art = P && WORLD.t[P[1]];
+  if (!art) return null;
+  const key = `t:prop:${name}:${v}`;
+  if (cache.has(key)) return cache.get(key);
+  const c = mk(16, 16);
+  const oy = CENTERED_PROPS.has(name) ? Math.round((16 - art.height) / 2) : 16 - art.height;
+  c.getContext('2d').drawImage(art, Math.round((16 - art.width) / 2), oy);
+  cache.set(key, c);
+  return c;
+}
+
 export function tile(name, variant = 0, f = 0) {
   const frames = TILE_FRAMES[name] || 1;
   const ff = f % frames;
-  const v = ['grass', 'path', 'dirt', 'sand', 'cavefloor', 'cavepath', 'snow', 'snowpath', 'ash'].includes(name) ? variant % 4 : 0;
+  const v = ['grass', 'path', 'dirt', 'sand', 'cavefloor', 'cavepath', 'snow', 'snowpath', 'ash', 'flower', 'tall'].includes(name) ? variant % 4 : 0;
   const key = `t:${name}:${v}:${ff}`;
   if (cache.has(key)) return cache.get(key);
   const c = mk(16, 16); const g = c.getContext('2d');
   const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
-  (TILE_DRAW[name] || TILE_DRAW.void)(px, srand(v + 1), ff);
+  const P = name === 'flower' ? ['grass', v % 2 ? 'flower_y' : 'flower_r'] : PROP_TILES[name];
+  const art = P && WORLD.t[P[1]];
+  if (art) {
+    if (P[0]) TILE_DRAW[P[0]](px, srand(v + 1), 0);
+    const ox = Math.round((16 - art.width) / 2);
+    const oy = CENTERED_PROPS.has(name) ? Math.round((16 - art.height) / 2) : 16 - art.height;
+    g.drawImage(art, ox, oy);
+  } else (TILE_DRAW[name] || TILE_DRAW.void)(px, srand(v + 1), ff);
   cache.set(key, c);
   return c;
 }
@@ -1175,21 +1297,22 @@ export function drawPerson(g, c, x, y) {
 
 // grassy fringe drawn over a path tile on the sides that touch grass
 // (bits: 1 = north, 2 = east, 4 = south, 8 = west)
-export function pathEdge(bits) {
-  const key = 'pe:' + bits;
+export function pathEdge(bits, kind = 'grass') {
+  const key = 'pe:' + kind + ':' + bits;
   if (cache.has(key)) return cache.get(key);
   const c = mk(16, 16); const g = c.getContext('2d');
   const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
   const r = srand(bits + 40);
   const side = (horiz, at, inward) => {
     for (let i = 0; i < 16; i++) {
-      const d = 1 + (r() < 0.45 ? 1 : 0) + (r() < 0.15 ? 1 : 0);
+      const d = kind === 'shore' ? 2 : 1 + (r() < 0.45 ? 1 : 0) + (r() < 0.15 ? 1 : 0);
       for (let k = 0; k < d; k++) {
-        const col = k === d - 1 ? '#a6c878' : '#8ab45c';
+        const col = kind === 'snow' ? (k === d - 1 ? '#ffffff' : '#f2f6fb') : kind === 'shore' ? (k === 0 ? '#d4ecfc' : '#78b6ea') : (k === d - 1 ? '#a6c878' : '#8ab45c');
         const o = at + inward * k;
         if (horiz) px(i, o, 1, 1, col); else px(o, i, 1, 1, col);
       }
       const sh = at + inward * d;
+      if (kind !== 'grass') continue;
       if (horiz) px(i, sh, 1, 1, 'rgba(60,70,40,0.25)'); else px(sh, i, 1, 1, 'rgba(60,70,40,0.25)');
     }
   };
@@ -1212,9 +1335,20 @@ const BUILD = {
   tower: { roof: '#3c3c54', roofD: '#22223a', wall: '#6c6c84', label: 'TOWER', style: 'stone' },
   league: { roof: '#c8a030', roofD: '#8a6a18', wall: '#ece2cc', label: 'LEAGUE', style: 'stone' },
 };
-export function building(kind, w, h, doorX) {
-  const key = `b:${kind}:${w}:${h}:${doorX}`;
+export function building(kind, w, h, doorX, snow = false) {
+  const art = (snow && WORLD.b[kind + '_snow']) || WORLD.b[kind];
+  const key = `b:${kind}:${w}:${h}:${doorX}:${art ? (snow ? 'snow' : 'art') : 'px'}`;
   if (cache.has(key)) return cache.get(key);
+  if (art) {
+    // painted building: centred on its footprint, standing on the bottom edge; a tall roof
+    // may rise up to ~a tile above it (c.over says how far)
+    const over = Math.max(0, art.height - h * 16);
+    const c = mk(w * 16, h * 16 + over);
+    c.getContext('2d').drawImage(art, Math.round((w * 16 - art.width) / 2), c.height - art.height);
+    c.over = over;
+    cache.set(key, c);
+    return c;
+  }
   const B = BUILD[kind];
   const c = mk(w * 16, h * 16); const g = c.getContext('2d');
   const px = (x, y, ww, hh, col) => { g.fillStyle = col; g.fillRect(x, y, ww, hh); };

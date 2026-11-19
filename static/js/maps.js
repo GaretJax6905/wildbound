@@ -3,7 +3,8 @@
 import { SPECIES } from './data.js';
 import { flag } from './state.js';
 export const SOLID = new Set(['tree', 'water', 'fence', 'sign', 'rock', 'wall', 'counter', 'shelf', 'table', 'pc', 'healer', 'plant', 'bed', 'tv', 'statue', 'boulder', 'void',
-  'bush', 'crack', 'cavewall', 'pine', 'lava', 'shrine', 'console']);
+  'bush', 'crack', 'cavewall', 'pine', 'lava', 'shrine', 'console',
+  'palm', 'deadtree', 'stump', 'stove', 'fridge', 'chair', 'crate', 'armchair']);
 // tiles where wild creatures appear
 export const GRASSY = new Set(['tall', 'snowgrass']);
 
@@ -172,6 +173,7 @@ function interior(id, name, w, h, mats, o = {}) {
 {
   const m = interior('house_player', 'Your House', 10, 8, [[4, 7]], { heal: true });
   dots(m, 'tv', [[2, 2]]); dots(m, 'bed', [[8, 2]]); dots(m, 'shelf', [[5, 2]]); dots(m, 'table', [[3, 4]]); dots(m, 'plant', [[1, 6], [8, 6]]);
+  dots(m, 'fridge', [[6, 2]]); dots(m, 'stove', [[7, 2]]); dots(m, 'armchair', [[2, 4]]);
   npc(m, { id: 'mom', look: 'mom', x: 6, y: 4, dir: 'left', move: 'look', script: 'mom' });
 }
 {
@@ -184,6 +186,7 @@ function interior(id, name, w, h, mats, o = {}) {
   dots(m, 'shelf', [[1, 2], [2, 2], [3, 2], [8, 2], [9, 2], [10, 2]]);
   dots(m, 'table', [[4, 5], [5, 5], [6, 5]]);
   dots(m, 'pc', [[10, 4]]); dots(m, 'plant', [[1, 8], [10, 8]]);
+  dots(m, 'console', [[6, 2]]); dots(m, 'crate', [[1, 5]]);
   npc(m, { id: 'maple', look: 'maple', x: 5, y: 3, dir: 'down', move: 'static', script: 'maple' });
   npc(m, { id: 'aide', look: 'aide', x: 9, y: 6, dir: 'left', move: 'wander', text: ['The professor studies how creatures bond with their trainers.', 'She says a partner who travels with you through many regions grows a special bond.'] });
   npc(m, { id: 'lab_kai', look: 'kai', x: 3, y: 4, dir: 'right', move: 'static', show: 'labRivals', text: ['Hurry up and pick already!'] });
@@ -236,9 +239,9 @@ const ri = (R, a, b) => a + Math.floor(R() * (b - a + 1));
 const STYLE = {
   grass: { base: 'grass', path: 'path', border: 'tree', tall: 'tall', tree: 'tree' },
   forest: { base: 'tall', path: 'path', border: 'tree', tall: 'tall', tree: 'tree' },
-  coast: { base: 'grass', path: 'sand', border: 'tree', tall: 'tall', tree: 'tree' },
+  coast: { base: 'grass', path: 'sand', border: 'tree', tall: 'tall', tree: 'palm' },
   snow: { base: 'snow', path: 'snowpath', border: 'pine', tall: 'snowgrass', tree: 'pine' },
-  ash: { base: 'ash', path: 'path', border: 'rock', tall: 'tall', tree: 'rock' },
+  ash: { base: 'ash', path: 'path', border: 'rock', tall: 'tall', tree: 'deadtree' },
   cave: { base: 'cavefloor', path: 'cavepath', border: 'cavewall', tall: null, tree: 'cavewall' },
   sea: { base: 'water', path: 'water', border: 'water', tall: null, tree: 'tree' },
 };
@@ -426,8 +429,8 @@ function mkTown(id, name, w, h, o) {
     const x = ri(R, 1, w - 2), y = ri(R, 1, h - 2);
     if (m.tiles[y][x] !== m.tiles[1][1] || buildingSolid(m, x, y)) continue;
     if (o.style === 'snow') { if (R() < 0.3) m.tiles[y][x] = 'pine'; continue; }
-    if (o.style === 'ash') { if (R() < 0.2) m.tiles[y][x] = 'rock'; continue; }
-    m.tiles[y][x] = R() < 0.75 ? 'flower' : 'tree';
+    if (o.style === 'ash') { if (R() < 0.2) m.tiles[y][x] = R() < 0.5 ? 'rock' : 'deadtree'; continue; }
+    m.tiles[y][x] = R() < 0.75 ? 'flower' : o.style === 'coast' ? 'palm' : R() < 0.15 ? 'stump' : 'tree';
   }
   // keep a free tile in front of every door
   for (const b of m.buildings) { const dx = b.x + b.door, dy = b.y + b.h; if (dy < h && SOLID.has(m.tiles[dy][dx])) m.tiles[dy][dx] = pathT; }
@@ -469,6 +472,7 @@ function gymInterior(id, gym) {
 function houseInterior(id, name, npcs) {
   const m = interior(id, name, 8, 7, [[3, 6]]);
   dots(m, 'shelf', [[1, 2]]); dots(m, 'table', [[2, 4]]); dots(m, 'plant', [[6, 2]]);
+  dots(m, 'fridge', [[2, 2]]); dots(m, 'stove', [[3, 2]]); dots(m, 'chair', [[1, 4]]);
   npcs.forEach((n, i) => npc(m, { id: `${id}_n${i}`, x: 5 - i * 2, y: 3, dir: 'down', move: 'look', ...n }));
   return m;
 }

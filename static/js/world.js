@@ -2,8 +2,67 @@
 // and field moves (Slash bushes, Shatter rocks, Wave Ride water, Heave boulders, Glow dark caves).
 import { W, H, T, input, wait, fadeOut, fadeIn, setScene, frame, chance, pick } from './engine.js';
 import { MAPS, SOLID, GRASSY, buildingSolid } from './maps.js';
-import { tile, person, building, itemBall, creature, setPlayerLook, pathEdge, drawPerson } from './art.js';
-const LAWN = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock']);
+import { tile, prop, person, building, itemBall, creature, setPlayerLook, pathEdge, drawPerson } from './art.js';
+const LAWN = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush']);
+const SNOWY = new Set(['snow', 'pine', 'snowgrass']);
+const SHORE = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush', 'sand', 'path', 'snow', 'pine', 'snowgrass', 'ash', 'dock', 'cavefloor', 'cavepath', 'dirt']);
+// the ground a map is mostly made of: painted props (trees, signs, furniture) stand on it
+const GROUNDS = ['grass', 'snow', 'ash', 'sand', 'cavefloor', 'gymfloor', 'dkfloor', 'floor', 'icefloor', 'path'];
+function groundOf(m) {
+  if (m._ground) return m._ground;
+  const n = {};
+  for (const row of m.tiles) for (const t of row) if (GROUNDS.includes(t)) n[t] = (n[t] || 0) + 1;
+  let best = m.interior ? 'floor' : 'grass';
+  for (const t of GROUNDS) if ((n[t] || 0) > (n[best] || 0)) best = t;
+  m._ground = best === 'floor' ? floorOf(m) : best;
+  return m._ground;
+}
+// ---- climate: falling rain, snow or volcanic ash over the outdoor maps that call for it ----
+const RAINY = new Set(['route4', 'route6']);
+function weatherOf(m) {
+  if (m.interior || m.cave) return null;
+  if (m.weather !== undefined) return m.weather;
+  if (m.style === 'snow') return 'snow';
+  if (m.style === 'ash') return 'ash';
+  if (RAINY.has(m.id) || m.style === 'sea') return 'rain';
+  return null;
+}
+const FLAKES = Array.from({ length: 80 }, (_, i) => ({ x: (i * 97 + 13) % 240, y: (i * 61 + 7) % 160, s: 0.6 + ((i * 37) % 10) / 12, i }));
+const wrap = (v, n) => ((v % n) + n) % n;
+function drawWeather(g, kind, cx, cy) {
+  if (kind === 'rain') {
+    g.fillStyle = 'rgba(24,36,72,0.20)'; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(206,224,255,0.7)';
+    for (const p of FLAKES) {
+      const t = frame * 3.2 * p.s;
+      const x = Math.floor(wrap(p.x - cx - t * 0.3, W)), y = Math.floor(wrap(p.y - cy + t, H));
+      g.fillRect(x, y, 1, 3); g.fillRect(x - 1, y + 3, 1, 2);
+    }
+    // the odd splash on the ground
+    g.fillStyle = 'rgba(220,235,255,0.6)';
+    for (let k = 0; k < 6; k++) { const p = FLAKES[(Math.floor(frame / 6) * 7 + k * 13) % FLAKES.length]; g.fillRect(wrap(p.x * 3 - cx, W) | 0, wrap(p.y * 5 - cy, H) | 0, 3, 1); }
+  } else if (kind === 'snow') {
+    g.fillStyle = 'rgba(150,175,220,0.14)'; g.fillRect(0, 0, W, H);
+    for (const p of FLAKES) {
+      const t = frame * 0.45 * p.s;
+      const x = Math.floor(wrap(p.x - cx + Math.sin((frame + p.i * 23) / 28) * 5, W)), y = Math.floor(wrap(p.y - cy + t, H));
+      const big = p.s > 1.05;
+      // a soft blue shadow keeps the flakes visible against white ground
+      g.fillStyle = 'rgba(90,120,170,0.45)'; g.fillRect(x + 1, y + 1, big ? 2 : 1, big ? 2 : 1);
+      g.fillStyle = '#ffffff'; g.fillRect(x, y, big ? 2 : 1, big ? 2 : 1);
+    }
+  } else if (kind === 'ash') {
+    g.fillStyle = 'rgba(120,70,40,0.10)'; g.fillRect(0, 0, W, H);
+    for (const p of FLAKES) {
+      const t = frame * 0.3 * p.s;
+      const x = Math.floor(wrap(p.x - cx + t * 0.6 + Math.sin((frame + p.i * 17) / 40) * 3, W)), y = Math.floor(wrap(p.y - cy + t, H));
+      g.fillStyle = p.i % 9 === 0 ? (Math.floor(frame / 8 + p.i) % 3 ? '#f08a3c' : '#f8c060') : 'rgba(70,62,58,0.75)';
+      g.fillRect(x, y, 1, 1);
+    }
+  }
+}
+// homes have wooden floors; the healing centre, mart and lab are tiled
+function floorOf(m) { return /^(center|mart|lab)/.test(m.id) ? 'tilefloor' : 'floor'; }
 import { G, flag, setFlag, save, addItem } from './state.js';
 import { ITEMS, FIELD, SPECIES } from './data.js';
 import { say, box, text, yesNo } from './ui.js';
@@ -388,16 +447,25 @@ export const worldScene = {
     for (let ty = y0; ty < y0 + H / T + 3; ty++) {
       for (let tx = x0; tx < x0 + W / T + 3; tx++) {
         const tn = tileAt(tx, ty);
+        const vr = (tx * 7 + ty * 13) & 3;
+        const X = tx * T - cx, Y = ty * T - cy;
         // towns are paved with cobblestones; routes keep a dirt trail
-        const shown = tn === 'path' && !town ? 'dirt' : tn;
-        g.drawImage(tile(shown, (tx * 7 + ty * 13) & 3, af), tx * T - cx, ty * T - cy);
-        if (tn === 'path') {
-          const bits = (LAWN.has(tileAt(tx, ty - 1)) ? 1 : 0) | (LAWN.has(tileAt(tx + 1, ty)) ? 2 : 0) | (LAWN.has(tileAt(tx, ty + 1)) ? 4 : 0) | (LAWN.has(tileAt(tx - 1, ty)) ? 8 : 0);
-          if (bits) g.drawImage(pathEdge(bits), tx * T - cx, ty * T - cy);
-        }
+        let shown = tn === 'path' && !town ? 'dirt' : tn;
+        if (tn === 'floor') shown = floorOf(m);
+        else if (tn === 'wall') shown = tileAt(tx, ty + 1) !== 'wall' ? 'walllow' : ((tx + 2) % 5 === 0 ? 'wallwin' : 'wall');
+        const pr = prop(shown, vr);
+        if (pr) { g.drawImage(tile(groundOf(m), vr, af), X, Y); g.drawImage(pr, X, Y); }
+        else g.drawImage(tile(shown, vr, af), X, Y);
+        const edge = (set, kind) => {
+          const bits = (set.has(tileAt(tx, ty - 1)) ? 1 : 0) | (set.has(tileAt(tx + 1, ty)) ? 2 : 0) | (set.has(tileAt(tx, ty + 1)) ? 4 : 0) | (set.has(tileAt(tx - 1, ty)) ? 8 : 0);
+          if (bits) g.drawImage(pathEdge(bits, kind), X, Y);
+        };
+        if (tn === 'path' && groundOf(m) === 'grass') edge(LAWN, 'grass');
+        else if (tn === 'snowpath') edge(SNOWY, 'snow');
+        else if (tn === 'water') edge(SHORE, 'shore');
       }
     }
-    for (const b of m.buildings) g.drawImage(building(b.kind, b.w, b.h, b.door), b.x * T - cx, b.y * T - cy);
+    for (const b of m.buildings) { const bi = building(b.kind, b.w, b.h, b.door, m.style === 'snow'); g.drawImage(bi, b.x * T - cx, b.y * T - cy - (bi.over || 0)); }
     for (const it of m.items) if (!flag('item_' + it.id)) g.drawImage(itemBall(), it.x * T - cx, it.y * T - cy);
     for (const b of world.boulders) g.drawImage(tile('pushrock'), b.x * T - cx + (b.off ? b.off.x : 0), b.y * T - cy + (b.off ? b.off.y : 0));
     const yOf = (a) => a.y + (a.moving ? DIRS[a.dir][1] * a.off / T : 0);
@@ -430,6 +498,8 @@ export const worldScene = {
         text(g, world.emote.kind, ax + 8, ay - 16, '#e03030', null, '600 10px Pixelify, monospace', 'center');
       }
     }
+    const wx = weatherOf(m);
+    if (wx) drawWeather(g, wx, cx, cy);
     if (m.dark) {
       const r = world.glow ? 88 : 26;
       g.fillStyle = '#05050c';
