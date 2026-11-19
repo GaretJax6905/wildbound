@@ -494,6 +494,38 @@ async function starterSequence() {
   save();
 }
 
+// Take the ferry to another region: only the chosen partners come along; everyone else
+// waits in this region's PC box until you return.
+const PORTS = { meridia: ['solace', 13, 16, 'up', 'center_solace'], aldermoor: ['pebbleton', 12, 1, 'up', 'center_peb'] };
+async function sail(to, chosen) {
+  const keep = new Set(chosen.map((m) => m.uid));
+  const stay = G.party.filter((m) => !keep.has(m.uid));
+  (G.boxes[G.region] = G.boxes[G.region] || []).push(...stay);
+  G.party = G.party.filter((m) => keep.has(m.uid));
+  G.partners = [...keep];
+  await say(`SAILOR: ${chosen.map(name).join(' and ')} will sail with you! All aboard!`);
+  await fadeOut(30);
+  sfx('door');
+  G.region = to;
+  G.regionsVisited = G.regionsVisited || ['aldermoor'];
+  const first = !G.regionsVisited.includes(to);
+  if (first) G.regionsVisited.push(to);
+  G.boxes[to] = G.boxes[to] || [];
+  const [map, x, y, dir, center] = PORTS[to];
+  G.lastHeal = { map: center, x: 5, y: 4, dir: 'up' };
+  loadMap(map, x, y, dir);
+  refreshNpcs();
+  save();
+  await fadeIn(30);
+  const where = to === 'meridia' ? 'Meridia' : 'Aldermoor';
+  await say(`After a long voyage, the ferry docked in ${where}!`);
+  if (first && to === 'meridia') {
+    sfx('item');
+    await say('...Your phone is ringing!', `MOM: ${G.name}! Did you make it to Meridia safe and sound?`, 'MOM: I promised I\'d send you a map of every new region. Check your TOWN MAP: Meridia is on it now!', 'MOM: Professor Cedar\'s lab is right there in Port Solace. Go say hello. Love you!');
+    setFlag('gotMap_meridia');
+  }
+}
+
 async function heal(where) {
   await fadeOut(10);
   G.party.forEach(healFull);
@@ -506,6 +538,10 @@ async function heal(where) {
 
 async function gymLeader(id) {
   const L = LEADERS[id];
+  if (!L) {
+    await say('LEADER: Welcome to my Gym! My creatures are still training for the season.', 'Come back once they\'re ready, and we\'ll have a real battle!');
+    return;
+  }
   const short = L.name.split(' ').pop().toUpperCase();
   if (G.badges.includes(id)) { await say(`${short}: ${L.after}`); return; }
   await say(`${short}: ${L.intro}`);
@@ -592,8 +628,21 @@ const SCRIPTS = {
     if (!(await yesNo('Do you want to choose your traveling partners now?'))) { await say('SAILOR: Take your time. Aldermoor isn\'t going anywhere.'); return; }
     const chosen = await partnerScreen();
     if (!chosen) { await say('SAILOR: Take your time.'); return; }
-    G.partners = chosen.map((m) => m.uid);
-    await say(`SAILOR: ${chosen.map(name).join(' and ')} will sail with you!`, 'SAILOR: The route to the next region is still being charted. We set sail in the next update!');
+    await sail('meridia', chosen);
+  },
+  async ferryHome() {
+    await say('SAILOR: Welcome to Meridia! This ferry runs back to Aldermoor whenever you like.');
+    if (!(await yesNo('Sail back to Aldermoor?'))) { await say('SAILOR: Enjoy Meridia!'); return; }
+    const chosen = await partnerScreen();
+    if (!chosen) { await say('SAILOR: Take your time.'); return; }
+    await sail('aldermoor', chosen);
+  },
+  async cedar() {
+    if (!flag('metCedar')) {
+      setFlag('metCedar');
+      await say(`CEDAR: Oh! You must be ${G.name}, the Champion from Aldermoor. Professor Maple told me all about you.`, 'CEDAR: I\'m Professor Cedar. I study the creatures of Meridia.');
+    }
+    await say('CEDAR: Every new trainer in Meridia gets to choose one of three partner creatures here.', 'CEDAR: They haven\'t arrived at the lab yet... When they do, the first pick is yours!', 'CEDAR: Until then, feel free to explore. There are eight Gyms across Meridia, each in a different climate.');
   },
   async td_slash() { await say('RANGER: Thorny bushes have grown over the path to Route 3.', G.bag.td_slash ? 'Teach Slash to a creature from your BAG, then press A in front of a bush!' : 'Leader Briar gives a Trail Disc that teaches Slash to trainers who beat her.'); },
   async td_glow() { await say('AIDE: Ember Tunnel north of town is pitch black.', G.bag.td_glow ? 'Teach Glow to a creature, and you\'ll be asked to light the cave when you enter.' : 'Leader Sable will give you Glow, once she\'s free from Team Eclipse.'); },
@@ -661,6 +710,10 @@ world.hooks = {
   lookFor(d) { if (d.trainer) { const t = getTrainer(d.trainer); return t && t.look; } return null; },
   async interact(n) {
     if (n.move !== 'static' || n.trainer) faceEachOther(n);
+    if (n.trainer && n.pending) {
+      await say('TRAINER: My team is still training out here!', 'Let\'s battle another time, once they\'re ready.');
+      return;
+    }
     if (n.trainer) {
       const t = getTrainer(n.trainer);
       if (flag('beat_' + n.trainer)) { await say(`${t.name.split(' ').pop().toUpperCase()}: ${t.after}`); return; }

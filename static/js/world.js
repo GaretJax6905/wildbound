@@ -3,9 +3,9 @@
 import { W, H, T, input, wait, fadeOut, fadeIn, setScene, frame, chance, pick } from './engine.js';
 import { MAPS, SOLID, GRASSY, buildingSolid, GYMS } from './maps.js';
 import { tile, prop, person, building, itemBall, creature, setPlayerLook, pathEdge, drawPerson } from './art.js';
-const LAWN = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush']);
+const LAWN = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush', 'mapletree', 'goldtree', 'pillar', 'grave', 'reeds']);
 const SNOWY = new Set(['snow', 'pine', 'snowgrass']);
-const SHORE = new Set(['grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush', 'sand', 'path', 'snow', 'pine', 'snowgrass', 'ash', 'dock', 'cavefloor', 'cavepath', 'dirt']);
+const SHORE = new Set(['reeds', 'mapletree', 'goldtree', 'cactus', 'drygrass', 'grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush', 'sand', 'path', 'snow', 'pine', 'snowgrass', 'ash', 'dock', 'cavefloor', 'cavepath', 'dirt']);
 // the ground a map is mostly made of: painted props (trees, signs, furniture) stand on it
 const GROUNDS = ['grass', 'snow', 'ash', 'sand', 'cavefloor', 'gymfloor', 'dkfloor', 'floor', 'icefloor', 'carpet'];
 function groundOf(m) {
@@ -22,6 +22,7 @@ const RAINY = new Set(['route4', 'route6']);
 function weatherOf(m) {
   if (m.interior || m.cave) return null;
   if (m.weather !== undefined) return m.weather;
+  if (m.style === 'desert') return 'sand';
   if (m.style === 'snow') return 'snow';
   if (m.style === 'ash') return 'ash';
   if (RAINY.has(m.id) || m.style === 'sea') return 'rain';
@@ -50,6 +51,32 @@ function drawWeather(g, kind, cx, cy) {
       // a soft blue shadow keeps the flakes visible against white ground
       g.fillStyle = 'rgba(90,120,170,0.45)'; g.fillRect(x + 1, y + 1, big ? 2 : 1, big ? 2 : 1);
       g.fillStyle = '#ffffff'; g.fillRect(x, y, big ? 2 : 1, big ? 2 : 1);
+    }
+  } else if (kind === 'sand') {
+    // sandstorm: a warm haze and grit streaking sideways
+    g.fillStyle = 'rgba(190,130,60,0.24)'; g.fillRect(0, 0, W, H);
+    for (const p of FLAKES) for (const o of [0, 90]) {
+      const t = frame * 2.6 * p.s;
+      const x = Math.floor(wrap(p.x + o - cx + t, W)), y = Math.floor(wrap(p.y + o * 0.6 - cy + Math.sin((frame + p.i * 11) / 18) * 3 + t * 0.15, H));
+      g.fillStyle = p.i % 3 ? 'rgba(130,84,36,0.7)' : 'rgba(250,226,170,0.85)';
+      g.fillRect(x, y, p.s > 1 ? 4 : 2, 1);
+    }
+  } else if (kind === 'fog') {
+    // drifting mist banks
+    g.fillStyle = 'rgba(220,226,236,0.18)'; g.fillRect(0, 0, W, H);
+    for (let k = 0; k < 7; k++) {
+      const x = wrap(k * 61 - cx * 0.6 + frame * 0.15 * (1 + (k % 3) * 0.3), W + 120) - 60, y = wrap(k * 37 - cy * 0.6, H + 40) - 20;
+      g.fillStyle = 'rgba(235,240,248,0.22)'; g.beginPath(); g.ellipse(x, y, 48, 12, 0, 0, 7); g.fill();
+    }
+  } else if (kind === 'storm') {
+    // thunderstorm: heavy slanted rain, a dark sky and the odd lightning flash
+    const flash = (frame % 420) < 6 || ((frame % 420) > 12 && (frame % 420) < 16);
+    g.fillStyle = flash ? 'rgba(240,244,255,0.55)' : 'rgba(16,20,48,0.32)'; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(200,214,250,0.75)';
+    for (const p of FLAKES) for (const o of [0, 120]) {
+      const t = frame * 4.2 * p.s;
+      const x = Math.floor(wrap(p.x + o - cx - t * 0.5, W)), y = Math.floor(wrap(p.y + o * 0.4 - cy + t, H));
+      g.fillRect(x, y, 1, 3); g.fillRect(x - 1, y + 3, 1, 2);
     }
   } else if (kind === 'ash') {
     g.fillStyle = 'rgba(120,70,40,0.10)'; g.fillRect(0, 0, W, H);
@@ -334,7 +361,8 @@ async function afterStep() {
     }
   }
   for (const n of world.npcs) {
-    if (!n.trainer || flag('beat_' + n.trainer)) continue;
+    // pending trainers (Meridia, until its creatures exist) don't challenge anyone yet
+    if (!n.trainer || n.pending || flag('beat_' + n.trainer)) continue;
     if (seesPlayer(n)) { await world.hooks.trainer(n); return; }
   }
   const table = encounterTable();

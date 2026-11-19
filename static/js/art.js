@@ -1041,6 +1041,8 @@ const PROP_TILES = {
   chair: ['floor', 'chair'], crate: ['floor', 'crate'], armchair: ['floor', 'armchair'],
   stalagmite: ['cavefloor', 'stalagmite'], caveboulder: ['cavefloor', 'caveboulder'], rockpile: ['cavefloor', 'rockpile'],
   magmarock: ['cavefloor', 'magmarock'], cavecrack: ['cavefloor', 'cavecrack'], boulder: ['gymfloor', 'caveboulder'],
+  cactus: ['sand', 'cactus'], barrelcactus: ['sand', 'barrelcactus'], mapletree: ['grass', 'mapletree'], goldtree: ['grass', 'goldtree'],
+  pillar: ['grass', 'pillar'], grave: ['grass', 'grave'], lamp: ['path', 'lamp'], barrel: ['path', 'barrel'],
   crystal: ['cavefloor', 'crystal'], crystal2: ['cavefloor', 'crystal2'], mushroom: ['cavefloor', 'mushroom'], redshroom: ['cavefloor', 'redshroom'], pebbles: ['cavefloor', 'pebbles'],
 };
 const CENTERED_PROPS = new Set(['mat', 'crack', 'pushrock', 'table', 'cavecrack', 'pebbles', 'mushroom', 'redshroom']);
@@ -1284,6 +1286,14 @@ const TILE_DRAW = {
   gf_Mind(px) { px(0, 0, 16, 16, '#8a6aa8'); px(8, 0, 8, 8, '#7e5e9c'); px(0, 8, 8, 8, '#7e5e9c'); px(1, 4, 4, 1, '#b8a0d0'); px(5, 5, 2, 1, '#b8a0d0'); px(10, 12, 4, 1, '#b8a0d0'); px(8, 8, 1, 1, '#f0d070'); },
   gf_Fire(px) { px(0, 0, 16, 16, '#5a3a34'); px(1, 1, 6, 6, '#644440'); px(9, 9, 6, 6, '#644440'); px(0, 7, 16, 1, '#3a2420'); px(7, 0, 1, 16, '#3a2420'); px(0, 15, 16, 1, '#3a2420'); px(15, 0, 1, 16, '#3a2420'); px(6, 7, 3, 1, '#c8542a'); px(7, 6, 1, 3, '#c8542a'); px(7, 7, 1, 1, '#ffb040'); },
   gf_Dragon(px) { px(0, 0, 16, 16, '#4a5468'); px(0, 0, 16, 1, '#5c6880'); px(0, 0, 1, 16, '#5c6880'); px(0, 15, 16, 1, '#343c4c'); px(15, 0, 1, 16, '#343c4c'); px(6, 6, 4, 4, '#3c4456'); px(7, 5, 2, 6, '#c8a040'); px(5, 7, 6, 2, '#c8a040'); px(7, 7, 2, 2, '#f0d070'); },
+  gf_Bug(px) { px(0, 0, 16, 16, '#a8b860'); px(0, 0, 16, 1, '#8a9a48'); px(0, 0, 1, 16, '#8a9a48'); for (const [x, y] of [[4, 4], [11, 10]]) { px(x - 2, y, 5, 1, '#c8d880'); px(x, y - 2, 1, 5, '#c8d880'); } px(8, 2, 2, 2, '#6a7a30'); },
+  gf_Ground(px) { px(0, 0, 16, 16, '#c8a070'); px(0, 5, 16, 1, '#a88050'); px(0, 11, 16, 1, '#a88050'); px(3, 2, 3, 1, '#dcb888'); px(10, 8, 4, 1, '#dcb888'); px(6, 13, 2, 1, '#9a7448'); },
+  gf_Flying(px) { px(0, 0, 16, 16, '#d8e8f4'); px(0, 15, 16, 1, '#a8c0d8'); px(15, 0, 1, 16, '#a8c0d8'); px(3, 6, 6, 1, '#ffffff'); px(5, 5, 4, 1, '#ffffff'); px(9, 11, 5, 1, '#ffffff'); },
+  gf_Toxic(px) { px(0, 0, 16, 16, '#6a5a7a'); px(1, 1, 6, 6, '#76668a'); px(9, 9, 6, 6, '#76668a'); px(0, 7, 16, 1, '#4a3e5a'); px(7, 0, 1, 16, '#4a3e5a'); px(3, 11, 2, 2, '#9ad048'); px(11, 3, 1, 1, '#9ad048'); },
+  gf_Spirit(px) { px(0, 0, 16, 16, '#5e5a70'); px(0, 0, 16, 1, '#6e6a82'); px(0, 0, 1, 16, '#6e6a82'); px(0, 15, 16, 1, '#46425a'); px(15, 0, 1, 16, '#46425a'); px(5, 6, 6, 1, '#7a76a0'); px(7, 4, 2, 5, '#7a76a0'); px(7, 6, 2, 1, '#b8b0e8'); },
+  gf_Metal(px) { px(0, 0, 16, 16, '#9098a4'); px(0, 0, 16, 1, '#b0b8c4'); px(0, 0, 1, 16, '#b0b8c4'); px(0, 15, 16, 1, '#646c78'); px(15, 0, 1, 16, '#646c78'); for (let i = 2; i < 14; i += 3) px(i, i, 2, 1, '#a4acb8'); for (const [x, y] of [[2, 2], [13, 2], [2, 13], [13, 13]]) px(x, y, 1, 1, '#545c68'); },
+  gf_Ice(px) { TILE_DRAW.icefloor(px, srand(3)); px(0, 0, 16, 1, '#e8f6ff'); px(0, 0, 1, 16, '#e8f6ff'); },
+  gf_Shadow(px) { px(0, 0, 16, 16, '#2e2a3a'); px(8, 0, 8, 8, '#363246'); px(0, 8, 8, 8, '#363246'); px(7, 7, 2, 2, '#8a48c8'); px(0, 0, 1, 1, '#5a3a88'); },
   // ---- interior wall styles ----
   stonewall(px) { px(0, 0, 16, 16, '#8c8a86'); for (let y = 3, row = 0; y < 16; y += 4, row++) { px(0, y, 16, 1, '#6a6864'); for (let x = (row % 2) * 4; x < 16; x += 8) px(x, y, 1, 4, '#6a6864'); px((row % 2) * 4 + 2, y + 1, 3, 1, '#a4a29c'); } px(0, 0, 16, 3, '#55524e'); px(0, 0, 16, 1, '#76736e'); },
   stonewalllow(px) { TILE_DRAW.stonewall(px); px(0, 0, 16, 3, '#8c8a86'); px(0, 0, 16, 1, '#6a6864'); px(0, 12, 16, 4, '#55524e'); px(0, 12, 16, 1, '#a4a29c'); },
@@ -1320,6 +1330,23 @@ const TILE_DRAW = {
     px(0, 0, 16, 16, '#dbe3ec');
     for (let i = 0; i < 4; i++) px(Math.floor(r() * 15), Math.floor(r() * 15), 2, 1, '#cbd5e1');
     if (r() < 0.6) { const x = 3 + Math.floor(r() * 8), y = 2 + Math.floor(r() * 8); px(x, y, 2, 3, '#bcc8d6'); px(x + 3, y + 3, 2, 3, '#bcc8d6'); }
+  },
+  drygrass(px) {
+    // desert scrub: the same tufts, sun-bleached and straw-coloured, on sand
+    px(0, 0, 16, 16, '#d8c088');
+    const TUFT = ['...h....', '..hm..h.', '.lm.hml.', '.mm.mml.', 'lmmdmmm.', 'mmddmdml', 'dmdddmmd', '.dddddd.'];
+    const C = { d: '#8a6a34', m: '#b8944c', l: '#d4b468', h: '#f0dc98' };
+    const tuft = (x0, y0) => TUFT.forEach((row, y) => [...row].forEach((ch, x) => { if (C[ch]) px(x0 + x, y0 + y, 1, 1, C[ch]); }));
+    for (const [x, y] of [[0, 0], [8, 0], [-4, 8], [4, 8], [12, 8]]) tuft(x, y);
+  },
+  reeds(px) {
+    // marsh reeds standing in shallow water, cattail heads on top
+    px(0, 0, 16, 16, '#4a7a6a');
+    px(0, 13, 16, 3, '#3c6a7e'); px(2, 14, 4, 1, '#6a9ab0'); px(10, 15, 3, 1, '#6a9ab0');
+    for (const [x, h] of [[1, 11], [3, 13], [5, 9], [7, 12], [9, 10], [11, 13], [13, 11], [15, 9]]) {
+      px(x, 14 - h, 1, h, '#5e9a4a'); px(x, 14 - h, 1, 1, '#8cc06a');
+      if (x % 4 === 1) { px(x, 14 - h - 3, 1, 3, '#7a4a28'); px(x, 14 - h - 3, 1, 1, '#9a6a3c'); }
+    }
   },
   snowgrass(px) {
     // the same wild-grass tufts, frosted and half buried in snow

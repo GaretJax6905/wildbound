@@ -5,9 +5,10 @@ import { MAPS, SOLID, buildingSolid } from '../static/js/maps.js';
 
 function explore(ab) {
   const seen = new Set();
-  const q = [['house_player', 4, 3]];
+  // Aldermoor starts at home; Meridia starts on the ferry dock at Port Solace
+  const q = [['house_player', 4, 3], ['solace', 13, 16]];
   const K = (m, x, y) => `${m}|${x}|${y}`;
-  seen.add(K(...q[0]));
+  q.forEach((s) => seen.add(K(...s)));
   const ok = (m, x, y) => {
     const t = m.tiles[y][x];
     if (buildingSolid(m, x, y)) return false;
@@ -56,6 +57,7 @@ for (const m of Object.values(MAPS)) {
 }
 const gates = [
   ['slash', 'cindercave'], ['shatter', 'coralport'], ['surf', 'kestrel'], ['heave', 'skyreach'],
+  ['slash', 'echocanyon'], ['shatter', 'fenmoor'], ['surf', 'kingsgate'], ['heave', 'frostvale'],
 ];
 for (const [ab, beyond] of gates) {
   const r = explore({ ...all, [ab]: false });

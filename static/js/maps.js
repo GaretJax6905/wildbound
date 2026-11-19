@@ -2,15 +2,16 @@
 // edit: fill(map, x, y, w, h, tile).
 import { SPECIES } from './data.js';
 import { flag } from './state.js';
-export const SOLID = new Set(['tree', 'water', 'fence', 'sign', 'rock', 'wall', 'counter', 'shelf', 'table', 'pc', 'healer', 'plant', 'bed', 'tv', 'statue', 'boulder', 'void',
+import { buildMeridia, MERIDIA_LAYOUT } from './region2.js';
+export const SOLID = new Set(['cactus', 'barrelcactus', 'mapletree', 'goldtree', 'pillar', 'grave', 'lamp', 'barrel', 'tree', 'water', 'fence', 'sign', 'rock', 'wall', 'counter', 'shelf', 'table', 'pc', 'healer', 'plant', 'bed', 'tv', 'statue', 'boulder', 'void',
   'bush', 'crack', 'cavewall', 'pine', 'lava', 'shrine', 'console',
   'palm', 'deadtree', 'stump', 'stove', 'fridge', 'chair', 'crate', 'armchair']);
 // tiles where wild creatures appear
-export const GRASSY = new Set(['tall', 'snowgrass']);
+export const GRASSY = new Set(['tall', 'snowgrass', 'drygrass', 'reeds']);
 
 function M(id, o) {
   const m = {
-    id, name: o.name, w: o.w, h: o.h, region: 'aldermoor', music: o.music || 'route',
+    id, name: o.name, w: o.w, h: o.h, region: o.region || REGION.id, music: o.music || 'route',
     interior: !!o.interior, border: o.border || (o.interior ? 'void' : 'tree'), borderNorth: o.borderNorth,
     tiles: Array.from({ length: o.h }, () => Array(o.w).fill(o.base || (o.interior ? 'floor' : 'grass'))),
     buildings: [], warps: {}, connections: o.connections || {}, npcs: [], signs: {}, items: [], triggers: [],
@@ -30,6 +31,8 @@ function item(m, id, x, y, itemId, n = 1) { m.items.push({ id, x, y, item: itemI
 function trig(m, x, y, w, h, script) { m.triggers.push({ x, y, w, h, script }); }
 
 export const MAPS = {};
+// maps are tagged with the region being built (Aldermoor first, then Meridia from region2.js)
+export const REGION = { id: 'aldermoor' };
 const add = (m) => { MAPS[m.id] = m; return m; };
 
 // ---------------- Brookhollow ----------------
@@ -244,6 +247,9 @@ const STYLE = {
   ash: { base: 'ash', path: 'path', border: 'rock', tall: 'tall', tree: 'deadtree' },
   cave: { base: 'cavefloor', path: 'cavepath', border: 'cavewall', tall: null, tree: 'cavewall' },
   sea: { base: 'water', path: 'water', border: 'water', tall: null, tree: 'tree' },
+  desert: { base: 'sand', path: 'dirt', border: 'rock', tall: 'drygrass', tree: 'cactus' },
+  autumn: { base: 'grass', path: 'path', border: 'mapletree', tall: 'tall', tree: 'mapletree' },
+  marsh: { base: 'grass', path: 'path', border: 'tree', tall: 'reeds', tree: 'tree' },
 };
 
 function carve(m, side, at, t) {
@@ -386,7 +392,10 @@ function genRoute(id, o) {
       const w = ri(R, 1, 3), h = ri(R, 1, 3);
       stamp(ri(R, 1, o.w - 2), ri(R, 1, o.h - 2), w, h, st.tree, (i, j) => !nearP(i, j, 1));
     }
-    if (o.style === 'grass' || o.style === 'coast') for (let n = 0; n < area / 50; n++) { const x = ri(R, 1, o.w - 2), y = ri(R, 1, o.h - 2); if (m.tiles[y][x] === 'grass') m.tiles[y][x] = 'flower'; }
+    if (o.style === 'grass' || o.style === 'coast' || o.style === 'autumn' || o.style === 'marsh') for (let n = 0; n < area / 50; n++) { const x = ri(R, 1, o.w - 2), y = ri(R, 1, o.h - 2); if (m.tiles[y][x] === 'grass') m.tiles[y][x] = 'flower'; }
+    if (o.style === 'autumn') for (let n = 0; n < area / 40; n++) { const x = ri(R, 1, o.w - 2), y = ri(R, 1, o.h - 2); if (m.tiles[y][x] === 'mapletree') m.tiles[y][x] = 'goldtree'; }
+    if (o.style === 'desert') for (let n = 0; n < area / 45; n++) { const x = ri(R, 1, o.w - 2), y = ri(R, 1, o.h - 2); if (m.tiles[y][x] === 'sand' && !nearP(x, y, 1)) m.tiles[y][x] = R() < 0.5 ? 'barrelcactus' : 'rock'; }
+    if (o.style === 'marsh') for (let n = 0; n < area / 35; n++) { const w = ri(R, 2, 4), h = ri(R, 1, 3); stamp(ri(R, 1, o.w - 2), ri(R, 1, o.h - 2), w, h, 'water', (i, j) => !nearP(i, j, 1) && m.tiles[j][i] === 'grass'); }
     if (o.style === 'cave') for (let n = 0; n < area / 60; n++) { const x = ri(R, 1, o.w - 2), y = ri(R, 1, o.h - 2); if (m.tiles[y][x] === 'cavefloor' && !nearP(x, y, 1)) m.tiles[y][x] = 'rock'; }
   }
   if (o.post) o.post(m, { R, P, K, fill: (x, y, w, h, t) => fill(m, x, y, w, h, t), stamp, nearP });
@@ -417,7 +426,9 @@ function mkTown(id, name, w, h, o) {
     const [kind, x, streetY, extra = {}] = b;
     const [bw, bh, door] = SIZES[kind];
     const y = streetY - bh;
-    const to = extra.to || `${kind}_${id}${extra.n || ''}`;
+    let to = extra.to || `${kind}_${id}${extra.n || ''}`;
+    // a second house of the same kind gets its own interior (house_town2, ...)
+    for (let k = 2; !extra.to && MAPS[to]; k++) to = `${kind}_${id}${k}`;
     bld(m, kind, x, y, bw, bh, door, to);
     if (kind === 'center') { centerInterior(to, m); m.fly = { x: x + door, y: streetY, dir: 'down' }; }
     if (kind === 'mart') martInterior(to, o.stock);
@@ -425,11 +436,17 @@ function mkTown(id, name, w, h, o) {
     if (kind === 'house' || kind === 'house2') houseInterior(to, extra.name || 'House', extra.npcs || []);
   }
   const R = rng(hash(id));
-  for (let n = 0; n < (w * h) / 30; n++) {
+  const baseT = o.base || 'grass';
+  for (let n = 0; n < (w * h) / (o.density || 30); n++) {
     const x = ri(R, 1, w - 2), y = ri(R, 1, h - 2);
-    if (m.tiles[y][x] !== m.tiles[1][1] || buildingSolid(m, x, y)) continue;
+    if (m.tiles[y][x] !== baseT || buildingSolid(m, x, y)) continue;
+    if (o.decor) { m.tiles[y][x] = o.decor[Math.floor(R() * o.decor.length)]; continue; }
     if (o.style === 'snow') { if (R() < 0.3) m.tiles[y][x] = 'pine'; continue; }
     if (o.style === 'ash') { if (R() < 0.2) m.tiles[y][x] = R() < 0.5 ? 'rock' : 'deadtree'; continue; }
+    if (o.style === 'desert') { if (R() < 0.35) m.tiles[y][x] = R() < 0.5 ? 'barrelcactus' : 'cactus'; continue; }
+    if (o.style === 'autumn') { m.tiles[y][x] = R() < 0.5 ? 'flower' : R() < 0.5 ? 'mapletree' : 'goldtree'; continue; }
+    if (o.style === 'ruins') { m.tiles[y][x] = R() < 0.4 ? 'flower' : R() < 0.5 ? 'pillar' : 'mapletree'; continue; }
+    if (o.style === 'city') { if (R() < 0.4) m.tiles[y][x] = R() < 0.5 ? 'lamp' : 'barrel'; continue; }
     m.tiles[y][x] = R() < 0.75 ? 'flower' : o.style === 'coast' ? 'palm' : R() < 0.15 ? 'stump' : 'tree';
   }
   // keep a free tile in front of every door
@@ -454,7 +471,8 @@ function martInterior(id, stock) {
   npc(m, { id: 'clerk', look: 'clerk', x: 1, y: 3, dir: 'right', move: 'static', script: 'mart' });
   return m;
 }
-const GYM_DECOR = { Grass: 'plant', Electric: 'console', Water: 'water', Brawl: 'statue', Mind: 'plant', Fire: 'lava', Dragon: 'statue', Rock: 'boulder' };
+const GYM_DECOR = { Grass: 'plant', Electric: 'console', Water: 'water', Brawl: 'statue', Mind: 'plant', Fire: 'lava', Dragon: 'statue', Rock: 'boulder',
+  Bug: 'plant', Ground: 'boulder', Flying: 'statue', Toxic: 'water', Spirit: 'grave', Metal: 'console', Ice: 'statue', Shadow: 'pillar' };
 function gymInterior(id, gym) {
   const m = interior(id, 'Gym', 12, 14, [[5, 13], [6, 13]], { base: 'gymfloor', music: 'indoor' });
   const d = GYM_DECOR[gym.type] || 'statue';
@@ -726,6 +744,11 @@ link('victoryroad', 'north', 14, 'crown', 10);
   hof.exitTo = { map: 'crown', x: 10, y: 8, dir: 'down' };
 }
 
+// ---------- Region 2: Meridia (region2.js), built with the same tools ----------
+REGION.id = 'meridia';
+buildMeridia({ MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS });
+REGION.id = 'aldermoor';
+
 // ---------- region layout for the Town Map ----------
 // [x, y] cell on a 28 x 20 grid, plus kind: town, route, cave, sea
 export const LAYOUT = {
@@ -737,6 +760,7 @@ export const LAYOUT = {
   cinderpeak: [21, 5, 'town'], route9: [23, 5, 'route', 21, 5, 25, 5], skyreach: [25, 5, 'town'], route10: [25, 3, 'route', 25, 5, 25, 2],
   victoryroad: [25, 2, 'cave'], crown: [25, 0.6, 'town'],
 };
+export const LAYOUTS = { aldermoor: LAYOUT, meridia: MERIDIA_LAYOUT };
 
 // ---------------- link doors <-> interiors ----------------
 for (const m of Object.values(MAPS)) {

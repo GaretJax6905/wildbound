@@ -3,7 +3,8 @@
 import { W, H, input, open, wait, frame, fx } from './engine.js';
 import { creature, silhouette, person, drawCreature, trainerPortrait, blit } from './art.js';
 import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField } from './data.js';
-import { MAPS, LAYOUT } from './maps.js';
+import { MAPS, LAYOUTS } from './maps.js';
+const layout = () => LAYOUTS[G.region] || LAYOUTS.aldermoor;
 import { stats, maxHp, name, expForLevel, evolve, movesAt, canEvolveByLevel } from './mon.js';
 import { G, settings, saveSettings, save, exportSave, importSaveFile, useItem, addItem } from './state.js';
 import { box, text, hpBar, bar, cursor, say, menu, choose, yesNo, Menu, QtyPicker, wrap, FONT, FONT_SMALL, FONT_BIG } from './ui.js';
@@ -207,7 +208,7 @@ class BoxList extends ListScreen {
     }
   }
 }
-export function regionName(id) { return { aldermoor: 'ALDERMOOR' }[id] || id.toUpperCase(); }
+export function regionName(id) { return { aldermoor: 'ALDERMOOR', meridia: 'MERIDIA' }[id] || id.toUpperCase(); }
 
 export async function pcScreen() {
   sfx('select');
@@ -449,7 +450,7 @@ class Title {
     drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 20, 82, 40, 48);
     this.menu.draw(g);
-    text(g, 'v2.10', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v3.0', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }
@@ -568,7 +569,7 @@ function soarUser() {
   return G.party.find((m) => m.moves.some((mv) => mv.id === 'soar')) || null;
 }
 async function soar() {
-  const towns = Object.keys(G.visited || {}).filter((t) => MAPS[t] && MAPS[t].fly);
+  const towns = Object.keys(G.visited || {}).filter((t) => MAPS[t] && MAPS[t].fly && MAPS[t].region === G.region);
   if (!towns.length) { await say('There\'s nowhere to fly to yet.'); return false; }
   const r = await menu({ items: towns.map((t) => MAPS[t].name), x: 110, y: 4, w: 126, lineH: 13 });
   if (r < 0) return false;
@@ -583,7 +584,7 @@ async function soar() {
 // ---------------- TOWN MAP ----------------
 class TownMap {
   constructor() {
-    const ids = Object.keys(LAYOUT).filter((id) => LAYOUT[id][2] === 'town');
+    const ids = Object.keys(layout()).filter((id) => layout()[id][2] === 'town');
     this.ids = ids;
     const here = this.hereId();
     this.i = Math.max(0, ids.indexOf(here));
@@ -592,7 +593,7 @@ class TownMap {
     let id = G.pos.map;
     const m = MAPS[id];
     if (m && m.interior && m.exitTo) id = m.exitTo.map;
-    if (!LAYOUT[id]) { for (const k of Object.keys(LAYOUT)) if (id.startsWith(k) || id.endsWith(k)) return k; }
+    if (!layout()[id]) { for (const k of Object.keys(layout())) if (id.startsWith(k) || id.endsWith(k)) return k; }
     return id;
   }
   update() {
@@ -606,14 +607,26 @@ class TownMap {
     g.fillStyle = '#4880c8'; for (let y = 0; y < H; y += 6) g.fillRect(0, y, W, 1);
     // land mass
     g.fillStyle = '#88c070';
+    if (G.region === 'meridia') {
+      const R = (x0, y0, x1, y1, c) => { g.fillStyle = c; g.fillRect(CX(x0), CY(y0), CX(x1) - CX(x0), CY(y1) - CY(y0)); };
+      R(1, 6.5, 28, 16.6, '#88c070'); R(9.5, -1, 22, 6.5, '#88c070');
+      R(7.5, 1.5, 14.5, 9.5, '#d8c088');   // desert and canyon
+      R(9.5, -1, 15.5, 2.5, '#b8c878');      // windy mesa
+      R(17.5, -1, 22, 2.5, '#6a9a78');       // marsh
+      R(18.5, 2.5, 21.5, 7.5, '#3870b8');  // the strait to Kingsgate
+      R(21.5, 7, 28, 10.5, '#c89858');     // autumn woods and the iron city
+      R(19, 11, 28, 16.6, '#e8f0f8');       // snowfields and peaks
+      R(1, 12.5, 5, 16.6, '#e8d8a0');       // Port Solace's beach
+    } else {
     g.fillRect(CX(1), CY(10), CX(10) - CX(1), CY(19.5) - CY(10));
     g.fillRect(CX(7), CY(1.5), CX(17) - CX(7), CY(13.5) - CY(1.5));
     g.fillRect(CX(13.5), CY(9.5), CX(27) - CX(13.5), CY(13) - CY(9.5));
     g.fillRect(CX(19), CY(-1), CX(27) - CX(19), CY(13) - CY(-1));
     g.fillStyle = '#c8b890'; g.fillRect(CX(19), CY(3.5), CX(27) - CX(19), CY(6.5) - CY(3.5));
     g.fillStyle = '#e8f0f8'; g.fillRect(CX(22.5), CY(-1), CX(27) - CX(22.5), CY(6.5) - CY(-1));
+    }
     // routes
-    for (const [id, L] of Object.entries(LAYOUT)) {
+    for (const [id, L] of Object.entries(layout())) {
       if (L[2] === 'route' || L[2] === 'sea') {
         g.strokeStyle = L[2] === 'sea' ? '#a0d0f8' : '#f0d890'; g.lineWidth = 3;
         if (L[2] === 'sea') g.setLineDash([3, 3]);
@@ -621,7 +634,7 @@ class TownMap {
       }
     }
     const here = this.hereId();
-    for (const [id, L] of Object.entries(LAYOUT)) {
+    for (const [id, L] of Object.entries(layout())) {
       const x = CX(L[0]), y = CY(L[1]);
       if (L[2] === 'town') {
         const seen = G.visited && G.visited[id];
@@ -633,14 +646,14 @@ class TownMap {
       if (id === here && (frame >> 4) % 2) { g.fillStyle = '#f8e040'; g.beginPath(); g.arc(x, y - 1, 4, 0, 7); g.fill(); g.fillStyle = '#e04030'; g.fillRect(x - 1, y - 2, 3, 3); }
     }
     const sel = this.ids[this.i];
-    const L = LAYOUT[sel];
+    const L = layout()[sel];
     g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.strokeRect(CX(L[0]) - 6.5, CY(L[1]) - 6.5, 13, 13);
     box(g, 4, 128, 232, 30);
     const seen = G.visited && G.visited[sel];
     const hereName = MAPS[here] ? MAPS[here].name : '';
     text(g, seen ? MAPS[sel].name : '???', 12, 133);
     text(g, `You are in: ${hereName}`, 12, 145, '#606068', null, FONT_SMALL);
-    text(g, 'ALDERMOOR', 230, 133, '#3870b8', null, FONT_SMALL, 'right');
+    text(g, regionName(G.region), 230, 133, '#3870b8', null, FONT_SMALL, 'right');
   }
 }
 export function townMapScreen() { return open(new TownMap()); }
@@ -658,6 +671,6 @@ export async function partnerScreen() {
     if (chosen.length >= 2) break;
   }
   if (!chosen.length) return null;
-  if (!(await yesNo(`Travel with ${chosen.map(name).join(' and ')}? Everyone else stays in Aldermoor with Professor Maple.`))) return null;
+  if (!(await yesNo(`Travel with ${chosen.map(name).join(' and ')}? Everyone else waits here in the ${regionName(G.region)} PC box.`))) return null;
   return chosen;
 }

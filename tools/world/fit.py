@@ -31,7 +31,8 @@ PROPS={'tree':16,'pine':16,'palm':16,'deadtree':16,'bush':13,'rock':13,'crack':1
        'flower_r':14,'flower_y':14,'fence':16,'sign':14,'tall':16,'snowgrass':16,'lily':14,'stump':12,
        'bed':16,'tv':15,'shelf':16,'table':14,'pc':15,'plant':14,'counter':16,'healer':15,'mat':14,'stove':15,
        'fridge':16,'chair':13,'console':16,'statue':15,'crate':14,'armchair':14,
-       'stalagmite':16,'caveboulder':14,'cavecrack':13,'crystal':14,'mushroom':12,'rockpile':14,'magmarock':14,'crystal2':12,'redshroom':12}
+       'stalagmite':16,'caveboulder':14,'cavecrack':13,'crystal':14,'mushroom':12,'rockpile':14,'magmarock':14,'crystal2':12,'redshroom':12,
+       'cactus':16,'barrelcactus':13,'mapletree':16,'goldtree':16,'pillar':16,'grave':14,'lamp':16,'barrel':13}
 for n,box in PROPS.items():
     im=Image.open(f'{CUT}/{n}.png'); im=im.crop(im.getbbox()); w0,h0=im.size
     if n in ('tall','snowgrass','fence','counter','mat'):
