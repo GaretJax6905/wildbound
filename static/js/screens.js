@@ -356,7 +356,7 @@ export async function shopScreen(stock) {
 // ---------------- STARTER PICK ----------------
 const STARTERS = ['sproutmole', 'emberkit', 'puddlefin'];
 class StarterPick {
-  constructor() { this.i = 1; }
+  constructor(list) { this.i = 1; this.list = list; }
   update() {
     if (input.repeat('left')) { this.i = (this.i + 2) % 3; sfx('move'); }
     if (input.repeat('right')) { this.i = (this.i + 1) % 3; sfx('move'); }
@@ -365,7 +365,7 @@ class StarterPick {
   draw(g) {
     bg(g, '#f0e8d0');
     text(g, 'Choose your partner!', W / 2, 6, '#383840', '#d0d0c8', FONT_BIG, 'center');
-    STARTERS.forEach((sp, i) => {
+    this.list.forEach((sp, i) => {
       const x = 8 + i * 77, sel = i === this.i;
       box(g, x, 26, 72, 84, sel ? 'red' : 'white');
       const bob = sel ? Math.round(Math.sin(frame / 8) * 2) : 0;
@@ -374,14 +374,14 @@ class StarterPick {
       typeTag(g, SPECIES[sp].types[0], x + 18, 98);
     });
     box(g, 0, 112, W, 48);
-    const S = SPECIES[STARTERS[this.i]];
+    const S = SPECIES[this.list[this.i]];
     wrap(g, S.dex, 220).slice(0, 2).forEach((l, j) => text(g, l, 10, 120 + j * 15));
   }
 }
-export async function starterScreen() {
+export async function starterScreen(list = STARTERS) {
   for (;;) {
-    const i = await open(new StarterPick());
-    const sp = STARTERS[i];
+    const i = await open(new StarterPick(list));
+    const sp = list[i];
     if (await yesNo(`So, you want ${SPECIES[sp].name}, the ${SPECIES[sp].types[0]}-type creature?`)) return sp;
   }
 }
@@ -398,7 +398,7 @@ class Card {
     const rows = [['NAME', G.name], ['MONEY', '$' + G.money], ['DEX', `${Object.keys(G.dex.caught).length} caught`], ['TIME', `${Math.floor(t / 3600)}:${String(Math.floor(t / 60) % 60).padStart(2, '0')}`], ['REGION', regionName(G.region)]];
     rows.forEach(([k, v], j) => { text(g, k, 22, 44 + j * 15, '#606068'); text(g, String(v), 84, 44 + j * 15); });
     text(g, 'BADGES', 22, 124, '#606068');
-    BADGES.forEach(([b, , c], j) => {
+    BADGES.filter((b) => (b[3] || 'aldermoor') === (G.region || 'aldermoor')).forEach(([b, , c], j) => {
       const x = 84 + j * 17;
       g.fillStyle = G.badges.includes(b) ? c : '#c8c8d0';
       g.beginPath(); g.moveTo(x + 6, 122); g.lineTo(x + 12, 128); g.lineTo(x + 6, 134); g.lineTo(x, 128); g.closePath(); g.fill();
@@ -453,7 +453,7 @@ class Title {
     drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 20, 82, 40, 48);
     this.menu.draw(g);
-    text(g, 'v3.1', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v3.2', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }

@@ -3,7 +3,7 @@
 import { wait, fadeOut, fadeIn, fx, setScene } from './engine.js';
 import { world, warp, walk, spawn, despawn, npcById, refreshNpcs, faceEachOther, showEmote, pathTo, blocked, opposite, stepActor, loadMap, fieldUser } from './world.js';
 import { G, flag, setFlag, save, addItem, addToCollection } from './state.js';
-import { SPECIES, SPECIES_LIST, ITEMS, BADGES, regionDex } from './data.js';
+import { SPECIES, SPECIES_LIST, ITEMS, BADGES, regionDex, regionBadges, OBEY_CAPS } from './data.js';
 import { MAPS, GYMS } from './maps.js';
 import { makeMon, healFull, name } from './mon.js';
 import { say, yesNo, choose, setNameHook, offerNickname, askName } from './ui.js';
@@ -33,8 +33,31 @@ function evolveFor(sp, lvl) {
     if (lvl >= need) cur = e.to; else return cur;
   }
 }
-const STARTER_LINES = new Set(['sproutmole', 'thornmole', 'grovemaw', 'emberkit', 'blazelynx', 'infernyx', 'puddlefin', 'tidalotl', 'abyssalotl']);
+const STARTER_LINES = new Set(['sproutmole', 'thornmole', 'grovemaw', 'emberkit', 'blazelynx', 'infernyx', 'puddlefin', 'tidalotl', 'abyssalotl',
+  'bramblecub', 'thornbear', 'briarbruin', 'cindergecko', 'forgecko', 'smeltwyrm', 'splotter', 'surfotter', 'glaciotter']);
+const MERIDIA_STARTERS = ['bramblecub', 'cindergecko', 'splotter'];
+// Meridia: the level of the first place each creature (or its earliest form) lives in the wild,
+// so trainers carry what you could have met by that point of the journey
+let HOME = null;
+function homeLevel(sp) {
+  if (!HOME) {
+    HOME = {};
+    for (const m of Object.values(MAPS)) {
+      if (!m.lv) continue;
+      for (const [w] of [...(m.encounters || []), ...(m.rareEnc || []), ...(m.surfEnc || []), ...(m.rareSurfEnc || [])]) HOME[w] = Math.min(HOME[w] ?? 99, m.lv[0]);
+    }
+  }
+  let cur = sp;
+  while (HOME[cur] === undefined && PREV[cur]) cur = PREV[cur];
+  return HOME[cur] ?? 99;
+}
 function poolFor(types, lvl, region = 'aldermoor') {
+  const all = poolAll(types, lvl, region);
+  if (region !== 'meridia') return all;
+  const near = all.filter((sp) => homeLevel(sp) <= lvl + 2);
+  return near.length ? near : all;
+}
+function poolAll(types, lvl, region) {
   return SPECIES_LIST.filter((sp) => {
     const S = SPECIES[sp];
     if (S.region !== region) return false;
@@ -65,6 +88,10 @@ const TRAINERS = {
   nyx_hq: T('Eclipse Nyx', 'nyx', [['mesaruff', 36], ['nightpip', 37]], 40, '', 'NOT AGAIN!', ''),
   corvo_hq: T('Eclipse Corvo', 'corvo', [['bouldox', 36], ['hauntle', 37]], 40, '', 'I can\'t believe this!', ''),
   vex: T('Eclipse Leader Vex', 'vex', [['shadeclaw', 38], ['constricta', 38], ['cinderfang', 39], ['hauntle', 40]], 80, '', 'Impossible... beaten by a child?', '', { potions: 2, music: 'boss' }),
+  // Team Eclipse's Meridia factory in Ironhaven
+  eclipse_m1: T('Eclipse Grunt', 'grunt', [['gravepup', 31], ['howlote', 32]], 30, 'Hey! This factory is off-limits!', 'Ugh... Nyx is gonna be furious.', 'We\'re building machines to track Meridia\'s legends. Don\'t tell anyone.'),
+  eclipse_m2: T('Eclipse Grunt', 'grunt', [['murkit', 31], ['dunestinger', 32], ['hivelet', 31]], 30, 'You again?! You\'re the Aldermoor Champion!', 'Champion or not, you\'re a pain!', 'Our machines can sense the four legends of Meridia. The boss wants them all.'),
+  eclipse_m3: T('Eclipse Nyx', 'nyx', [['vultrex', 33], ['hollowhound', 34], ['centigloom', 35]], 60, 'You followed us across the sea? Ugh! Team Eclipse will cover Meridia in shadow, starting right here!', 'Not AGAIN! Fine, we\'re packing up the factory...', 'Corvo and I just follow orders. Vex is the one hunting the legends.', { music: 'boss', potions: 1 }),
   nyx_final: T('Eclipse Nyx', 'nyx', [['mesaruff', 44], ['ravenlord', 45]], 50, '', 'We lost... again...', ''),
   corvo_final: T('Eclipse Corvo', 'corvo', [['monolox', 44], ['shadeking', 45]], 50, '', 'This is the worst!', ''),
 };
@@ -80,6 +107,28 @@ const LEADERS = {
   ember: T('Leader Ignis', 'ignis', [['ashpup', 41], ['flarecolt', 42], ['magmollusk', 43], ['cinderfang', 45]], 150, 'Hot enough for you? My creatures burn as fierce as this volcano!', 'Extinguished... you\'re the real deal.', 'Skyreach is east, past the boulders on Route 9.', { potions: 2, reward: [['maxpotion', 2]] }),
   wyrm: T('Leader Vesper', 'vesper', [['dragoneel', 46], ['wyvernix', 47], ['torrentail', 48], ['skydrake', 50]], 160, 'Dragons are the proudest creatures alive. Do you have what it takes to face them?', 'The dragons... acknowledge you.', 'With eight badges, Victory Road is open. The Elite Four await.', { potions: 3, reward: [['ultraorb', 5]] }),
 };
+// Meridia's eight Leaders
+Object.assign(LEADERS, {
+  hive: T('Leader Tansy', 'tansy', [['hivelet', 12], ['webbit', 13], ['glimmoth', 15]], 100, 'Bzz! Welcome to my hive! My bugs work together like one big family. Can you break our rhythm?', 'Bzz... you scattered the whole swarm!', 'Bug creatures grow up fast. Catch them young and watch them bloom!', { potions: 1, reward: [['superpotion', 3], ['greatorb', 5]] }),
+  dune: T('Leader Sahar', 'sahar', [['sandskink', 18], ['coyip', 19], ['scorpip', 19], ['duneskink', 21]], 110, 'The desert takes the weak and keeps the strong. Let\'s see which you are.', 'Like water through sand... you slipped right past me.', 'Echo Canyon is north. The wind there will test you next.', { potions: 1, reward: [['superpotion', 3], ['revive', 2]] }),
+  gale: T('Leader Aeron', 'aeron', [['swiftail', 22], ['vultyke', 23], ['dustwhirl', 24], ['kitewing', 25]], 120, 'Up here the wind never stops! My birds were born riding it. Try to keep your feet!', 'Whoa! You blew me right off the mesa!', 'Fenmoor\'s past the prairie. Watch out for the marsh gas!', { potions: 2, reward: [['hyperpotion', 2], ['greatorb', 5]] }),
+  bog: T('Leader Fennick', 'fennick', [['bogslug', 27], ['jellet', 28], ['dunestinger', 29], ['fungloom', 31]], 130, 'Heh. You can smell my Gym from a mile off, right? That\'s the point. Let\'s get toxic!', 'Ugh... I\'m the one who got poisoned this time.', 'Wave Ride gets you to Kingsgate. Don\'t breathe the fog there, it\'s spooky.', { potions: 2, reward: [['fullheal', 4], ['ultraorb', 3]] }),
+  wraith: T('Leader Ysolde', 'ysolde', [['gravepup', 31], ['hoothaunt', 32], ['leafwraith', 32], ['sparkshade', 33], ['owlgeist', 35]], 140, 'The old kings of this city never truly left. Their spirits fight beside me. Will you face them?', 'The spirits bow to you. How rare.', 'Ironhaven lies past the autumn woods. Something dark stirs in its old factory.', { potions: 2, reward: [['hyperpotion', 3], ['duskstone', 1]] }),
+  forge: T('Leader Bram', 'bram', [['rustmite', 36], ['clanklet', 36], ['gildcrow', 37], ['oregolem', 37], ['ironmantle', 39]], 150, 'Every one of my creatures was tempered in this forge! Let\'s see if you can dent them!', 'Bent like hot iron! Good work, kid!', 'Route 17 south is snowed in. Bundle up!', { potions: 2, reward: [['maxpotion', 2], ['ironcore', 1]] }),
+  rime: T('Leader Nevia', 'nevia', [['aurorine', 41], ['emperice', 42], ['frostbeetle', 42], ['hailhawk', 43], ['yetirage', 44]], 160, 'Every move on the ice must be graceful and exact. One slip and it\'s over. Shall we dance?', 'A perfect score... for you.', 'Storm Cave west of Route 18 is pitch black. Light your way!', { potions: 3, reward: [['maxpotion', 3], ['sparkstone', 1]] }),
+  dusk: T('Leader Corwin', 'corwin', [['howlote', 45], ['arachnight', 46], ['vultrex', 46], ['razorcuda', 47], ['umbrastoat', 47], ['centigloom', 49]], 170, 'Most trainers fear the dark. My creatures were raised in it. You won\'t see us coming.', 'You saw through every shadow. Remarkable.', 'With eight Meridia badges, Summit Pass and the League are open to you.', { potions: 3, reward: [['ultraorb', 5], ['revive', 3]] }),
+});
+const ELITE2 = [
+  T('Elite Calla', 'calla', [['driftsteed', 52], ['medusail', 53], ['reefortress', 53], ['gloomangler', 54], ['crystallix', 55]], 220, 'I am Calla of the Meridia Elite Four. The tide is turning, and it is turning against you!', 'Washed away... Go on, the next room awaits.', '', { potions: 2 }),
+  T('Elite Dorran', 'dorran', [['ramparch', 53], ['siroccor', 54], ['trilocrown', 54], ['sandrake', 55], ['titanore', 56]], 220, 'Dorran. I\'ve dug through every canyon in Meridia. Nothing has ever moved me. Let\'s see you try.', 'Hm. The mountain moved.', '', { potions: 2 }),
+  T('Elite Lyra', 'lyra', [['saguarro', 54], ['locustorm', 55], ['shellmoss', 55], ['arachnight', 56], ['leafwraith', 57]], 220, 'I\'m Lyra! Forests, swamps, deserts... life finds a way everywhere. My team is proof!', 'You\'re a force of nature yourself!', '', { potions: 2 }),
+  T('Elite Voss', 'voss', [['scarabolt', 55], ['galeon', 56], ['voltibex', 56], ['nimbulord', 57], ['stormwisp', 58]], 220, 'Voss, last of the Four. I was born in a thunderstorm on Skyspire. Let\'s make some lightning.', 'Grounded... The Champion is waiting.', '', { potions: 3 }),
+];
+function meridiaChampion() {
+  const ace = G.rivals && G.rivals.juno ? [[evolveFor(G.rivals.juno, 62), 62]] : [];
+  return { name: 'Champion Juno', look: 'juno', party: [['driftsteed', 58], ['aurorine', 58], ['crystallix', 59], ['galeon', 59], ['rimewyrm', 60], ...ace], money: 100, music: 'boss', potions: 3 };
+}
+
 const ELITE = [
   T('Elite Frida', 'frida', [['clamorite', 52], ['glacieroo', 53], ['rimewing', 53], ['frostseer', 54], ['shadeclaw', 55]], 200, 'I am Frida of the Elite Four. My ice will freeze your hopes solid!', 'Melted... Go on.', '', { potions: 2 }),
   T('Elite Morrow', 'morrow', [['hauntle', 53], ['gourdghast', 54], ['sonarwing', 54], ['pumpling', 54], ['shadeking', 56]], 200, 'Morrow is my name. Spirits whisper that you\'ll fall here...', 'The spirits were wrong.', '', { potions: 2 }),
@@ -95,6 +144,16 @@ const CLASSES = {
   cave: [['Hiker', 'hiker', ['Rock', 'Ground']], ['Mystic', 'mystic', ['Spirit', 'Mind']], ['Biker', 'biker', ['Toxic', 'Shadow']]],
   snow: [['Skier', 'skier', ['Ice']], ['Ace Trainer', 'acetrainer', ['Dragon', 'Ice', 'Metal', 'Fire']], ['Dragon Tamer', 'tamer', ['Dragon', 'Flying']], ['Hiker', 'hiker', ['Rock', 'Ground']]],
   ash: [['Hiker', 'hiker', ['Rock', 'Fire']], ['Biker', 'biker', ['Fire', 'Toxic']]],
+  desert: [['Hiker', 'hiker', ['Ground', 'Rock']], ['Biker', 'biker', ['Toxic', 'Shadow']], ['Bird Keeper', 'birdkeeper', ['Flying']], ['Ace Trainer', 'acetrainer', ['Ground', 'Fire', 'Grass']]],
+  autumn: [['Mystic', 'mystic', ['Spirit']], ['Lass', 'lass', ['Normal', 'Grass']], ['Bug Kid', 'bugkid', ['Bug']], ['Beauty', 'beauty', ['Grass', 'Fae']]],
+};
+// Meridia trainers lean on what lives nearby: a few classes fit its routes better
+const CLASSES_M = {
+  grass: [['Bug Kid', 'bugkid', ['Bug']], ['Lass', 'lass', ['Normal', 'Fae']], ['Youngster', 'boy', ['Normal', 'Electric']], ['Bird Keeper', 'birdkeeper', ['Flying']], ['Ace Trainer', 'acetrainer', ['Metal', 'Ice', 'Electric', 'Ground']]],
+  forest: [['Bug Kid', 'bugkid', ['Bug']], ['Beauty', 'beauty', ['Grass', 'Toxic']]],
+  cave: [['Hiker', 'hiker', ['Rock', 'Ground']], ['Mystic', 'mystic', ['Spirit', 'Shadow']], ['Biker', 'biker', ['Shadow', 'Bug']]],
+  snow: [['Skier', 'skier', ['Ice']], ['Ace Trainer', 'acetrainer', ['Ice', 'Metal', 'Electric']], ['Hiker', 'hiker', ['Ground', 'Ice']], ['Bird Keeper', 'birdkeeper', ['Flying', 'Electric']]],
+  sea: [['Swimmer', 'swimmer', ['Water']], ['Fisher', 'fisher', ['Water']], ['Sailor', 'sailor', ['Water', 'Brawl']]],
 };
 const NAMES = ['Ari', 'Beck', 'Cleo', 'Dax', 'Eli', 'Faye', 'Gus', 'Hana', 'Ivo', 'Jade', 'Kip', 'Lena', 'Milo', 'Nell', 'Otto', 'Pia', 'Quin', 'Rosa', 'Sol', 'Tess', 'Uma', 'Vic', 'Wren', 'Yara', 'Zed', 'Bo', 'Cal', 'Dina', 'Ezra', 'Fern'];
 const INTROS = ['Let\'s battle!', 'My team is ready for you!', 'I\'ve been training all day for this!', 'Bet you can\'t beat me!', 'Don\'t hold back!', 'Our eyes met, so we battle!'];
@@ -111,15 +170,18 @@ function getTrainer(id) {
   let t;
   if (kind === 'gen') {
     const m = MAPS[a];
-    const classes = CLASSES[m.style] || CLASSES.grass;
-    const [cls, look, types] = pickR(classes);
+    const region = m.region || 'aldermoor';
     const [lo, hi] = m.lv || [5, 8];
+    // only classes that have creatures to use at this point of the region
+    const classes = ((region === 'meridia' && CLASSES_M[m.style]) || CLASSES[m.style] || CLASSES.grass).filter(([, , ty]) => poolFor(ty, lo, region).length);
+    const [cls, look, types] = classes.length ? pickR(classes) : ['Youngster', 'boy', ['Normal']];
     const n = Math.min(4, (hi < 15 ? 1 : hi < 30 ? 2 : 3) + (R() < 0.4 ? 1 : 0));
     const party = [];
+    const local = (m.encounters || []).map((e) => e[0]);
     for (let i = 0; i < n; i++) {
       const lvl = lo + Math.floor(R() * (hi - lo + 1));
-      const pool = poolFor(types, lvl);
-      const sp = pool.length ? pickR(pool) : 'bunnip';
+      const pool = poolFor(types, lvl, region);
+      const sp = pool.length ? pickR(pool) : local.length ? pickR(local) : 'bunnip';
       party.push([evolveFor(sp, lvl), lvl]);
     }
     t = T(`${cls} ${pickR(NAMES)}`, look, party, 18 + Math.floor(hi / 2), pickR(INTROS), pickR(LOSES), pickR(AFTERS));
@@ -127,7 +189,7 @@ function getTrainer(id) {
     const gym = GYMS[a];
     const lead = LEADERS[a];
     const lv = lead.party[0][1] - 3 + +b;
-    const pool = poolFor([gym.type], lv);
+    const pool = poolFor([gym.type], lv, gym.region || 'aldermoor');
     const party = [0, 1].map((i) => { const sp = pool.length ? pickR(pool) : 'bunnip'; return [evolveFor(sp, lv + i), lv + i]; });
     t = T(`Gym Trainer ${pickR(NAMES)}`, gym.tlook || 'guide', party, 40, `You'll have to beat me before you face our Leader!`, 'Our Leader is even stronger than me!', gym.tip || 'Good luck!');
   }
@@ -166,6 +228,7 @@ async function whiteout() {
   G.party.forEach(healFull);
   G.money = Math.floor(G.money / 2);
   if (world.map.e4 !== undefined || world.map.id === 'league_lobby') ['e4_0', 'e4_1', 'e4_2', 'e4_3', 'leagueOpen'].forEach((f) => setFlag(f, false));
+  if (world.map.e4m !== undefined || world.map.id === 'league2_lobby') ['e4m_0', 'e4m_1', 'e4m_2', 'e4m_3', 'league2Open'].forEach((f) => setFlag(f, false));
   const h = G.lastHeal;
   loadMap(h.map, h.x, h.y, h.dir);
   save();
@@ -527,6 +590,49 @@ async function sail(to, chosen) {
   }
 }
 
+// Professor Cedar: the Meridia starters, the obedience talk, and DEX progress afterwards
+async function cedarTalk() {
+  if (!flag('metCedar')) {
+    setFlag('metCedar');
+    await say(`CEDAR: Oh! You must be ${G.name}, the Champion from Aldermoor. Professor Maple told me all about you.`, 'CEDAR: I\'m Professor Cedar. I study the creatures of Meridia.');
+  }
+  if (!flag('cedarStarter')) {
+    await say('CEDAR: And you came on the perfect day! Meridia\'s three partner creatures just arrived this morning.',
+      'CEDAR: Before you choose, there\'s something every visitor should know.',
+      'CEDAR: Creatures here respect trainers who have proven themselves in Meridia. Your partners from Aldermoor are strong... maybe a bit too strong.',
+      `CEDAR: Until you earn Meridia's badges, creatures above level ${OBEY_CAPS[regionBadges(G, 'meridia')]} may ignore your orders now and then. A bit like being paralyzed, but they just won't listen.`,
+      'CEDAR: Every Meridia badge raises that limit. With all eight, every creature will listen to you.',
+      'CEDAR: A partner from Meridia grows up with you, so it always listens. That\'s why I\'d like you to have one.');
+    const aide = npcById('cedar_aide');
+    if (aide) { faceEachOther(aide); await say('AIDE: Here they are, Professor!'); }
+    await say('CEDAR: Bramblecub, the Grass type. Cindergecko, the Fire type. Splotter, the Water type.', 'CEDAR: Take your time and pick the one you like best!');
+    const sp = await starterScreen(MERIDIA_STARTERS);
+    const m = makeMon(sp, 5, { ot: G.name });
+    addToCollection(m);
+    G.starter2 = sp;
+    sfx('badge');
+    await say(`${G.name} received ${SPECIES[sp].name}!`);
+    await offerNickname(m, SPECIES[sp].name);
+    setFlag('cedarStarter');
+    addItem('orb', 10);
+    sfx('item');
+    await say(`${G.name} received 10 Capture Orbs!`, 'CEDAR: Your DEX already has Meridia\'s pages loaded. Fill them in for me!',
+      'CEDAR: The other two partners like to wander in Whisperwood, east of Mossbrook. You might meet them there.',
+      'CEDAR: Oh, and another trainer from Aldermoor came through a while ago. A girl with orange hair. She went straight for the League!',
+      'CEDAR: Mossbrook is north up Route 11. That\'s where the first Gym is. Good luck!');
+    refreshNpcs();
+    save();
+    return;
+  }
+  const MER = regionDex('meridia');
+  const c = MER.filter((x) => G.dex.caught[x]).length;
+  await say(`CEDAR: You've caught ${c} of ${MER.length} kinds of creatures in Meridia.`);
+  if (c >= 15 && !flag('cedarGift')) { setFlag('cedarGift'); addItem('ultraorb', 5); sfx('item'); await say('CEDAR: Fantastic! Here, take these 5 Ultra Orbs.'); }
+  else if (c >= 60 && !flag('cedarGift2')) { setFlag('cedarGift2'); addItem('masterorb', 1); sfx('item'); await say('CEDAR: Over half of Meridia! You\'ve earned a MASTER ORB. Use it on a legend.'); }
+  else if (c >= MER.length) await say('CEDAR: Every creature in Meridia! You and Maple will have to write a book together.');
+  else await say('CEDAR: Some creatures only show up in one patch of grass, far off the trail. Search every corner!');
+}
+
 async function heal(where) {
   await fadeOut(10);
   G.party.forEach(healFull);
@@ -639,12 +745,11 @@ const SCRIPTS = {
     if (!chosen) { await say('SAILOR: Take your time.'); return; }
     await sail('aldermoor', chosen);
   },
-  async cedar() {
-    if (!flag('metCedar')) {
-      setFlag('metCedar');
-      await say(`CEDAR: Oh! You must be ${G.name}, the Champion from Aldermoor. Professor Maple told me all about you.`, 'CEDAR: I\'m Professor Cedar. I study the creatures of Meridia.');
-    }
-    await say('CEDAR: Every new trainer in Meridia gets to choose one of three partner creatures here.', 'CEDAR: They haven\'t arrived at the lab yet... When they do, the first pick is yours!', 'CEDAR: Until then, feel free to explore. There are eight Gyms across Meridia, each in a different climate.');
+  async cedar() { await cedarTalk(); },
+  async cedarAide() {
+    if (!flag('cedarStarter')) { await say('AIDE: The three partner creatures arrived this morning!', 'AIDE: Go talk to the professor. She\'s been waiting for you!'); return; }
+    const cap = OBEY_CAPS[regionBadges(G, 'meridia')];
+    await say(`AIDE: With ${regionBadges(G, 'meridia')} Meridia badge${regionBadges(G, 'meridia') === 1 ? '' : 's'}, creatures up to level ${cap > 99 ? 100 : cap} will always listen to you here.`, 'AIDE: Stronger ones might ignore you now and then. Every badge you earn raises the limit!');
   },
   async td_slash() { await say('RANGER: Thorny bushes have grown over the path to Route 3.', G.bag.td_slash ? 'Teach Slash to a creature from your BAG, then press A in front of a bush!' : 'Leader Briar gives a Trail Disc that teaches Slash to trainers who beat her.'); },
   async td_glow() { await say('AIDE: Ember Tunnel north of town is pitch black.', G.bag.td_glow ? 'Teach Glow to a creature, and you\'ll be asked to light the cave when you enter.' : 'Leader Sable will give you Glow, once she\'s free from Team Eclipse.'); },
@@ -693,6 +798,42 @@ const SCRIPTS = {
     if (!won) return;
     setFlag('e4_4');
     await say('KAI: ...I lost. To you. Again.', 'KAI: You know what? You earned it. You\'re the Champion of Aldermoor.', 'The door to the Hall of Fame opened!');
+  },
+  async leagueGuard2() {
+    if (flag('champion_meridia')) { await say('GUARD: Welcome back, Champion of Meridia! The Elite Four are ready for a rematch.'); setFlag('league2Open'); ['e4m_0', 'e4m_1', 'e4m_2', 'e4m_3', 'e4m_4'].forEach((f) => setFlag(f, false)); return; }
+    if (regionBadges(G, 'meridia') < 8) { await say(`GUARD: Welcome to the Meridia League! You need all eight Meridia badges to challenge it.`, `GUARD: You have ${regionBadges(G, 'meridia')}. Come back when you have them all!`); return; }
+    if (await yesNo('GUARD: Beyond this door are Meridia\'s Elite Four and its Champion. You must win every battle in a row. Are you ready?')) {
+      setFlag('league2Open'); await say('GUARD: Then go! The door on the right is open. Good luck!');
+    }
+  },
+  async elite2() {
+    const i = world.map.e4m;
+    const L = ELITE2[i];
+    const short = L.name.split(' ').pop().toUpperCase();
+    if (flag('e4m_' + i)) { await say(`${short}: Go on. The next room awaits.`); return; }
+    await say(`${short}: ${L.intro}`);
+    const won = await fight(L);
+    if (!won) return;
+    setFlag('e4m_' + i);
+    await say(`${short}: ${L.lose}`, 'The door at the back opened!');
+  },
+  async champion2() {
+    if (flag('e4m_4')) { await say('JUNO: Go on through. Professor Cedar is waiting for you.'); return; }
+    await say(`JUNO: ${G.name}! I knew you'd make it here.`, 'JUNO: I sailed to Meridia right after you became Champion of Aldermoor. I wanted a title of my own.', 'JUNO: I\'m the Champion here now. And this time, I\'m not losing to you!');
+    const won = await fight(meridiaChampion());
+    if (!won) return;
+    setFlag('e4m_4');
+    await say('JUNO: ...Wow. You really are something else.', 'JUNO: Meridia\'s yours, Champion. Go on, the Hall of Fame is through there!', 'The door to the Hall of Fame opened!');
+  },
+  async hallOfFame2() {
+    if (flag('champion_meridia')) { await say('CEDAR: Welcome back, Champion! Your record in Meridia\'s Hall of Fame is safe.'); return; }
+    playMusic('victory');
+    await say(`CEDAR: ${G.name}! Congratulations! You are the Champion of Meridia!`, 'CEDAR: Two regions, two titles. Professor Maple is going to be so proud.');
+    setFlag('champion_meridia');
+    G.hallOfFame = (G.hallOfFame || []).concat([{ date: Date.now(), region: 'meridia', team: G.party.map((m) => `${name(m)} Lv${m.level}`) }]);
+    sfx('badge');
+    await say('CEDAR: Every creature in Meridia listens to you now.', 'CEDAR: Stay as long as you like. Fill your DEX, and find the legends that still hide around Meridia!');
+    save();
   },
   async hallOfFame() {
     if (flag('champion')) { await say('MAPLE: Welcome back, Champion! Your Hall of Fame record is safe here.'); return; }
@@ -750,3 +891,6 @@ async function trainerBattle(n) {
   const won = await fight(t);
   if (won) setFlag('beat_' + n.trainer);
 }
+
+// for tests and debugging
+export const _debug = { getTrainer, LEADERS, ELITE2, ELITE, meridiaChampion, TRAINERS };

@@ -344,10 +344,12 @@ async function tryMove(dir) {
 
 function encounterTable() {
   const m = world.map, p = world.player;
-  if (p.surf) return m.surfEnc;
+  const k = p.y * m.w + p.x;
+  if (p.surf) return m.rareSurfZone && m.rareSurfZone.has(k) ? m.rareSurfEnc : m.surfEnc;
   const t = tileAt(p.x, p.y);
-  if (GRASSY.has(t)) return m.encounters;
-  if (m.cave && (t === 'cavefloor' || t === 'cavepath')) return m.encounters;
+  const land = m.rareZone && m.rareZone.has(k) ? m.rareEnc : m.encounters;
+  if (GRASSY.has(t)) return land;
+  if (m.cave && (t === 'cavefloor' || t === 'cavepath')) return land;
   return null;
 }
 

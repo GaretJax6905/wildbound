@@ -2,17 +2,16 @@
 // shares buildings, props, weather and the route generator. Every climate at once: a sunny
 // harbour, rainy forest and marsh, desert and canyon, open prairie, misty ruins, an iron city,
 // snowfields and thunderstorm peaks.
-// Trainers stand where they belong but are marked `pending` until Meridia's creatures exist.
 
 export const MERIDIA_GYMS = {
-  hive: { id: 'hive', type: 'Bug', look: 'acetrainer', tlook: 'bugkid', layout: 1, region: 'meridia' },
-  dune: { id: 'dune', type: 'Ground', look: 'hiker', tlook: 'hiker', layout: 2, region: 'meridia' },
-  gale: { id: 'gale', type: 'Flying', look: 'birdkeeper', tlook: 'birdkeeper', layout: 3, region: 'meridia' },
-  bog: { id: 'bog', type: 'Toxic', look: 'biker', tlook: 'biker', layout: 1, region: 'meridia' },
-  wraith: { id: 'wraith', type: 'Spirit', look: 'mystic', tlook: 'mystic', layout: 2, region: 'meridia' },
-  forge: { id: 'forge', type: 'Metal', look: 'scientist', tlook: 'scientist', layout: 3, region: 'meridia' },
-  rime: { id: 'rime', type: 'Ice', look: 'skier', tlook: 'skier', layout: 1, region: 'meridia' },
-  dusk: { id: 'dusk', type: 'Shadow', look: 'tamer', tlook: 'acetrainer', layout: 2, region: 'meridia' },
+  hive: { id: 'hive', type: 'Bug', look: 'tansy', tlook: 'bugkid', layout: 1, region: 'meridia' },
+  dune: { id: 'dune', type: 'Ground', look: 'sahar', tlook: 'hiker', layout: 2, region: 'meridia' },
+  gale: { id: 'gale', type: 'Flying', look: 'aeron', tlook: 'birdkeeper', layout: 3, region: 'meridia' },
+  bog: { id: 'bog', type: 'Toxic', look: 'fennick', tlook: 'biker', layout: 1, region: 'meridia' },
+  wraith: { id: 'wraith', type: 'Spirit', look: 'ysolde', tlook: 'mystic', layout: 2, region: 'meridia' },
+  forge: { id: 'forge', type: 'Metal', look: 'bram', tlook: 'scientist', layout: 3, region: 'meridia' },
+  rime: { id: 'rime', type: 'Ice', look: 'nevia', tlook: 'skier', layout: 1, region: 'meridia' },
+  dusk: { id: 'dusk', type: 'Shadow', look: 'corwin', tlook: 'acetrainer', layout: 2, region: 'meridia' },
 };
 
 // where things sit on Meridia's Town Map (same 28 x 20 grid as Aldermoor's)
@@ -49,8 +48,8 @@ export function buildMeridia(A) {
     const lab = interior('lab_solace', 'Cedar Lab', 12, 10, [[5, 9]]);
     dots(lab, 'shelf', [[1, 2], [2, 2], [3, 2], [8, 2], [9, 2], [10, 2]]);
     dots(lab, 'table', [[4, 5], [5, 5], [6, 5]]); dots(lab, 'pc', [[10, 4]]); dots(lab, 'plant', [[1, 8], [10, 8]]); dots(lab, 'console', [[6, 2]]);
-    npc(lab, { id: 'cedar', look: 'scientist', x: 5, y: 3, dir: 'down', move: 'static', script: 'cedar' });
-    npc(lab, { id: 'cedar_aide', look: 'aide', x: 9, y: 6, dir: 'left', move: 'wander', text: ['The three partner creatures of Meridia are on their way to the lab.', 'Once they arrive, the professor will let you pick one!'] });
+    npc(lab, { id: 'cedar', look: 'cedar', x: 5, y: 3, dir: 'down', move: 'static', script: 'cedar' });
+    npc(lab, { id: 'cedar_aide', look: 'aide', x: 9, y: 6, dir: 'left', move: 'wander', script: 'cedarAide' });
   }
 
   // ---------- Route 11 -> Mossbrook (Gym 1: Bug) ----------
@@ -166,9 +165,9 @@ export function buildMeridia(A) {
     const b = interior('eclipsebase', 'Eclipse Factory', 18, 14, [[8, 13], [9, 13]], { base: 'dkfloor', music: 'boss' });
     fill(b, 2, 4, 5, 1, 'console'); fill(b, 11, 4, 5, 1, 'console'); fill(b, 1, 9, 6, 1, 'console'); fill(b, 11, 9, 6, 1, 'console');
     dots(b, 'crate', [[1, 2], [2, 2], [16, 2], [15, 12], [16, 12]]);
-    npc(b, { id: 'eb_g1', look: 'grunt', x: 4, y: 7, dir: 'right', trainer: 'eclipse_m1', sight: 3, pending: true });
-    npc(b, { id: 'eb_g2', look: 'grunt', x: 13, y: 7, dir: 'left', trainer: 'eclipse_m2', sight: 3, pending: true });
-    npc(b, { id: 'eb_admin', look: 'nyx', x: 8, y: 3, dir: 'down', trainer: 'eclipse_m3', sight: 4, pending: true });
+    npc(b, { id: 'eb_g1', look: 'grunt', x: 4, y: 7, dir: 'right', trainer: 'eclipse_m1', sight: 3, sight: 3 });
+    npc(b, { id: 'eb_g2', look: 'grunt', x: 13, y: 7, dir: 'left', trainer: 'eclipse_m2', sight: 3 });
+    npc(b, { id: 'eb_admin', look: 'nyx', x: 8, y: 3, dir: 'down', trainer: 'eclipse_m3', sight: 4 });
   }
 
   // ---------- Route 17 (snow, Heave gate) -> Frostvale (Gym 7: Ice) ----------
@@ -224,20 +223,25 @@ export function buildMeridia(A) {
     const lobby = interior('league2_lobby', 'Meridia League', 12, 9, [[5, 8], [6, 8]], { heal: true });
     fill(lobby, 3, 3, 6, 1, 'counter'); dots(lobby, 'healer', [[7, 2]]); dots(lobby, 'statue', [[1, 6], [10, 6]]);
     npc(lobby, { id: 'nurse', look: 'nurse', x: 5, y: 2, dir: 'down', move: 'static', script: 'nurse' });
-    npc(lobby, { id: 'lg2_guard', look: 'guide', x: 10, y: 2, dir: 'down', move: 'static', text: ['GUARD: Welcome to the Meridia League!', 'The Elite Four are still preparing. Come back when you hold all eight Meridia badges.'] });
+    npc(lobby, { id: 'lg2_guard', look: 'guide', x: 10, y: 2, dir: 'down', move: 'static', script: 'leagueGuard2' });
     fill(lobby, 11, 2, 1, 1, 'mat');
-    const rooms = [['e4m_1', 'Elite Room I', 'marble'], ['e4m_2', 'Elite Room II', 'dkfloor'], ['e4m_3', 'Elite Room III', 'icefloor'], ['e4m_4', 'Elite Room IV', 'gymfloor'], ['champ2', 'Champion\'s Hall', 'carpet']];
-    lobby.warps['11,2'] = { map: rooms[0][0], x: 4, y: 8, dir: 'up', cond: 'league2Open', lockedMsg: 'The door is sealed. The Elite Four are still preparing.' };
+    const rooms = [['e4m_1', 'Calla\'s Room', 'marble'], ['e4m_2', 'Dorran\'s Room', 'dkfloor'], ['e4m_3', 'Lyra\'s Room', 'gymfloor'], ['e4m_4', 'Voss\'s Room', 'dkfloor'], ['champ2', 'Champion\'s Hall', 'carpet']];
+    lobby.warps['11,2'] = { map: rooms[0][0], x: 4, y: 8, dir: 'up', cond: 'league2Open', lockedMsg: 'Talk to the guard first.' };
     rooms.forEach(([id, name, floor], i) => {
       const r = interior(id, name, 10, 10, [], { base: floor, music: 'boss' });
       dots(r, 'statue', [[1, 3], [8, 3], [1, 7], [8, 7]]);
-      npc(r, { id: 'e4m', look: ['beauty', 'blackbelt', 'psychic', 'sailor', 'juno'][i], x: 4, y: 3, dir: 'down', move: 'static', text: ['...The League isn\'t ready yet. Come back later!'] });
-      const next = rooms[i + 1] ? rooms[i + 1][0] : 'league2_lobby';
+      npc(r, { id: 'e4m', look: ['calla', 'dorran', 'lyra', 'voss', 'juno'][i], x: 4, y: 3, dir: 'down', move: 'static', script: i === 4 ? 'champion2' : 'elite2' });
+      r.e4m = i;
+      const next = rooms[i + 1] ? rooms[i + 1][0] : 'halloffame2';
       fill(r, 4, 1, 2, 1, 'mat');
       r.warps['4,1'] = { map: next, x: 4, y: 8, dir: 'up', cond: `e4m_${i}`, lockedMsg: 'The way forward is sealed until you win.' };
       r.warps['5,1'] = r.warps['4,1'];
       r.exitTo = { map: 'league2_lobby', x: 5, y: 7, dir: 'down' };
     });
+    const hof = interior('halloffame2', 'Hall of Fame', 10, 10, [[4, 9], [5, 9]], { base: 'carpet', music: 'victory' });
+    dots(hof, 'statue', [[2, 3], [7, 3]]);
+    npc(hof, { id: 'hof_cedar', look: 'cedar', x: 4, y: 3, dir: 'down', move: 'static', script: 'hallOfFame2' });
+    hof.exitTo = { map: 'zenith', x: 10, y: 8, dir: 'down' };
   }
 
   // ---- special encounters: the starters gather in Whisperwood; four legends hide around Meridia ----
@@ -264,6 +268,4 @@ export function buildMeridia(A) {
   special('echocanyon', 'solkhan', 50, [13, 4]); special('route17', 'glacieth', 55, [4, 4]);
   special('route18', 'thundrael', 55, [18, 3]); special('summitpass', 'meridion', 60, [15, 4]);
 
-  // every trainer in Meridia waits for its roster (Meridia's own creatures come later)
-  for (const m of Object.values(MAPS)) if (m.region === 'meridia') for (const n of m.npcs) if (n.trainer) n.pending = true;
 }

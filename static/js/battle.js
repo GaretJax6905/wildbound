@@ -3,7 +3,7 @@
 import { pxWidth } from './font.js';
 import { W, H, wait, setScene, getScene, frame, rand, chance, pick, fx, input, open } from './engine.js';
 import { creature, trainerPortrait, orb as orbSprite, blit } from './art.js';
-import { MOVES, SPECIES, ITEMS, TYPE_COLORS, SPECIAL_TYPES, effectiveness, STATUS_NAMES } from './data.js';
+import { MOVES, SPECIES, ITEMS, TYPE_COLORS, SPECIAL_TYPES, effectiveness, STATUS_NAMES, obeyCap } from './data.js';
 import { stats, maxHp, name, addExp, expYield, expForLevel, knows } from './mon.js';
 import { G, addToCollection, useItem } from './state.js';
 import { world } from './world.js';
@@ -524,6 +524,12 @@ async function doMove(a) {
     m.status = null; await msg(`${Label(s)} woke up!`);
   }
   if (m.status === 'par' && chance(0.25)) { await msg(`${Label(s)} is paralyzed! It can't move!`); return; }
+  // Obedience: in a new region, creatures above the badge level cap sometimes ignore orders
+  // (a milder version of paralysis: about 1 turn in 5).
+  if (B.p.includes(s) && m.level > obeyCap(G) && chance(0.2)) {
+    await msg(pick([`${Label(s)} ignored the order!`, `${Label(s)} is loafing around!`, `${Label(s)} turned away and won't listen!`, `${Label(s)} pretended not to hear!`]));
+    return;
+  }
   if (a.move !== 'struggle') { const slot = m.moves.find((x) => x.id === a.move); if (slot) slot.pp = Math.max(0, slot.pp - 1); }
   await msg(`${Label(s)} used ${M.name}!`);
   const selfMove = M.stat && M.stat.target === 'self' && !M.power;

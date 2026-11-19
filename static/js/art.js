@@ -720,6 +720,20 @@ export const LOOKS = {
   mystic: { skin: '#e0d8e8', hair: '#383050', shirt: '#4a3a70', pants: '#2a2040', long: true, coat: true },
   biker: { skin: '#d8a070', hair: '#c03030', shirt: '#303030', pants: '#405068', spiky: true },
   tamer: { skin: '#e8b890', hair: '#383838', shirt: '#a03838', pants: '#383838', coat: true },
+  // Meridia: Professor Cedar, the eight Leaders and the Elite Four
+  cedar: { skin: '#d8a880', hair: '#3a5a2a', shirt: '#f8f8f0', pants: '#6a5038', coat: true, long: true },
+  tansy: { skin: '#f8d0a8', hair: '#f0c030', shirt: '#f0d040', pants: '#584020', long: true },
+  sahar: { skin: '#b07850', hair: '#282018', shirt: '#e0c890', pants: '#a07848', hat: '#f0e0c0', hatB: '#c0a070' },
+  aeron: { skin: '#f0c8a0', hair: '#c06830', shirt: '#80b8e0', pants: '#584838', spiky: true },
+  fennick: { skin: '#e0c0a8', hair: '#70c040', shirt: '#383040', pants: '#584878', spiky: true },
+  ysolde: { skin: '#f0e8f0', hair: '#c8c0e0', shirt: '#584870', pants: '#302840', long: true, coat: true },
+  bram: { skin: '#c88858', hair: '#a04020', shirt: '#706050', pants: '#383028', beard: true },
+  nevia: { skin: '#f8e0d8', hair: '#f0f0f8', shirt: '#a8d8f0', pants: '#f8f8f8', long: true },
+  corwin: { skin: '#d8b090', hair: '#181820', shirt: '#282838', pants: '#181828', coat: true },
+  calla: { skin: '#c89070', hair: '#30a0b0', shirt: '#58c8d0', pants: '#f8f8f8', long: true },
+  dorran: { skin: '#a87048', hair: '#504030', shirt: '#a06838', pants: '#584028', beard: true },
+  lyra: { skin: '#f8d8b8', hair: '#58a048', shirt: '#a8d070', pants: '#605030', long: true },
+  voss: { skin: '#e8c8a8', hair: '#f8f0a0', shirt: '#383870', pants: '#202040', spiky: true, coat: true },
 };
 
 // The player can be a boy or a girl. LOOKS.player is swapped in place so every

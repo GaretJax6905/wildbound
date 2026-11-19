@@ -808,4 +808,90 @@ for (const [id, t] of Object.entries(WILD)) {
   const lv = m.lv || [5, 8];
   if (t.land) m.encounters = t.land.map(([sp, w]) => [sp, lv[0], lv[1], w]);
   if (t.surf) m.surfEnc = t.surf.map(([sp, w]) => [sp, lv[0], lv[1], w]);
+  if (m.region === 'meridia') hideRare(m);
+}
+
+// Meridia: only a couple of creatures show up in a route's ordinary grass (or water). The rest
+// live in one out-of-the-way patch, far from the trail, so players have to go looking for them.
+function hideRare(m) {
+  const split = (tab) => {
+    if (!tab || tab.length < 3) return [tab, null];
+    const s = [...tab].sort((a, b) => b[3] - a[3]);
+    return [s.slice(0, 2), s.slice(2)];
+  };
+  const K = (x, y) => y * m.w + x;
+  const inside = (x, y) => x > 0 && y > 0 && x < m.w - 1 && y < m.h - 1;
+  const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  // walking distance from the trail (or from land, for water)
+  const distFrom = (isSrc, canWalk) => {
+    const d = new Map(); let q = [];
+    for (let y = 1; y < m.h - 1; y++) for (let x = 1; x < m.w - 1; x++) if (isSrc(x, y)) { d.set(K(x, y), 0); q.push([x, y]); }
+    while (q.length) {
+      const nq = [];
+      for (const [x, y] of q) for (const [dx, dy] of N4) {
+        const nx = x + dx, ny = y + dy;
+        if (!inside(nx, ny) || d.has(K(nx, ny)) || !canWalk(nx, ny)) continue;
+        d.set(K(nx, ny), d.get(K(x, y)) + 1); nq.push([nx, ny]);
+      }
+      q = nq;
+    }
+    return d;
+  };
+  // grow a patch of `n` tiles from the farthest tile that matches `ok`
+  const grow = (d, ok, n) => {
+    let best = null;
+    for (const [k, v] of d) { const x = k % m.w, y = (k / m.w) | 0; if (ok(x, y) && (!best || v > best[1])) best = [k, v]; }
+    const zone = new Set();
+    if (!best) return zone;
+    let q = [best[0]]; zone.add(best[0]);
+    while (q.length && zone.size < n) {
+      const nq = [];
+      for (const k of q) for (const [dx, dy] of N4) {
+        const x = (k % m.w) + dx, y = ((k / m.w) | 0) + dy, kk = K(x, y);
+        if (!inside(x, y) || zone.has(kk) || !ok(x, y) || !d.has(kk)) continue;
+        zone.add(kk); nq.push(kk); if (zone.size >= n) break;
+      }
+      q = nq;
+    }
+    return zone;
+  };
+  const TRAIL = new Set(['path', 'dirt', 'cavepath', 'snowpath', 'dock']);
+  const tile = (x, y) => m.tiles[y][x];
+  const blockedAt = (x, y) => SOLID.has(tile(x, y)) || m.boulders.some((b) => b.x === x && b.y === y);
+  const [common, rare] = m.style === 'sea' ? [m.encounters, null] : split(m.encounters);
+  if (rare) {
+    const d = distFrom((x, y) => TRAIL.has(tile(x, y)), (x, y) => !blockedAt(x, y));
+    const enc = m.cave ? (x, y) => tile(x, y) === 'cavefloor' : (x, y) => GRASSY.has(tile(x, y));
+    let zone = null;
+    if (!m.cave) {
+      // whole grass patches: pick the reachable one farthest from the trail (keep at least one other)
+      const seen = new Set(), comps = [];
+      for (const [k] of d) {
+        const x = k % m.w, y = (k / m.w) | 0;
+        if (seen.has(k) || !enc(x, y)) continue;
+        const c = []; let q = [k]; seen.add(k);
+        while (q.length) {
+          const nq = [];
+          for (const kk of q) { c.push(kk); for (const [dx, dy] of N4) { const nx = (kk % m.w) + dx, ny = ((kk / m.w) | 0) + dy, k2 = K(nx, ny); if (inside(nx, ny) && !seen.has(k2) && enc(nx, ny) && d.has(k2)) { seen.add(k2); nq.push(k2); } } }
+          q = nq;
+        }
+        comps.push(c);
+      }
+      // a patch small enough to feel like a find (and never the only grass on the route)
+      const big = comps.filter((c) => c.length >= 5 && c.length <= 30);
+      if (big.length >= 1 && comps.length >= 2) {
+        const score = (c) => c.reduce((a, k) => a + d.get(k), 0) / c.length;
+        big.sort((a, b) => score(b) - score(a));
+        zone = new Set(big[0]);
+      }
+    }
+    if (!zone) zone = grow(d, enc, m.cave ? 36 : 12);
+    m.encounters = common; m.rareEnc = rare; m.rareZone = zone;
+  }
+  const [sc, sr] = split(m.surfEnc);
+  if (sr) {
+    const water = (x, y) => tile(x, y) === 'water';
+    const d = distFrom((x, y) => !water(x, y) && !SOLID.has(tile(x, y)), water);
+    m.surfEnc = sc; m.rareSurfEnc = sr; m.rareSurfZone = grow(d, water, 40);
+  }
 }

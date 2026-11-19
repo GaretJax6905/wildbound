@@ -245,4 +245,12 @@ export const STATUS_NAMES = { burn: 'BRN', par: 'PAR', sleep: 'SLP', poison: 'PS
 export const BADGES = [
   ['stone', 'Stone', '#a08060'], ['thistle', 'Thistle', '#58b048'], ['volt', 'Volt', '#e8c020'], ['tide', 'Tide', '#4890e8'],
   ['grit', 'Grit', '#c03028'], ['lumen', 'Lumen', '#f85888'], ['ember', 'Ember', '#f08030'], ['wyrm', 'Wyrm', '#7038f8'],
+  // Meridia's eight (the 4th field is the region)
+  ['hive', 'Honeycomb', '#d8b020', 'meridia'], ['dune', 'Dune', '#d0a058', 'meridia'], ['gale', 'Gale', '#88c8f0', 'meridia'], ['bog', 'Bog', '#8858a8', 'meridia'],
+  ['wraith', 'Wraith', '#706890', 'meridia'], ['forge', 'Forge', '#a0a8b8', 'meridia'], ['rime', 'Rime', '#a8e0f0', 'meridia'], ['dusk', 'Dusk', '#403858', 'meridia'],
 ];
+// how many badges the player holds from one region
+export const regionBadges = (G, region) => BADGES.filter((b) => (b[3] || 'aldermoor') === region && G.badges.includes(b[0])).length;
+// Obedience: in Meridia, creatures above this level may ignore orders until more badges are earned
+export const OBEY_CAPS = [15, 20, 25, 30, 35, 40, 45, 50, 100];
+export const obeyCap = (G) => (G.region === 'meridia' ? OBEY_CAPS[regionBadges(G, 'meridia')] : 100);

@@ -11,7 +11,7 @@ const catchable = new Set();
 for (const m of Object.values(MAPS)) {
   for (const row of m.tiles) if (row.length !== m.w) errors.push(`${m.id}: row width ${row.length} != ${m.w}`);
   if (m.tiles.length !== m.h) errors.push(`${m.id}: height mismatch`);
-  for (const [sp] of [...(m.encounters || []), ...(m.surfEnc || [])]) { if (!SPECIES[sp]) errors.push(`${m.id}: unknown species ${sp}`); catchable.add(sp); }
+  for (const [sp] of [...(m.encounters || []), ...(m.surfEnc || []), ...(m.rareEnc || []), ...(m.rareSurfEnc || [])]) { if (!SPECIES[sp]) errors.push(`${m.id}: unknown species ${sp}`); catchable.add(sp); }
   for (const n of m.npcs) if (n.creature) catchable.add(n.creature);
   for (const [dir, c] of Object.entries(m.connections)) {
     const t = MAPS[c.map];
@@ -39,11 +39,21 @@ for (const m of Object.values(MAPS)) {
   }
 }
 for (const m of Object.values(MAPS)) {
+  // Meridia's hidden patches: rare creatures need a real patch to live in, apart from the common grass
+  if (m.rareEnc && !(m.rareZone && m.rareZone.size >= 4)) errors.push(`${m.id}: rare creatures have no hidden patch`);
+  if (m.rareSurfEnc && !(m.rareSurfZone && m.rareSurfZone.size >= 4)) errors.push(`${m.id}: rare sea creatures have no hidden spot`);
+  if (m.rareZone) {
+    let common = 0;
+    for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (!m.rareZone.has(y * m.w + x) && (GRASSY.has(m.tiles[y][x]) || (m.cave && m.tiles[y][x] === 'cavefloor'))) common++;
+    if (common < 8) errors.push(`${m.id}: the hidden patch swallowed all the ordinary grass`);
+  }
+}
+for (const m of Object.values(MAPS)) {
   if (!(m.encounters || []).length || m.cave) continue;
   if (!m.tiles.some((row) => row.some((t) => GRASSY.has(t)))) errors.push(`${m.id}: has land creatures but no tall grass to find them in`);
 }
 const homes = {};
-for (const m of Object.values(MAPS)) for (const [sp] of m.encounters || []) (homes[sp] = homes[sp] || []).push(m.id);
+for (const m of Object.values(MAPS)) for (const [sp] of [...(m.encounters || []), ...(m.rareEnc || [])]) (homes[sp] = homes[sp] || []).push(m.id);
 for (const [id, s] of Object.entries(SPECIES)) {
   if (!obtainable.has(id)) errors.push(`${id} cannot be obtained anywhere`);
   for (const [, mv] of s.learn) if (!MOVES[mv]) errors.push(`${id}: unknown move ${mv}`);
