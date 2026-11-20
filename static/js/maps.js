@@ -808,6 +808,32 @@ export const WILD = {
   route10: { land: [['ironhorn', 35], ['glacieroo', 30], ['frostseer', 20], ['drakelet', 15]], surf: [['clamorite', 50], ['kingpincer', 50]] },
   victoryroad: { land: [['sonarwing', 35], ['bouldox', 30], ['mucklord', 20], ['pterrock', 15]], surf: [['torrentail', 50], ['krakammon', 50]] },
 };
+// The Isles get real beaches: lawn within two steps of the sea turns to sand, and trees on the
+// beach become palms. Runs before encounters are split so hidden patches see the final ground.
+function beachify(m) {
+  if (m.region !== 'azurine' || m.interior || m.style === 'cave' || m.dark) return;
+  const H = m.h, W = m.w, dist = Array.from({ length: H }, () => Array(W).fill(99));
+  const q = [];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (m.tiles[y][x] === 'water') { dist[y][x] = 0; q.push([x, y]); }
+  for (let i = 0; i < q.length; i++) {
+    const [x, y] = q[i]; const d = dist[y][x];
+    if (d >= 3) continue;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || dist[ny][nx] <= d + 1) continue;
+      dist[ny][nx] = d + 1; q.push([nx, ny]);
+    }
+  }
+  const warp = (x, y) => m.warps && m.warps[`${x},${y}`];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const t = m.tiles[y][x], d = dist[y][x];
+    if (d === 0 || d > 3 || warp(x, y)) continue;
+    if ((t === 'grass' || t === 'flower') && d <= 2) m.tiles[y][x] = 'sand';
+    else if (t === 'tall' && d === 1) m.tiles[y][x] = 'sand';
+    else if (t === 'tree' && d <= 3) m.tiles[y][x] = 'palm';
+  }
+}
+for (const m of Object.values(MAPS)) beachify(m);
 Object.assign(WILD, WILD2, WILD3);
 for (const [id, t] of Object.entries(WILD)) {
   const m = MAPS[id];

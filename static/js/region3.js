@@ -65,6 +65,15 @@ export function buildAzurine(A) {
   // ---------- Route 20 (beach) -> Palmhaven (Gym 1: Grass, jungle village) ----------
   genRoute('route20', { name: 'Route 20', w: 22, h: 30, style: 'coast', lv: [6, 9], open: [['south', 12], ['north', 9]], trainers: 3, items: 3, hidden: 2 });
   link('coralline', 'north', 12, 'route20', 12);
+  {
+    // Route 20 runs up the shore: open sea along its west side
+    const m = MAPS.route20;
+    const busy = new Set([...m.npcs.map((n) => `${n.x},${n.y}`), ...m.items.map((i) => `${i.x},${i.y}`), ...Object.keys(m.warps)]);
+    for (let y = 0; y < m.h; y++) for (let x = 0; x <= 3; x++) {
+      const t = m.tiles[y][x];
+      if (!busy.has(`${x},${y}`) && (t === 'grass' || t === 'tree' || t === 'flower' || t === 'palm' || t === 'stump' || t === 'tall')) m.tiles[y][x] = 'water';
+    }
+  }
   mkTown('palmhaven', 'Palmhaven', 26, 20, {
     decor: ['palm', 'tree', 'flower', 'palm', 'stump'], density: 18,
     post(m) { fill(m, 18, 1, 5, 2, 'water'); fill(m, 17, 3, 7, 1, 'flower'); },

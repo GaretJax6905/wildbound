@@ -8,6 +8,15 @@ const SNOWY = new Set(['snow', 'pine', 'snowgrass']);
 const SHORE = new Set(['reeds', 'mapletree', 'goldtree', 'cactus', 'drygrass', 'grass', 'flower', 'tall', 'sign', 'tree', 'rock', 'palm', 'stump', 'fence', 'bush', 'sand', 'path', 'snow', 'pine', 'snowgrass', 'ash', 'dock', 'cavefloor', 'cavepath', 'dirt']);
 // the ground a map is mostly made of: painted props (trees, signs, furniture) stand on it
 const GROUNDS = ['grass', 'snow', 'ash', 'sand', 'cavefloor', 'gymfloor', 'dkfloor', 'floor', 'icefloor', 'carpet'];
+const WET = new Set(['water']);
+// props stand on the map's usual ground, except on a beach where most neighbours are sand
+function localGround(m, x, y) {
+  const gr = groundOf(m);
+  if (gr !== 'grass') return gr;
+  let n = 0;
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (tileAt(x + dx, y + dy) === 'sand') n++;
+  return n >= 2 ? 'sand' : gr;
+}
 function groundOf(m) {
   if (m._ground) return m._ground;
   const n = {};
@@ -128,6 +137,11 @@ function showCond(c) {
 }
 
 // tile lookup that respects cut bushes / smashed rocks
+// what to draw at a spot: past the edge of a seaside map the sea keeps going (drawing only)
+function viewTile(m, x, y) {
+  if ((x < 0 || y < 0 || x >= m.w || y >= m.h) && !m.interior && m.tiles[Math.min(m.h - 1, Math.max(0, y))][Math.min(m.w - 1, Math.max(0, x))] === 'water') return 'water';
+  return tileAt(x, y);
+}
 export function tileAt(x, y) {
   const m = world.map;
   if (x < 0 || y < 0 || x >= m.w || y >= m.h) return y < 0 && m.borderNorth ? m.borderNorth : m.border;
@@ -481,11 +495,18 @@ export const worldScene = {
     const town = m.music === 'town';
     for (let ty = y0; ty < y0 + H / T + 3; ty++) {
       for (let tx = x0; tx < x0 + W / T + 3; tx++) {
-        const tn = tileAt(tx, ty);
+        const tn = viewTile(m, tx, ty);
         const vr = (tx * 7 + ty * 13) & 3;
         const X = tx * T - cx, Y = ty * T - cy;
         // towns are paved with cobblestones; routes keep a dirt trail
         let shown = tn === 'path' && !town ? 'dirt' : tn;
+        if (m.region === 'azurine') {
+          // the Isles swap in tropical plants: jungle trees, coconut palms, hibiscus, shells on the rocks
+          if (tn === 'tree') shown = ((tx * 5 + ty * 3) % 7 === 0) ? 'tpalm' : 'jungle';
+          else if (tn === 'palm') shown = 'tpalm';
+          else if (tn === 'stump') shown = 'hibiscus';
+          else if (tn === 'rock' && !m.cave && localGround(m, tx, ty) === 'sand') shown = 'shellrock';
+        }
         if (tn === 'floor') shown = floorOf(m);
         else if (tn === 'gymfloor' && m.gym && GYMS[m.gym]) shown = 'gf_' + GYMS[m.gym].type;
         else if (tn === 'wall') {
@@ -498,7 +519,7 @@ export const worldScene = {
           else if (tn === 'crack') shown = 'cavecrack';
         }
         const pr = prop(shown, vr);
-        if (pr) { const gr = groundOf(m); g.drawImage(tile(gr === 'gymfloor' && m.gym && GYMS[m.gym] ? 'gf_' + GYMS[m.gym].type : gr, vr, af), X, Y); g.drawImage(pr, X, Y); }
+        if (pr) { const gr = localGround(m, tx, ty); g.drawImage(tile(gr === 'gymfloor' && m.gym && GYMS[m.gym] ? 'gf_' + GYMS[m.gym].type : gr, vr, af), X, Y); g.drawImage(pr, X, Y); }
         else {
           g.drawImage(tile(shown, vr, af), X, Y);
           // a sprinkle of walk-over decoration on cave floors
@@ -508,12 +529,13 @@ export const worldScene = {
           }
         }
         const edge = (set, kind) => {
-          const bits = (set.has(tileAt(tx, ty - 1)) ? 1 : 0) | (set.has(tileAt(tx + 1, ty)) ? 2 : 0) | (set.has(tileAt(tx, ty + 1)) ? 4 : 0) | (set.has(tileAt(tx - 1, ty)) ? 8 : 0);
+          const bits = (set.has(viewTile(m, tx, ty - 1)) ? 1 : 0) | (set.has(viewTile(m, tx + 1, ty)) ? 2 : 0) | (set.has(viewTile(m, tx, ty + 1)) ? 4 : 0) | (set.has(viewTile(m, tx - 1, ty)) ? 8 : 0);
           if (bits) g.drawImage(pathEdge(bits, kind), X, Y);
         };
-        if (tn === 'path' && groundOf(m) === 'grass') edge(LAWN, 'grass');
+        if ((tn === 'path' || (tn === 'sand' && m.region === 'azurine')) && groundOf(m) === 'grass') edge(LAWN, 'grass');
+        if (tn === 'sand') edge(WET, 'wetsand');
         else if (tn === 'snowpath') edge(SNOWY, 'snow');
-        else if (tn === 'water') edge(SHORE, 'shore');
+        else if (tn === 'water') { const bits = (SHORE.has(viewTile(m, tx, ty - 1)) ? 1 : 0) | (SHORE.has(viewTile(m, tx + 1, ty)) ? 2 : 0) | (SHORE.has(viewTile(m, tx, ty + 1)) ? 4 : 0) | (SHORE.has(viewTile(m, tx - 1, ty)) ? 8 : 0); if (bits) g.drawImage(pathEdge(bits, af % 2 ? 'surf1' : 'surf0'), X, Y); }
         else if (tn === 'cavepath') edge(CAVEFLOOR, 'cave');
         else if (tn === 'lava') edge(LAVA_BANK, 'lava');
       }

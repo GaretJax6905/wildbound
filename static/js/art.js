@@ -1079,7 +1079,7 @@ export function loadWorldArt() {
 }
 // tile name -> [ground drawn underneath, painted prop on top]
 const PROP_TILES = {
-  tree: ['grass', 'tree'], pine: ['snow', 'pine'], palm: ['grass', 'palm'], deadtree: ['ash', 'deadtree'], stump: ['grass', 'stump'],
+  tree: ['grass', 'tree'], jungle: ['grass', 'jungle'], tpalm: ['grass', 'tpalm'], hibiscus: ['grass', 'hibiscus'], shellrock: ['sand', 'shellrock'], pine: ['snow', 'pine'], palm: ['grass', 'palm'], deadtree: ['ash', 'deadtree'], stump: ['grass', 'stump'],
   bush: ['grass', 'bush'], rock: ['grass', 'rock'], crack: ['path', 'crack'], pushrock: [null, 'pushrock'],
   fence: ['grass', 'fence'], sign: ['grass', 'sign'],
   bed: ['floor', 'bed'], tv: ['floor', 'tv'], shelf: ['floor', 'shelf'], table: ['floor', 'table'], pc: ['floor', 'pc'],
@@ -1157,6 +1157,8 @@ const TILE_DRAW = {
     rows.forEach(([a, b], y) => { px(a, y, 1, 1, '#1e5228'); px(b, y, 1, 1, '#1e5228'); });
     px(5, 0, 6, 1, '#1e5228'); px(5, 11, 6, 1, '#1e5228');
   },
+  jungle(px) { TILE_DRAW.tree(px); },
+  tpalm(px) { TILE_DRAW.tree(px); },
   water(px, r, f) {
     // deep blue with drifting light crests (two frames)
     px(0, 0, 16, 16, '#3f86d8');
@@ -1460,6 +1462,27 @@ export function drawPerson(g, c, x, y) {
 
 // grassy fringe drawn over a path tile on the sides that touch grass
 // (bits: 1 = north, 2 = east, 4 = south, 8 = west)
+// the sea meeting land: a band of white surf that rolls in and out (two frames), and a strip of
+// darker wet sand on the beach side
+function surfEdge(g, bits, kind) {
+  const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+  const sides = [[1, true, 0, 1], [4, true, 15, -1], [8, false, 0, 1], [2, false, 15, -1]];
+  for (const [b, horiz, at, inward] of sides) {
+    if (!(bits & b)) continue;
+    const r = srand(b * 7 + (kind === 'surf1' ? 3 : 0));
+    for (let i = 0; i < 16; i++) {
+      let cols;
+      if (kind === 'wetsand') cols = ['#d6bf86', r() < 0.5 ? '#e2cc94' : null];
+      else {
+        const roll = kind === 'surf1' ? 1 : 0;
+        const wave = (Math.sin((i + roll * 4) * 0.8) > 0.2) ? 1 : 0;
+        cols = ['#e8f6ff', '#ffffff', wave ? '#ffffff' : '#bfe2fa', wave ? '#bfe2fa' : (r() < 0.4 ? '#9fd0f4' : null)];
+        if (roll) cols = ['#d8eefc', '#ffffff', wave ? '#bfe2fa' : '#ffffff', (r() < 0.35 ? '#bfe2fa' : null)];
+      }
+      cols.forEach((col, k) => { if (!col) return; const o = at + inward * k; if (horiz) px(i, o, 1, 1, col); else px(o, i, 1, 1, col); });
+    }
+  }
+}
 export function pathEdge(bits, kind = 'grass') {
   const key = 'pe:' + kind + ':' + bits;
   if (cache.has(key)) return cache.get(key);
@@ -1479,6 +1502,7 @@ export function pathEdge(bits, kind = 'grass') {
       if (horiz) px(i, sh, 1, 1, 'rgba(60,70,40,0.25)'); else px(sh, i, 1, 1, 'rgba(60,70,40,0.25)');
     }
   };
+  if (kind === 'surf0' || kind === 'surf1' || kind === 'wetsand') { surfEdge(g, bits, kind); cache.set(key, c); return c; }
   if (bits & 1) side(true, 0, 1);
   if (bits & 4) side(true, 15, -1);
   if (bits & 8) side(false, 0, 1);
