@@ -34,8 +34,10 @@ function evolveFor(sp, lvl) {
   }
 }
 const STARTER_LINES = new Set(['sproutmole', 'thornmole', 'grovemaw', 'emberkit', 'blazelynx', 'infernyx', 'puddlefin', 'tidalotl', 'abyssalotl',
-  'bramblecub', 'thornbear', 'briarbruin', 'cindergecko', 'forgecko', 'smeltwyrm', 'splotter', 'surfotter', 'glaciotter']);
+  'bramblecub', 'thornbear', 'briarbruin', 'cindergecko', 'forgecko', 'smeltwyrm', 'splotter', 'surfotter', 'glaciotter',
+  'batbud', 'frondbat', 'canopteryx', 'cindershell', 'kilnshell', 'calderacrab', 'tuskle', 'lancetusk', 'narwhallant']);
 const MERIDIA_STARTERS = ['bramblecub', 'cindergecko', 'splotter'];
+const AZURINE_STARTERS = ['batbud', 'cindershell', 'tuskle'];
 // Meridia: the level of the first place each creature (or its earliest form) lives in the wild,
 // so trainers carry what you could have met by that point of the journey
 let HOME = null;
@@ -100,6 +102,17 @@ const TRAINERS = {
   eclipse_m1: T('Eclipse Grunt', 'grunt', [['gravepup', 31], ['howlote', 32]], 30, 'Hey! This factory is off-limits!', 'Ugh... Nyx is gonna be furious.', 'We\'re building machines to track Meridia\'s legends. Don\'t tell anyone.'),
   eclipse_m2: T('Eclipse Grunt', 'grunt', [['murkit', 31], ['dunestinger', 32], ['hivelet', 31]], 30, 'You again?! You\'re the Aldermoor Champion!', 'Champion or not, you\'re a pain!', 'Our machines can sense the four legends of Meridia. The boss wants them all.'),
   eclipse_m3: T('Eclipse Nyx', 'nyx', [['vultrex', 33], ['hollowhound', 34], ['centigloom', 35]], 60, 'You followed us across the sea? Ugh! Team Eclipse will cover Meridia in shadow, starting right here!', 'Not AGAIN! Fine, we\'re packing up the factory...', 'Corvo and I just follow orders. Vex is the one hunting the legends.', { music: 'boss', potions: 1 }),
+  // Team Eclipse in the Azurine Isles: building a Tide Engine to call up Azuron from the deep
+  corvo_a1: T('Eclipse Corvo', 'corvo', [['antlet', 14], ['puffurr', 15]], 30, '', 'Huh?! Even my new island team?!', ''),
+  nyx_a2: T('Eclipse Nyx', 'nyx', [['obsidisk', 23], ['sulfurk', 24]], 40, '', 'Too hot to handle... I mean YOU, not the volcano!', ''),
+  corvo_a2: T('Eclipse Corvo', 'corvo', [['smogfly', 23], ['squiddle', 24]], 40, '', 'My drill! My beautiful drill!', ''),
+  eclipse_a1: T('Eclipse Grunt', 'grunt', [['squiddle', 35], ['obsidisk', 36]], 35, 'Hey! This lighthouse is Team Eclipse property now!', 'The lights are going out... for me.', 'Every bolt of lightning that hits this tower gets stored. Clever, right?'),
+  eclipse_a2: T('Eclipse Grunt', 'grunt', [['puffurr', 35], ['drownling', 35], ['magmoth', 36]], 35, 'The Champion of TWO regions? Don\'t care. Beat it!', 'Fine, fine! Three regions\' worth of trouble...', 'We blacked out the Gym so the Leader can\'t bother us. Smart, huh?'),
+  eclipse_a3: T('Eclipse Corvo', 'corvo', [['spinefugu', 37], ['obsidisk', 38], ['inkraken', 39]], 70, 'You AGAIN?! Can\'t a guy steal some lightning in peace?!', 'Not the battery! Ugh, Nyx is going to kill me...', '', { music: 'boss', potions: 1 }),
+  eclipse_a4a: T('Eclipse Grunt', 'grunt', [['inkraken', 38], ['spinefugu', 37]], 40, '', 'The net... it\'s torn...', ''),
+  eclipse_a4b: T('Eclipse Grunt', 'grunt', [['crestisk', 38], ['magmoth', 37]], 40, '', 'The sky whale got away! The boss will be furious!', ''),
+  vex_a: T('Eclipse Leader Vex', 'vex', [['orcanine', 47], ['gloomray', 48], ['crestisk', 48], ['shadeclaw', 50]], 150, '', 'Three regions... three defeats...', '', { potions: 2, music: 'boss' }),
+  nyx_a5: T('Eclipse Nyx', 'nyx', [['obsidrake', 46], ['wreckwraith', 46], ['inkraken', 47]], 70, '', 'Boss... I\'m sorry...', '', { potions: 1 }),
   nyx_final: T('Eclipse Nyx', 'nyx', [['mesaruff', 44], ['ravenlord', 45]], 50, '', 'We lost... again...', ''),
   corvo_final: T('Eclipse Corvo', 'corvo', [['monolox', 44], ['shadeking', 45]], 50, '', 'This is the worst!', ''),
 };
@@ -126,6 +139,26 @@ Object.assign(LEADERS, {
   rime: T('Leader Nevia', 'nevia', [['aurorine', 41], ['emperice', 42], ['frostbeetle', 42], ['hailhawk', 43], ['yetirage', 44]], 160, 'Every move on the ice must be graceful and exact. One slip and it\'s over. Shall we dance?', 'A perfect score... for you.', 'Storm Cave west of Route 18 is pitch black. Light your way!', { potions: 3, reward: [['maxpotion', 3], ['sparkstone', 1]] }),
   dusk: T('Leader Corwin', 'corwin', [['howlote', 45], ['arachnight', 46], ['vultrex', 46], ['razorcuda', 47], ['umbrastoat', 47], ['centigloom', 49]], 170, 'Most trainers fear the dark. My creatures were raised in it. You won\'t see us coming.', 'You saw through every shadow. Remarkable.', 'With eight Meridia badges, Summit Pass and the League are open to you.', { potions: 3, reward: [['ultraorb', 5], ['revive', 3]] }),
 });
+// The Azurine Isles' eight Leaders
+Object.assign(LEADERS, {
+  bloom: T('Leader Kalea', 'kalea', [['cocolet', 12], ['mischimp', 13], ['leafrog', 15]], 110, 'Aloha! Every flower in this greenhouse grew from a song. Let\'s see if your team can keep the beat!', 'Oh! You picked every petal!', 'Rain falls on Route 21 every afternoon. The jungle loves it, and so do Grass types!', { potions: 1, reward: [['superpotion', 3], ['greatorb', 5]] }),
+  reef: T('Leader Marlin', 'marlin', [['drippet', 19], ['jellune', 19], ['finlet', 20], ['tidepup', 22]], 120, 'Welcome to the reef! I dive with my team every morning. Down here, we\'re the ones who set the current!', 'You swam right through my reef!', 'Ember Isle is east across Route 22. Ride the waves, and mind the smoke!', { potions: 1, reward: [['superpotion', 3], ['revive', 2]] }),
+  magma: T('Leader Cinda', 'cinda', [['kidling', 24], ['smogfly', 25], ['pumicorn', 25], ['lavalump', 27]], 130, 'Feel that heat? My creatures dance on lava like it\'s a ballroom floor. Keep up if you can!', 'You stepped right out of the flames... impressive!', 'Cracked lava rock blocks Route 23. Shatter it and climb into the clouds.', { potions: 2, reward: [['hyperpotion', 2], ['sunstone', 1]] }),
+  cirrus: T('Leader Skye', 'skye', [['shorewing', 29], ['skimmerkit', 30], ['macawlure', 30], ['stormtern', 32]], 140, 'Up here we glide on the clouds themselves! My birds have never once touched the ground. Ready for takeoff?', 'Whoa! You clipped my wings!', 'Lagoon Isle is east across Route 24. The water turns pink at sunset!', { potions: 2, reward: [['hyperpotion', 2], ['ultraorb', 3]] }),
+  pearl: T('Leader Perla', 'perla', [['lunahare', 33], ['quartzling', 33], ['lunajel', 34], ['coralynx', 36]], 150, 'Every pearl in my lagoon holds a little moonlight. My Fae creatures will dazzle you!', 'Your shine outshone mine...', 'The Sunken Ruins north of here are pitch dark. Bring Glow, and watch for old stone guardians.', { potions: 2, reward: [['fullheal', 4], ['moonshard', 1]] }),
+  beacon: T('Leader Arc', 'arc', [['voltnewt', 37], ['sparkgull', 38], ['coilfin', 38], ['stormray', 40]], 160, 'My Gym\'s back online, thanks to you! Now, let\'s see if you can handle a full charge!', 'Overloaded! You win, fair and square!', 'Cragmoor is east past Route 26. Keep Wave Ride handy.', { potions: 2, reward: [['maxpotion', 2], ['sparkstone', 1]] }),
+  crag: T('Leader Basalt', 'basalt', [['iguanox', 41], ['crystagger', 42], ['shalepard', 42], ['barnacolossus', 43], ['condorock', 44]], 170, 'Forty years in the quarry. I\'ve split stone harder than any creature you\'ll ever own. Show me otherwise!', 'Hah! You cracked the bedrock itself!', 'Wyrmhold sits in a crater south of here. Its dragons don\'t warm up to strangers.', { potions: 3, reward: [['maxpotion', 2], ['revive', 3]] }),
+  scale: T('Leader Wyneth', 'wyneth', [['crestisk', 45], ['magmawyrm', 46], ['serpentide', 46], ['leviadrake', 47], ['scaleking', 50]], 180, 'I have raised dragons in this crater since before your parents were born. They decide who is worthy. Not me.', 'The dragons bow. So shall I.', 'With eight Azurine badges, sail west to Crown Atoll. The League awaits.', { potions: 3, reward: [['ultraorb', 5], ['maxpotion', 3]] }),
+});
+const ELITE3 = [
+  T('Elite Nalu', 'nalu', [['sailfinn', 55], ['lunajel', 56], ['turtidal', 56], ['sealord', 57], ['titanwhale', 58]], 250, 'Nalu of the Azurine Elite Four. I\'ve surfed every wave between these islands. Let\'s see you ride mine!', 'Wiped out... Nice ride. The next room awaits.', '', { potions: 2 }),
+  T('Elite Coralie', 'coralie', [['coralite', 56], ['quartzeen', 57], ['crystagger', 57], ['kingcoral', 58], ['coralossus', 59]], 250, 'I\'m Coralie. A reef takes a thousand years to grow, and only a moment to break. Mine won\'t break.', 'Shattered... and still so pretty. Go on.', '', { potions: 2 }),
+  T('Elite Haku', 'haku', [['ramblaze', 57], ['sulfurex', 58], ['lavalanche', 58], ['obsidrake', 59], ['magmawyrm', 60]], 250, 'Haku. I was raised on the rim of the volcano with dragons for siblings. Burn bright, or burn out!', 'The fire... has cooled. Go.', '', { potions: 2 }),
+  T('Elite Mira', 'mira', [['shalepard', 58], ['wreckwraith', 59], ['orcanine', 59], ['gloomray', 60], ['inkraken', 61]], 250, 'Mira, last of the Four. Below the waves there is no light at all. That is where my creatures live.', 'You brought light to the deep. The Champion awaits.', '', { potions: 3 }),
+];
+function azurineChampion() {
+  return { ...rivalA('kai', 64, { ace: true, title: 'Champion' }), money: 120, potions: 3 };
+}
 const ELITE2 = [
   T('Elite Calla', 'calla', [['driftsteed', 52], ['medusail', 53], ['reefortress', 53], ['gloomangler', 54], ['crystallix', 55]], 220, 'I am Calla of the Meridia Elite Four. The tide is turning, and it is turning against you!', 'Washed away... Go on, the next room awaits.', '', { potions: 2 }),
   T('Elite Dorran', 'dorran', [['ramparch', 53], ['siroccor', 54], ['trilocrown', 54], ['sandrake', 55], ['titanore', 56]], 220, 'Dorran. I\'ve dug through every canyon in Meridia. Nothing has ever moved me. Let\'s see you try.', 'Hm. The mountain moved.', '', { potions: 2 }),
@@ -162,6 +195,15 @@ const CLASSES_M = {
   snow: [['Skier', 'skier', ['Ice']], ['Ace Trainer', 'acetrainer', ['Ice', 'Metal', 'Electric']], ['Hiker', 'hiker', ['Ground', 'Ice']], ['Bird Keeper', 'birdkeeper', ['Flying', 'Electric']]],
   sea: [['Swimmer', 'swimmer', ['Water']], ['Fisher', 'fisher', ['Water']], ['Sailor', 'sailor', ['Water', 'Brawl']]],
 };
+// the Isles: sailors, divers and dancers on the beaches, hikers on the volcano
+const CLASSES_A = {
+  coast: [['Swimmer', 'swimmer', ['Water']], ['Fisher', 'fisher', ['Water']], ['Beauty', 'beauty', ['Grass', 'Fae']], ['Bird Keeper', 'birdkeeper', ['Flying']], ['Bug Kid', 'bugkid', ['Bug', 'Normal']]],
+  forest: [['Bug Kid', 'bugkid', ['Bug']], ['Beauty', 'beauty', ['Grass']], ['Youngster', 'boy', ['Normal', 'Grass']], ['Bird Keeper', 'birdkeeper', ['Flying', 'Normal']]],
+  sea: [['Swimmer', 'swimmer', ['Water']], ['Fisher', 'fisher', ['Water']], ['Sailor', 'sailor', ['Water', 'Brawl']], ['Bird Keeper', 'birdkeeper', ['Flying']]],
+  cave: [['Hiker', 'hiker', ['Rock']], ['Mystic', 'mystic', ['Spirit', 'Mind', 'Shadow']], ['Fisher', 'fisher', ['Water']]],
+  ash: [['Hiker', 'hiker', ['Rock', 'Fire']], ['Biker', 'biker', ['Fire', 'Toxic']], ['Bug Kid', 'bugkid', ['Bug']]],
+  desert: [['Hiker', 'hiker', ['Rock']], ['Dragon Tamer', 'tamer', ['Dragon']], ['Bird Keeper', 'birdkeeper', ['Flying']], ['Ace Trainer', 'acetrainer', ['Dragon', 'Rock', 'Fire', 'Electric']]],
+};
 const NAMES = ['Ari', 'Beck', 'Cleo', 'Dax', 'Eli', 'Faye', 'Gus', 'Hana', 'Ivo', 'Jade', 'Kip', 'Lena', 'Milo', 'Nell', 'Otto', 'Pia', 'Quin', 'Rosa', 'Sol', 'Tess', 'Uma', 'Vic', 'Wren', 'Yara', 'Zed', 'Bo', 'Cal', 'Dina', 'Ezra', 'Fern'];
 const INTROS = ['Let\'s battle!', 'My team is ready for you!', 'I\'ve been training all day for this!', 'Bet you can\'t beat me!', 'Don\'t hold back!', 'Our eyes met, so we battle!'];
 const LOSES = ['I lost?!', 'You\'re really strong!', 'Back to training...', 'Wow, nice team!', 'No fair!'];
@@ -180,7 +222,7 @@ function getTrainer(id) {
     const region = m.region || 'aldermoor';
     const [lo, hi] = m.lv || [5, 8];
     // only classes that have creatures to use at this point of the region
-    const classes = ((region === 'meridia' && CLASSES_M[m.style]) || CLASSES[m.style] || CLASSES.grass).filter(([, , ty]) => poolFor(ty, lo, region).length);
+    const classes = ((region === 'meridia' && CLASSES_M[m.style]) || (region === 'azurine' && CLASSES_A[m.style]) || CLASSES[m.style] || CLASSES.grass).filter(([, , ty]) => poolFor(ty, lo, region).length);
     const [cls, look, types] = classes.length ? pickR(classes) : ['Youngster', 'boy', ['Normal']];
     const n = Math.min(4, (hi < 15 ? 1 : hi < 30 ? 2 : 3) + (R() < 0.4 ? 1 : 0));
     const party = [];
@@ -232,6 +274,23 @@ function rivalM(who, lvl, o = {}) {
   return { name: o.title ? `${o.title} ${nm}` : nm, look: who, party, money: 60, music: 'boss', potions: lvl > 30 ? 2 : lvl > 15 ? 1 : 0 };
 }
 
+// In the Isles they start over once more, with an island partner. For the Champion fight Kai
+// calls back both of his old partners.
+const COUNTER3 = { batbud: 'cindershell', cindershell: 'tuskle', tuskle: 'batbud' };
+const RIVAL_POOLS_A = { kai: ['parrotune', 'magmaw', 'shalecat', 'coilfin'], juno: ['moonhare', 'jellune', 'kelpie', 'quartzling'] };
+function rivalA(who, lvl, o = {}) {
+  const party = [];
+  const count = o.ace ? 3 : Math.min(4, Math.floor(lvl / 12));
+  RIVAL_POOLS_A[who].slice(0, count).forEach((sp, i) => { const l = lvl - 2 - (i % 3); party.push([evolveFor(sp, l), l]); });
+  party.push([evolveFor(G.rivals3[who], lvl), lvl]);
+  if (o.ace) {
+    if (G.rivals2 && G.rivals2[who]) party.push([evolveFor(G.rivals2[who], lvl + 1), lvl + 1]);
+    if (G.rivals && G.rivals[who]) party.push([evolveFor(G.rivals[who], lvl + 2), lvl + 2]);
+  }
+  const nm = who === 'kai' ? 'Kai' : 'Juno';
+  return { name: o.title ? `${o.title} ${nm}` : nm, look: who, party, money: 80, music: 'boss', potions: lvl > 30 ? 2 : lvl > 15 ? 1 : 0 };
+}
+
 // the rival names the player picked (defaults Kai / Juno)
 export const rivalName = (who) => (G && G.rivalNames && G.rivalNames[who]) || (who === 'kai' ? 'Kai' : 'Juno');
 const title = (n) => n.charAt(0) + n.slice(1).toLowerCase();
@@ -250,6 +309,7 @@ async function whiteout() {
   G.money = Math.floor(G.money / 2);
   if (world.map.e4 !== undefined || world.map.id === 'league_lobby') ['e4_0', 'e4_1', 'e4_2', 'e4_3', 'leagueOpen'].forEach((f) => setFlag(f, false));
   if (world.map.e4m !== undefined || world.map.id === 'league2_lobby') ['e4m_0', 'e4m_1', 'e4m_2', 'e4m_3', 'league2Open'].forEach((f) => setFlag(f, false));
+  if (world.map.e4a !== undefined || world.map.id === 'league3_lobby') ['e4a_0', 'e4a_1', 'e4a_2', 'e4a_3', 'league3Open'].forEach((f) => setFlag(f, false));
   const h = G.lastHeal;
   loadMap(h.map, h.x, h.y, h.dir);
   save();
@@ -656,6 +716,143 @@ const TRIGGERS = {
     await say('...Something enormous stirs deeper in the pass. Meridion has awakened!');
     return true;
   },
+  // ---------- Azurine: rivals ----------
+  async junoRoute21() {
+    if (flag('junoR21') || !flag('rivalsAzurine') || !G.badges.includes('bloom')) return false;
+    await say(`JUNO: ${G.name}! Isn't this rain amazing?!`);
+    const j = await appear('tmp_juno', 'juno');
+    await say('JUNO: I got Kalea\'s badge too! My island team is tiny, but it\'s mighty. Battle me!');
+    const won = await fight(rivalA('juno', 14));
+    await say(won ? 'JUNO: Aww! We\'ll grow up fast, you\'ll see!' : 'JUNO: Yay! Island power!', 'JUNO: The cave past the bushes leads to Shellport. It floods at high tide, so hurry!');
+    setFlag('junoR21');
+    await walkAway(j);
+    return true;
+  },
+  async kaiEmber() {
+    if (flag('kaiEmber') || !flag('rivalsAzurine') || !G.badges.includes('reef')) return false;
+    await say(`KAI: ${G.name}. Took the slow boat?`);
+    const kai = await appear('tmp_kai', 'kai');
+    await say('KAI: I\'ve been training on the beach while you were sightseeing. Let\'s see what you\'ve got!');
+    const won = await fight(rivalA('kai', 22));
+    await say(won ? 'KAI: ...The heat\'s getting to my team. That\'s all.' : 'KAI: Ha! Two regions, and I\'m still catching up? Not anymore.', 'KAI: Cinda\'s Gym is in town. Don\'t get burned.');
+    setFlag('kaiEmber');
+    await walkAway(kai);
+    return true;
+  },
+  async rivalsPearl() {
+    if (flag('rivalsPearl') || !flag('rivalsAzurine') || !G.badges.includes('cirrus')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say(`JUNO: ${G.name}! Perfect timing!`);
+    const j = await appear('tmp_juno', 'juno');
+    const s = freeNear(world.player);
+    spawn({ id: 'tmp_kai', look: 'kai', x: s.x, y: s.y, dir: opposite[s.d] });
+    await say('KAI: Four badges each. Juno and I have been practicing combos on the beach.', 'JUNO: Tag battle! Two against... well, your two!');
+    const won = await fight([rivalA('kai', 31), rivalA('juno', 31)], { double: true });
+    await say(won ? 'KAI: ...We need better combos.' : 'JUNO: Teamwork makes the dream work!', 'JUNO: Did you see the old lighthouse up north at Stormwatch? It\'s been glowing purple at night.', 'KAI: Purple light, strange humming... Sounds like Team Eclipse to me.');
+    setFlag('rivalsPearl');
+    const k = npcById('tmp_kai');
+    await Promise.all([walkAway(j), k ? walkAway(k) : null]);
+    return true;
+  },
+  async rivalsCrag() {
+    if (flag('rivalsCrag') || !flag('rivalsAzurine') || !G.badges.includes('beacon')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say(`KAI: ${G.name}! Hold up!`);
+    const kai = await appear('tmp_kai', 'kai');
+    const s = freeNear(world.player);
+    spawn({ id: 'tmp_juno', look: 'juno', x: s.x, y: s.y, dir: opposite[s.d] });
+    await say('JUNO: We heard you kicked Team Eclipse out of the lighthouse!', 'KAI: Then you\'re warmed up. One more tag battle. No mercy this time!');
+    const won = await fight([rivalA('kai', 41), rivalA('juno', 41)], { double: true });
+    await say(won ? 'JUNO: You\'re SO strong now...' : 'KAI: Finally! That\'s one for us!', 'KAI: Wyrmhold\'s south, inside the old crater. Last Gym before the League.', 'JUNO: Race you there!');
+    setFlag('rivalsCrag');
+    const jn = npcById('tmp_juno');
+    await Promise.all([walkAway(kai), jn ? walkAway(jn) : null]);
+    return true;
+  },
+  async junoAtoll() {
+    if (flag('junoAtoll') || !flag('rivalsAzurine') || regionBadges(G, 'azurine') < 8) return false;
+    await say(`JUNO: ${G.name}! Wait!`);
+    const j = await appear('tmp_juno', 'juno');
+    await say('JUNO: Kai went in first this time. He beat all four of the Elite Four. He\'s the Champion of the Isles!',
+      'JUNO: He called back his partners from Aldermoor AND Meridia for it. He really wants to beat you.',
+      'JUNO: So I did the same! Let me be your warm-up. Everything I\'ve got!');
+    const won = await fight(rivalA('juno', 54, { ace: true }));
+    await say(won ? 'JUNO: You\'re ready. Go show Kai what a real Champion looks like!' : 'JUNO: Hehe! Maybe rest up first. Kai\'s even stronger than me.', 'JUNO: Crown Atoll is right ahead. Good luck!');
+    setFlag('junoAtoll');
+    await walkAway(j);
+    return true;
+  },
+  // ---------- Azurine: Team Eclipse ----------
+  async eclipseTide() {
+    if (flag('eclipseTide') || !flag('marloweStarter')) return false;
+    await say('???: Ugh, it\'s so DAMP in here! Where is that stupid echo coming from?');
+    await appear('ec_corvo', 'corvo');
+    await say('CORVO: WHAT?! Not you! Not on vacation island too!', 'CORVO: Team Eclipse is mapping the sea caves. Something HUGE sleeps under these islands, and the boss wants it!', 'CORVO: You\'re not ruining my first island job. Battle!');
+    const won = await fight(TRAINERS.corvo_a1);
+    if (!won) { despawn('ec_corvo'); return true; }
+    await say('CORVO: Fine! It doesn\'t matter anyway!', 'CORVO: Once the Tide Engine is built, that big sleeper will come to US. See ya!');
+    setFlag('eclipseTide');
+    await vanish('ec_corvo');
+    return true;
+  },
+  async eclipseVolcano() {
+    if (flag('eclipseVolcano') || !G.badges.includes('magma')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say('NYX: Faster, Corvo! The drill has to hit the magma before the Gym Leader notices!');
+    await appear('ec_nyx', 'nyx');
+    const cs = freeNear(world.player);
+    spawn({ id: 'ec_corvo', look: 'corvo', x: cs.x, y: cs.y, dir: opposite[cs.d] });
+    playMusic('boss');
+    await say('CORVO: Nyx! It\'s the kid! From the cave! And Meridia! And Aldermoor!', 'NYX: I KNOW who it is, Corvo.', ...MOTTO,
+      'NYX: The Tide Engine needs three things: fire from the volcano, lightning from the storms, and the power of a legend.', 'NYX: And you\'re standing on our fire. Move!');
+    const won = await fight([TRAINERS.nyx_a2, TRAINERS.corvo_a2], { double: true });
+    if (!won) { despawn('ec_nyx'); despawn('ec_corvo'); playMusic(world.map.music); return true; }
+    await say('NYX: The drill\'s busted... Fine! We got enough heat already.', 'CORVO: And the lightning\'s all taken care of up at Stormwatch! Oops.', 'NYX: CORVO!!', 'BOTH: Team Eclipse is blasting off!');
+    setFlag('eclipseVolcano');
+    await vanish('ec_nyx', 'ec_corvo');
+    playMusic(world.map.music);
+    await say('Deep inside the volcano, something rumbles in its sleep...');
+    return true;
+  },
+  async eclipseStorm() {
+    if (flag('eclipseStorm') || !flag('eclipseRig')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say('GRUNT: Hurry with that net! The storm whale is circling Route 26!');
+    await appear('ec_g1', 'grunt');
+    const s = freeNear(world.player);
+    spawn({ id: 'ec_g2', look: 'grunt', x: s.x, y: s.y, dir: opposite[s.d] });
+    playMusic('boss');
+    await say('GRUNT: It\'s the kid who wrecked the lighthouse! Get them!', 'GRUNT: Without that battery, we need Maelstrix\'s storm power instead. Nobody gets past us!');
+    const won = await fight([TRAINERS.eclipse_a4a, TRAINERS.eclipse_a4b], { double: true });
+    if (!won) { despawn('ec_g1'); despawn('ec_g2'); playMusic(world.map.music); return true; }
+    await say('GRUNT: The net\'s ruined... Retreat!', 'GRUNT: Whatever! Vex is already in Wyrmhold. The engine just needs one last spark!');
+    setFlag('eclipseStorm');
+    await vanish('ec_g1', 'ec_g2');
+    playMusic(world.map.music);
+    return true;
+  },
+  async eclipseWyrm() {
+    if (flag('eclipseSea') || !G.badges.includes('scale')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say('VEX: Stop right there.');
+    await appear('ec_vex', 'vex');
+    const s = freeNear(world.player);
+    spawn({ id: 'ec_nyx', look: 'nyx', x: s.x, y: s.y, dir: opposite[s.d] });
+    playMusic('boss');
+    await say('VEX: Aldermoor. Meridia. And now the Isles. You simply refuse to stay home.',
+      'VEX: The Tide Engine is anchored on Route 28. Fire from the volcano, lightning from the storm. One more surge and Azuron, lord of the deep sea, will rise and obey us.',
+      'VEX: With the oceans in our hands, every region\'s coast will fall into shadow. Nyx! Together!', 'NYX: Right behind you, boss!');
+    const won = await fight([TRAINERS.vex_a, TRAINERS.nyx_a5], { double: true });
+    if (!won) { despawn('ec_vex'); despawn('ec_nyx'); playMusic(world.map.music); return true; }
+    await say('VEX: ...The engine. It\'s surging without us!', 'Boom...!', 'NYX: Boss! The sea is boiling out on Route 28! It\'s waking up on its own!',
+      'VEX: Then it is free, and so are we. Team Eclipse withdraws.', 'VEX: Remember this, child. The world is bigger than three regions.');
+    setFlag('eclipseSea');
+    await vanish('ec_vex', 'ec_nyx');
+    playMusic(world.map.music);
+    refreshNpcs();
+    await say('Far out on Route 28, a huge shape rises from the waves. Azuron has awakened!');
+    return true;
+  },
   async badgeGate() {
     if (G.badges.length >= 8) return false;
     await say(`GUARD: Halt! Only trainers with all eight Aldermoor badges may enter Victory Road.`, `You have ${G.badges.length}. Come back when you have them all!`);
@@ -685,6 +882,16 @@ const TRIGGERS = {
   col('route18', MAPS.route18.w - 5, 'rivalsStorm');
   col('summitpass', MAPS.summitpass.w - 6, 'eclipseSummit');
   col('summitpass', 3, 'kaiSummit');
+  // Azurine Isles
+  col('route21', 3, 'junoRoute21');
+  col('emberisle', 3, 'kaiEmber');
+  col('pearlcove', 3, 'rivalsPearl');
+  row('cragmoor', 5, 'rivalsCrag');
+  col('route29', MAPS.route29.w - 5, 'junoAtoll');
+  col('tidecave', 5, 'eclipseTide');
+  row('route23', 9, 'eclipseVolcano');
+  col('stormwatch', MAPS.stormwatch.w - 4, 'eclipseStorm');
+  col('wyrmhold', 3, 'eclipseWyrm');
 })();
 
 // ---------- talk scripts ----------
@@ -825,6 +1032,70 @@ async function rivalsArrive() {
   despawn('tmp_kai'); despawn('tmp_juno');
 }
 
+// Professor Marlowe: the Isles' starters, the obedience talk, and DEX progress
+async function marloweTalk() {
+  if (!flag('metMarlowe')) {
+    setFlag('metMarlowe');
+    await say(`MARLOWE: Ahoy! You must be ${G.name}. Two regions conquered already? Cedar wrote me all about you!`, 'MARLOWE: I\'m Professor Marlowe. I study the creatures that live between the islands: on reefs, in lagoons, up on the volcano.');
+  }
+  if (!flag('marloweStarter')) {
+    await say('MARLOWE: You know how this goes by now, eh? Creatures here only fully trust trainers who\'ve proven themselves in the Isles.',
+      `MARLOWE: Until you earn Azurine badges, creatures above level ${OBEY_CAPS[regionBadges(G, 'azurine')]} may loaf around instead of listening.`,
+      'MARLOWE: Each badge raises the limit, and with all eight, everyone listens. Same deal as Meridia!',
+      'MARLOWE: And an island partner grows up with you, so it always listens. I just brought three back from the reef!');
+    const aide = npcById('marlowe_aide');
+    if (aide) { faceEachOther(aide); await say('AIDE: They\'re all dry and ready, Professor!'); }
+    await say('MARLOWE: Batbud, the Grass type. Cindershell, the Fire type. Tuskle, the Water type.', 'MARLOWE: Go on, pick a friend!');
+    const sp = await starterScreen(AZURINE_STARTERS);
+    const m = makeMon(sp, 5, { ot: G.name });
+    addToCollection(m);
+    G.starter3 = sp;
+    sfx('badge');
+    await say(`${G.name} received ${SPECIES[sp].name}!`);
+    await offerNickname(m, SPECIES[sp].name);
+    setFlag('marloweStarter');
+    addItem('greatorb', 10);
+    sfx('item');
+    await say(`${G.name} received 10 Great Orbs!`, 'MARLOWE: Your DEX has the Isles\' pages now. Fill \'em up!',
+      'MARLOWE: Wild partners like these love the rainy jungle on Route 21. You might spot more out there.',
+      'MARLOWE: Palmhaven is up the beach to the north. That\'s where the first Gym is. Fair winds!');
+    refreshNpcs();
+    await rivalsArrive3();
+    save();
+    return;
+  }
+  if (!flag('rivalsAzurine')) { await rivalsArrive3(); save(); return; }
+  const AZ = regionDex('azurine');
+  const c = AZ.filter((x) => G.dex.caught[x]).length;
+  await say(`MARLOWE: You've caught ${c} of ${AZ.length} kinds of creatures in the Isles.`);
+  if (c >= 15 && !flag('marloweGift')) { setFlag('marloweGift'); addItem('ultraorb', 5); sfx('item'); await say('MARLOWE: Grand work! Take these 5 Ultra Orbs.'); }
+  else if (c >= 60 && !flag('marloweGift2')) { setFlag('marloweGift2'); addItem('masterorb', 1); sfx('item'); await say('MARLOWE: Half the Isles! Here\'s a MASTER ORB. There are legends out there worth it.'); }
+  else if (c >= AZ.length) await say('MARLOWE: Every creature in the Isles! Maple, Cedar and I will have to build you a museum.');
+  else await say('MARLOWE: Out at sea, the rarest creatures hide around the little islands. Surf close to every shore!');
+}
+
+async function rivalsArrive3() {
+  if (flag('rivalsAzurine')) return;
+  const p = world.player;
+  await say('???: Hey! Save some for us!');
+  const kai = spawn({ id: 'tmp_kai', look: 'kai', x: 4, y: 8, dir: 'up' });
+  const juno = spawn({ id: 'tmp_juno', look: 'juno', x: 6, y: 8, dir: 'up' });
+  await Promise.all([walk(kai, ['up', 'up'], 1), walk(juno, ['up', 'up'], 1)]);
+  p.dir = 'down';
+  await say(`JUNO: ${G.name}! You beat Meridia and didn't even wait for us?!`,
+    'KAI: Whatever. New islands, new rules. We left our teams with Cedar again.',
+    'MARLOWE: Ha! The more the merrier. Two partners left, one each!');
+  G.rivals3 = { kai: COUNTER3[G.starter3], juno: AZURINE_STARTERS.find((x) => x !== G.starter3 && x !== COUNTER3[G.starter3]) };
+  sfx('item');
+  await say(`KAI: ${SPECIES[G.rivals3.kai].name}. It beats yours. Obviously.`,
+    `JUNO: Then ${SPECIES[G.rivals3.juno].name} is mine! Look at its little face!`,
+    'KAI: Eight islands, eight badges. This time I\'m getting to the League first.',
+    'JUNO: And we\'ll battle you on the way. Maybe both at once again!');
+  setFlag('rivalsAzurine');
+  await Promise.all([walk(kai, ['down', 'down', 'down'], 1), walk(juno, ['down', 'down', 'down'], 1)]);
+  despawn('tmp_kai'); despawn('tmp_juno');
+}
+
 // The ferry offers every region you may sail to from here. The Isles open once you're
 // Champion of Meridia.
 const REGION_NAMES = { aldermoor: 'Aldermoor', meridia: 'Meridia', azurine: 'Azurine Isles' };
@@ -858,6 +1129,10 @@ async function gymLeader(id) {
   }
   const short = L.name.split(' ').pop().toUpperCase();
   if (G.badges.includes(id)) { await say(`${short}: ${L.after}`); return; }
+  if (id === 'beacon' && !flag('eclipseRig')) {
+    await say('ARC: Sorry, the Gym\'s dark! Somebody rerouted the island\'s power to the old lighthouse.', 'ARC: I can\'t battle without power. If you could find out who\'s up there...');
+    return;
+  }
   await say(`${short}: ${L.intro}`);
   const won = await fight(L);
   if (!won) return;
@@ -952,12 +1227,11 @@ const SCRIPTS = {
     await ferryTo('azurine');
   },
   async cedar() { await cedarTalk(); },
-  async marlowe() {
-    if (!flag('metMarlowe')) {
-      setFlag('metMarlowe');
-      await say(`MARLOWE: Ahoy! You must be ${G.name}. Two regions conquered already? Cedar wrote me all about you!`, 'MARLOWE: I\'m Professor Marlowe. I study the creatures that live between the islands: on reefs, in lagoons, up on the volcano.');
-    }
-    await say('MARLOWE: The Isles\' three partner creatures are still out on the reefs. I\'m tracking them down!', 'MARLOWE: Until then, have a look around. Eight islands, eight Gyms. Palmhaven is just up the beach.');
+  async marlowe() { await marloweTalk(); },
+  async marloweAide() {
+    if (!flag('marloweStarter')) { await say('AIDE: The professor just got back from the reef with three partner creatures!', 'AIDE: Go say hi. She\'s right over there!'); return; }
+    const n = regionBadges(G, 'azurine'); const cap = OBEY_CAPS[n];
+    await say(`AIDE: With ${n} Azurine badge${n === 1 ? '' : 's'}, creatures up to level ${cap > 99 ? 100 : cap} always listen to you here.`, 'AIDE: Stronger ones might loaf around. Every badge raises the limit!');
   },
   async cedarAide() {
     if (!flag('cedarStarter')) { await say('AIDE: The three partner creatures arrived this morning!', 'AIDE: Go talk to the professor. She\'s been waiting for you!'); return; }
@@ -1048,6 +1322,43 @@ const SCRIPTS = {
     await say('CEDAR: Every creature in Meridia listens to you now.', 'CEDAR: Stay as long as you like. Fill your DEX, and find the legends that still hide around Meridia!');
     save();
   },
+  async leagueGuard3() {
+    if (flag('champion_azurine')) { await say('GUARD: Welcome back, Champion of the Isles! The Elite Four are ready for a rematch.'); setFlag('league3Open'); ['e4a_0', 'e4a_1', 'e4a_2', 'e4a_3', 'e4a_4'].forEach((f) => setFlag(f, false)); return; }
+    if (regionBadges(G, 'azurine') < 8) { await say('GUARD: Welcome to the Azurine League! You need all eight Azurine badges to challenge it.', `GUARD: You have ${regionBadges(G, 'azurine')}. Come back when you have them all!`); return; }
+    if (await yesNo('GUARD: Beyond this door are the Isles\' Elite Four and its Champion. You must win every battle in a row. Are you ready?')) {
+      setFlag('league3Open'); await say('GUARD: Then go! The door on the right is open. Good luck!');
+    }
+  },
+  async elite3() {
+    const i = world.map.e4a;
+    const L = ELITE3[i];
+    const short = L.name.split(' ').pop().toUpperCase();
+    if (flag('e4a_' + i)) { await say(`${short}: Go on. The next room awaits.`); return; }
+    await say(`${short}: ${L.intro}`);
+    const won = await fight(L);
+    if (!won) return;
+    setFlag('e4a_' + i);
+    await say(`${short}: ${L.lose}`, 'The door at the back opened!');
+  },
+  async champion3() {
+    if (flag('e4a_4')) { await say('KAI: Go on. Professor Marlowe is waiting.'); return; }
+    await say(`KAI: ${G.name}. I knew you'd come.`, 'KAI: Aldermoor, you beat me. Meridia, you beat Juno. Not here. Not this time.',
+      'KAI: I called back every partner I\'ve ever had. This is my best team ever. Let\'s finish it!');
+    const won = await fight(azurineChampion());
+    if (!won) return;
+    setFlag('e4a_4');
+    await say('KAI: ...Three for three. Unbelievable.', 'KAI: Heh. Honestly? I\'m glad it\'s you. Nobody else could have pushed me this far.', 'KAI: Go on, Champion. The Hall of Fame is through there.', 'The door to the Hall of Fame opened!');
+  },
+  async hallOfFame3() {
+    if (flag('champion_azurine')) { await say('MARLOWE: Welcome back, Champion! Your record in the Isles\' Hall of Fame is safe.'); return; }
+    playMusic('victory');
+    await say(`MARLOWE: ${G.name}! You did it! Champion of the Azurine Isles!`, 'MARLOWE: Three regions, three titles. Maple and Cedar are going to throw you a party.');
+    setFlag('champion_azurine');
+    G.hallOfFame = (G.hallOfFame || []).concat([{ date: Date.now(), region: 'azurine', team: G.party.map((m) => `${name(m)} Lv${m.level}`) }]);
+    sfx('badge');
+    await say('MARLOWE: Every creature in the Isles listens to you now.', 'MARLOWE: Stick around! The legends of the volcano, the storm and the deep are still out there.');
+    save();
+  },
   async hallOfFame() {
     if (flag('champion')) { await say('MAPLE: Welcome back, Champion! Your Hall of Fame record is safe here.'); return; }
     playMusic('victory');
@@ -1104,6 +1415,19 @@ async function trainerBattle(n) {
   const won = await fight(t);
   if (won) setFlag('beat_' + n.trainer);
   if (won && n.trainer === 'eclipse_m3') await eclipseFactory(n);
+  if (won && n.trainer === 'eclipse_a3') await eclipseRig(n);
+}
+
+// after Corvo falls in the Stormwatch lighthouse, he spills the plan
+async function eclipseRig(n) {
+  await say('CORVO: Okay, okay! You win! Stop looking at me like that!',
+    'CORVO: This tower catches lightning. We were storing it in a giant battery for the Tide Engine.',
+    'CORVO: Fire, lightning, and a legend\'s power. That\'s the recipe. Then Azuron, lord of the deep sea, rises from Route 28 and does whatever Vex says.',
+    'CORVO: But you broke the battery, so now the grunts have to catch the storm whale instead. Hah! ...Wait, why did I tell you that?');
+  setFlag('eclipseRig');
+  await vanish(n.id);
+  refreshNpcs();
+  await say('The lighthouse hums down. Power flows back to the Stormwatch Gym!');
 }
 
 // after Nyx falls in the Ironhaven factory, she lets the plan slip
@@ -1119,4 +1443,4 @@ async function eclipseFactory(n) {
 }
 
 // for tests and debugging
-export const _debug = { getTrainer, LEADERS, ELITE2, ELITE, meridiaChampion, TRAINERS };
+export const _debug = { getTrainer, LEADERS, ELITE2, ELITE3, ELITE, meridiaChampion, azurineChampion, rivalA, TRAINERS };

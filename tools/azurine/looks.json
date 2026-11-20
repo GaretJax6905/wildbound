@@ -632,7 +632,7 @@
  "palmwyrm": {
   "name": "Palmwyrm",
   "types": "Dragon/Grass",
-  "look": "a large tall dragon with bark-textured scales, huge palm leaf wings, a crown of coconuts and fronds, sturdy legs like tree trunks",
+  "look": "a long low crocodile-like dragon with bark-textured scales, a row of small palm trees and coconut clusters growing along its back, mangrove-root legs, no wings",
   "evo": ""
  },
  "orcanine": {
@@ -698,7 +698,7 @@
  "solarbird": {
   "name": "Solarbird",
   "types": "Fire/Flying",
-  "look": "a radiant bird with flame-orange and golden plumage, sunburst tail feathers and wings glowing like a tropical sunset",
+  "look": "a frigatebird with sleek black plumage tipped with embers, long angular wings and a huge inflated glowing red-orange throat pouch shaped like a rising sun",
   "evo": ""
  },
  "kingcoral": {
@@ -716,7 +716,7 @@
  "maelstrix": {
   "name": "Maelstrix",
   "types": "Water/Flying",
-  "look": "a legendary giant sea bird with deep-blue and white storm-feathers, its long tail swirling into a whirlpool, wings trailing rain and spray",
+  "look": "a legendary flying sky-whale with a streamlined deep-blue body, long winglike pectoral fins like a flying fish, storm-cloud markings, a glowing whirlpool spiral on its forehead and rain trailing from its fins",
   "evo": ""
  },
  "coralis": {

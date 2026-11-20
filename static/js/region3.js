@@ -3,17 +3,16 @@
 // Lagoon Isle (pink pearl lagoon, sunken ruins, a storm-lashed lighthouse), the rocky
 // Crag Isle, the dragon crater of Wyrmhold, and Crown Atoll where the League stands.
 // Built with the same tools as Aldermoor and Meridia (maps.js passes them in).
-// Trainers stand where they belong but are marked `pending` until the Isles' creatures exist.
 
 export const AZURINE_GYMS = {
-  bloom: { id: 'bloom', type: 'Grass', look: 'beauty', tlook: 'beauty', layout: 2, region: 'azurine' },
-  reef: { id: 'reef', type: 'Water', look: 'swimmer', tlook: 'swimmer', layout: 3, region: 'azurine' },
-  magma: { id: 'magma', type: 'Fire', look: 'hiker', tlook: 'hiker', layout: 1, region: 'azurine' },
-  cirrus: { id: 'cirrus', type: 'Flying', look: 'birdkeeper', tlook: 'birdkeeper', layout: 2, region: 'azurine' },
-  pearl: { id: 'pearl', type: 'Fae', look: 'lass', tlook: 'lass', layout: 3, region: 'azurine' },
-  beacon: { id: 'beacon', type: 'Electric', look: 'scientist', tlook: 'acetrainer', layout: 1, region: 'azurine' },
-  crag: { id: 'crag', type: 'Rock', look: 'blackbelt', tlook: 'hiker', layout: 2, region: 'azurine' },
-  scale: { id: 'scale', type: 'Dragon', look: 'tamer', tlook: 'tamer', layout: 3, region: 'azurine' },
+  bloom: { id: 'bloom', type: 'Grass', look: 'kalea', tlook: 'beauty', layout: 2, region: 'azurine' },
+  reef: { id: 'reef', type: 'Water', look: 'marlin', tlook: 'swimmer', layout: 3, region: 'azurine' },
+  magma: { id: 'magma', type: 'Fire', look: 'cinda', tlook: 'hiker', layout: 1, region: 'azurine' },
+  cirrus: { id: 'cirrus', type: 'Flying', look: 'skye', tlook: 'birdkeeper', layout: 2, region: 'azurine' },
+  pearl: { id: 'pearl', type: 'Fae', look: 'perla', tlook: 'lass', layout: 3, region: 'azurine' },
+  beacon: { id: 'beacon', type: 'Electric', look: 'arc', tlook: 'acetrainer', layout: 1, region: 'azurine' },
+  crag: { id: 'crag', type: 'Rock', look: 'basalt', tlook: 'hiker', layout: 2, region: 'azurine' },
+  scale: { id: 'scale', type: 'Dragon', look: 'wyneth', tlook: 'tamer', layout: 3, region: 'azurine' },
 };
 
 // where things sit on the Isles' Town Map (same 28 x 20 grid)
@@ -38,7 +37,7 @@ export const AZURINE_ISLANDS = [
 ];
 
 export function buildAzurine(A) {
-  const { MAPS, fill, dots, sign, npc, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS } = A;
+  const { MAPS, flag, fill, dots, sign, npc, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS } = A;
   Object.assign(GYMS, AZURINE_GYMS);
   const G = AZURINE_GYMS;
 
@@ -59,8 +58,8 @@ export function buildAzurine(A) {
     const lab = interior('lab_coralline', 'Marlowe Lab', 12, 10, [[5, 9]]);
     dots(lab, 'shelf', [[1, 2], [2, 2], [3, 2], [8, 2], [9, 2], [10, 2]]);
     dots(lab, 'table', [[4, 5], [5, 5], [6, 5]]); dots(lab, 'pc', [[10, 4]]); dots(lab, 'plant', [[1, 8], [10, 8]]); dots(lab, 'console', [[6, 2]]);
-    npc(lab, { id: 'marlowe', look: 'scientist', x: 5, y: 3, dir: 'down', move: 'static', script: 'marlowe' });
-    npc(lab, { id: 'marlowe_aide', look: 'aide', x: 9, y: 6, dir: 'left', move: 'wander', text: ['The Isles\' partner creatures are still out on the reefs.', 'Once the professor finds them, you\'ll get to pick one!'] });
+    npc(lab, { id: 'marlowe', look: 'marlowe', x: 5, y: 3, dir: 'down', move: 'static', script: 'marlowe' });
+    npc(lab, { id: 'marlowe_aide', look: 'aide', x: 9, y: 6, dir: 'left', move: 'wander', script: 'marloweAide' });
   }
 
   // ---------- Route 20 (beach) -> Palmhaven (Gym 1: Grass, jungle village) ----------
@@ -176,7 +175,7 @@ export function buildAzurine(A) {
     dots(b, 'crate', [[1, 13], [2, 13], [14, 13], [13, 2]]);
     npc(b, { id: 'er_g1', look: 'grunt', x: 3, y: 10, dir: 'right', trainer: 'eclipse_a1', sight: 3 });
     npc(b, { id: 'er_g2', look: 'grunt', x: 12, y: 10, dir: 'left', trainer: 'eclipse_a2', sight: 3 });
-    npc(b, { id: 'er_admin', look: 'corvo', x: 8, y: 5, dir: 'down', trainer: 'eclipse_a3', sight: 4 });
+    npc(b, { id: 'er_admin', look: 'corvo', x: 8, y: 5, dir: 'down', trainer: 'eclipse_a3', sight: 4, show: '!eclipseRig' });
   }
 
   // ---------- Route 26 (sea) -> Cragmoor (Gym 7: Rock) ----------
@@ -225,20 +224,25 @@ export function buildAzurine(A) {
     const lobby = interior('league3_lobby', 'Azurine League', 12, 9, [[5, 8], [6, 8]], { heal: true });
     fill(lobby, 3, 3, 6, 1, 'counter'); dots(lobby, 'healer', [[7, 2]]); dots(lobby, 'statue', [[1, 6], [10, 6]]);
     npc(lobby, { id: 'nurse', look: 'nurse', x: 5, y: 2, dir: 'down', move: 'static', script: 'nurse' });
-    npc(lobby, { id: 'lg3_guard', look: 'guide', x: 10, y: 2, dir: 'down', move: 'static', text: ['GUARD: Welcome to the Azurine League!', 'The Elite Four are still on their islands, training. Come back when you hold all eight Azurine badges.'] });
+    npc(lobby, { id: 'lg3_guard', look: 'guide', x: 10, y: 2, dir: 'down', move: 'static', script: 'leagueGuard3' });
     fill(lobby, 11, 2, 1, 1, 'mat');
-    const rooms = [['e4a_1', 'Elite Room I', 'marble'], ['e4a_2', 'Elite Room II', 'icefloor'], ['e4a_3', 'Elite Room III', 'dkfloor'], ['e4a_4', 'Elite Room IV', 'gymfloor'], ['champ3', 'Champion\'s Hall', 'carpet']];
-    lobby.warps['11,2'] = { map: rooms[0][0], x: 4, y: 8, dir: 'up', cond: 'league3Open', lockedMsg: 'The door is sealed. The Elite Four are still training.' };
+    const rooms = [['e4a_1', 'Nalu\'s Room', 'icefloor'], ['e4a_2', 'Coralie\'s Room', 'marble'], ['e4a_3', 'Haku\'s Room', 'dkfloor'], ['e4a_4', 'Mira\'s Room', 'gymfloor'], ['champ3', 'Champion\'s Hall', 'carpet']];
+    lobby.warps['11,2'] = { map: rooms[0][0], x: 4, y: 8, dir: 'up', cond: 'league3Open', lockedMsg: 'Talk to the guard first.' };
     rooms.forEach(([id, name, floor], i) => {
       const r = interior(id, name, 10, 10, [], { base: floor, music: 'boss' });
       dots(r, 'statue', [[1, 3], [8, 3], [1, 7], [8, 7]]);
-      npc(r, { id: 'e4a', look: ['swimmer', 'hiker', 'psychic', 'tamer', 'kai'][i], x: 4, y: 3, dir: 'down', move: 'static', text: ['...The League isn\'t ready yet. Come back later!'] });
-      const next = rooms[i + 1] ? rooms[i + 1][0] : 'league3_lobby';
+      npc(r, { id: 'e4a', look: ['nalu', 'coralie', 'haku', 'mira', 'kai'][i], x: 4, y: 3, dir: 'down', move: 'static', script: i === 4 ? 'champion3' : 'elite3' });
+      r.e4a = i;
+      const next = rooms[i + 1] ? rooms[i + 1][0] : 'halloffame3';
       fill(r, 4, 1, 2, 1, 'mat');
       r.warps['4,1'] = { map: next, x: 4, y: 8, dir: 'up', cond: `e4a_${i}`, lockedMsg: 'The way forward is sealed until you win.' };
       r.warps['5,1'] = r.warps['4,1'];
       r.exitTo = { map: 'league3_lobby', x: 5, y: 7, dir: 'down' };
     });
+    const hof = interior('halloffame3', 'Hall of Fame', 10, 10, [[4, 9], [5, 9]], { base: 'carpet', music: 'victory' });
+    dots(hof, 'statue', [[2, 3], [7, 3]]);
+    npc(hof, { id: 'hof_marlowe', look: 'marlowe', x: 4, y: 3, dir: 'down', move: 'static', script: 'hallOfFame3' });
+    hof.exitTo = { map: 'crownatoll', x: 10, y: 8, dir: 'down' };
   }
 
   // ---- special encounters: the starters gather in the Route 21 jungle; four legends hide around the Isles ----
@@ -266,8 +270,6 @@ export function buildAzurine(A) {
   };
   special('route21', 'batbud', 10, [12, 4]); special('route21', 'cindershell', 10, [18, 12]); special('route21', 'tuskle', 10, [26, 4]);
   special('magmatunnel', 'caldoros', 55, [13, 10]); special('route26', 'maelstrix', 55, [13, 20]);
-  special('coraldepths', 'coralis', 58, [14, 10]); special('route28', 'azuron', 62, [19, 10]);
+  special('coraldepths', 'coralis', 58, [14, 10]); special('route28', 'azuron', 62, [19, 10], () => flag('eclipseSea') && !flag('caught_azuron'));
 
-  // every trainer in the Isles waits for its roster (the Isles' own creatures come later)
-  for (const m of Object.values(MAPS)) if (m.region === 'azurine') for (const n of m.npcs) if (n.trainer) n.pending = true;
 }

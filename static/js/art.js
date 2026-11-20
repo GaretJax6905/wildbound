@@ -752,6 +752,20 @@ export const LOOKS = {
   dorran: { skin: '#a87048', hair: '#504030', shirt: '#a06838', pants: '#584028', beard: true },
   lyra: { skin: '#f8d8b8', hair: '#58a048', shirt: '#a8d070', pants: '#605030', long: true },
   voss: { skin: '#e8c8a8', hair: '#f8f0a0', shirt: '#383870', pants: '#202040', spiky: true, coat: true },
+  // Azurine Isles: Professor Marlowe, the eight Leaders and the Elite Four
+  marlowe: { skin: '#c88860', hair: '#e8e0d0', shirt: '#f8f8f0', pants: '#3878a0', coat: true, long: true },
+  kalea: { skin: '#c89068', hair: '#302018', shirt: '#e85878', pants: '#58a048', long: true },
+  marlin: { skin: '#e0b088', hair: '#2858a0', shirt: '#204870', pants: '#183050', spiky: true },
+  cinda: { skin: '#b87850', hair: '#e04820', shirt: '#f0a030', pants: '#a02818', long: true },
+  skye: { skin: '#f0d0b0', hair: '#f0f0f0', shirt: '#58b8e8', pants: '#e8e8f0', hat: '#e8d040', hatB: '#a08020' },
+  perla: { skin: '#f8e0d0', hair: '#f0a8c8', shirt: '#f8f0f8', pants: '#e888b8', long: true },
+  arc: { skin: '#c89070', hair: '#383838', shirt: '#f0c830', pants: '#304060', long: true, hat: '#f8f8f8', hatB: '#c0c0c8' },
+  basalt: { skin: '#a06840', hair: '#585858', shirt: '#808078', pants: '#484038', beard: true },
+  wyneth: { skin: '#e0c0a0', hair: '#c8c8d0', shirt: '#583878', pants: '#302040', long: true, coat: true },
+  nalu: { skin: '#a87048', hair: '#181818', shirt: '#38a0c0', pants: '#f0e8d0', spiky: true },
+  coralie: { skin: '#f0d0c0', hair: '#f07860', shirt: '#f8b0a0', pants: '#f8f0e8', long: true },
+  haku: { skin: '#b88058', hair: '#201818', shirt: '#c03020', pants: '#302020', spiky: true, coat: true },
+  mira: { skin: '#e8d8e8', hair: '#283858', shirt: '#2a3050', pants: '#181828', long: true, coat: true },
 };
 
 // The player can be a boy or a girl. LOOKS.player is swapped in place so every

@@ -359,9 +359,9 @@ c('albatrice', 'Albatrice', 'Flying', 470, 'fast', '', 'route28', 'bird', '#f8f8
 c('palmdrake', 'Palmdrake', 'Dragon/Grass', 300, 'tank', 'palmwyrm:48', 'route28:r', 'dragon', '#6a5838,#58b040,#f0d898', 'eyes=cute',
   'A little dragon with a palm-frond crest. It drops coconuts on its friends as gifts.',
   'a small brown baby dragon with a crest of green palm fronds on its head, scales like palm bark and a coconut held in its arms')
-c('palmwyrm', 'Palmwyrm', 'Dragon/Grass', 530, 'tank', '', '', 'dragon', '#4a3e28,#3e9030,#e0c078', 'eyes=mean wings=big',
-  'Its wings are huge palm leaves. Whole islands sprout where it naps.',
-  'a large tall dragon with bark-textured scales, huge palm leaf wings, a crown of coconuts and fronds, sturdy legs like tree trunks')
+c('palmwyrm', 'Palmwyrm', 'Dragon/Grass', 530, 'tank', '', '', 'dragon', '#4a3e28,#3e9030,#e0c078', 'eyes=mean',
+  'A whole grove grows along its back. When it lies still on a beach, people mistake it for an island.',
+  'a long low crocodile-like dragon with bark-textured scales, a row of small palm trees and coconut clusters growing along its back, mangrove-root legs, no wings')
 c('orcanine', 'Orcanine', 'Water/Shadow', 490, 'phys', '', 'route28:w', 'fish', '#181820,#f8f8f8,#606878', 'eyes=mean',
   'It hunts in clever packs and herds fish into tight balls before striking.',
   'a powerful orca with glossy black and white markings shaped like a wolf mask, a tall dorsal fin and sharp teeth')
@@ -397,8 +397,8 @@ c('rootstrider', 'Rootstrider', 'Grass/Water', 480, 'tank', '', 'route29', 'gole
   'A mangrove tree that walks on its stilt roots through the shallows.',
   'a walking mangrove tree creature standing on tall arched stilt roots, leafy canopy head with a sleepy face, small crabs on its roots')
 c('solarbird', 'Solarbird', 'Fire/Flying', 480, 'spec', '', 'route29:r', 'bird', '#f8a020,#f04020,#f8e060', 'eyes=mean wings=big glow',
-  'It flies toward the sunset every evening and is said to carry the sun to bed.',
-  'a radiant bird with flame-orange and golden plumage, sunburst tail feathers and wings glowing like a tropical sunset')
+  'It puffs its glowing throat pouch at dawn. Fishers say it is the reason the sun rises.',
+  'a frigatebird with sleek black plumage tipped with embers, long angular wings and a huge inflated glowing red-orange throat pouch shaped like a rising sun')
 c('kingcoral', 'Kingcoral', 'Rock/Water', 490, 'tank', '', 'route29:r', 'golem', '#c84060,#f8d0a0,#782840', 'eyes=mean crown',
   'A coral boulder crowned with a living reef. It sits at the gate of Crown Atoll.',
   'a stout regal creature made of red coral rock with a crown of colorful living coral and sea fans, stern face and a royal posture')
@@ -407,9 +407,9 @@ c('kingcoral', 'Kingcoral', 'Rock/Water', 490, 'tank', '', 'route29:r', 'golem',
 c('caldoros', 'Caldoros', 'Fire/Dragon', 600, 'legend', '', 'static:magmatunnel', 'dragon', '#b82810,#1e1414,#f8b030', 'eyes=mean wings=big glow crown',
   'The volcano dragon that raised Ember Isle from the sea. It sleeps in the heart of the mountain.',
   'a legendary colossal volcano dragon with a body of black basalt and rivers of lava, a crater-shaped crown spewing fire and smoke, huge ash-gray wings')
-c('maelstrix', 'Maelstrix', 'Water/Flying', 600, 'legend', '', 'static:route26', 'bird', '#2850a0,#e0f0f8,#80c0f0', 'eyes=mean wings=big glow',
-  'It stirs the great whirlpools between the islands with every beat of its wings.',
-  'a legendary giant sea bird with deep-blue and white storm-feathers, its long tail swirling into a whirlpool, wings trailing rain and spray')
+c('maelstrix', 'Maelstrix', 'Water/Flying', 600, 'legend', '', 'static:route26', 'fish', '#2850a0,#e0f0f8,#80c0f0', 'eyes=mean wings=big glow',
+  'A whale that swims through the sky. The whirlpools between the islands follow its path below.',
+  'a legendary flying sky-whale with a streamlined deep-blue body, long winglike pectoral fins like a flying fish, storm-cloud markings, a glowing whirlpool spiral on its forehead and rain trailing from its fins')
 c('coralis', 'Coralis', 'Water/Fae', 600, 'legend', '', 'static:coraldepths', 'floater', '#f8a0c0,#f8f8ff,#60c8e0', 'eyes=big glow crown',
   'The guardian of every reef. Coral grows wherever its tears fall.',
   'a legendary graceful reef spirit shaped like a giant floating sea slug with frilly pink and coral-orange ruffled fins like silk, pearl spots, a crown of coral and starfish, glowing gently')
