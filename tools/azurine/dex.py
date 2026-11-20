@@ -204,8 +204,8 @@ c('quartzling', 'Quartzling', 'Rock/Fae', 285, 'spdef', 'quartzeen:38', 'magmatu
   'A little crystal that formed in a lava bubble. It chimes when it is happy.',
   'a small floating cluster of pink and clear quartz crystals with a cute face and sparkles')
 c('quartzeen', 'Quartzeen', 'Rock/Fae', 490, 'spdef', '', '', 'floater', '#e0c8f0,#a870d0,#f8f0ff', 'eyes=big glow crown',
-  'Light shining through its body splits into rainbows. Cave explorers call it the Cave Queen.',
-  'a graceful floating crystal creature like a queen with a gown of rose quartz crystals, a tiara of amethyst points, rainbow light refracting')
+  'It sleeps sealed inside a stone shell. When it opens, the whole tunnel glows pink.',
+  'a large floating geode: a round cracked-open gray rock shell with a glowing pink and purple crystal interior, a calm face inside the crystals, small quartz shards orbiting it')
 c('magmaw', 'Magmaw', 'Fire/Dragon', 300, 'phys', 'magmawyrm:42', 'magmatunnel:r', 'dragon', '#e85020,#3a2a2a,#f8c048', 'eyes=cute',
   'A baby dragon that hatched from an egg buried in lava. It loves chewing hot rocks.',
   'a small chubby baby dragon with red-orange scales, a wide mouth showing glowing lava inside, stubby wings and a rocky belly')
@@ -412,7 +412,7 @@ c('maelstrix', 'Maelstrix', 'Water/Flying', 600, 'legend', '', 'static:route26',
   'a legendary giant sea bird with deep-blue and white storm-feathers, its long tail swirling into a whirlpool, wings trailing rain and spray')
 c('coralis', 'Coralis', 'Water/Fae', 600, 'legend', '', 'static:coraldepths', 'floater', '#f8a0c0,#f8f8ff,#60c8e0', 'eyes=big glow crown',
   'The guardian of every reef. Coral grows wherever its tears fall.',
-  'a legendary graceful mermaid-like reef spirit with a body of pink coral and pearl, flowing fins like silk, a crown of coral and starfish, glowing gently')
+  'a legendary graceful reef spirit shaped like a giant floating sea slug with frilly pink and coral-orange ruffled fins like silk, pearl spots, a crown of coral and starfish, glowing gently')
 c('azuron', 'Azuron', 'Dragon/Fae', 600, 'legend', '', 'static:route28', 'serpent', '#3070d0,#f8f0ff,#f0c040', 'eyes=big glow crown',
   'A mythical sky-and-sea dragon said to have painted the Isles\' waters their blue.',
   'a mythical long flowing serpent dragon with azure scales shifting from sky blue to deep sea blue, golden whiskers, feathery fins and a pearl held in its claw')

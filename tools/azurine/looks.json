@@ -344,7 +344,7 @@
  "quartzeen": {
   "name": "Quartzeen",
   "types": "Rock/Fae",
-  "look": "a graceful floating crystal creature like a queen with a gown of rose quartz crystals, a tiara of amethyst points, rainbow light refracting",
+  "look": "a large floating geode: a round cracked-open gray rock shell with a glowing pink and purple crystal interior, a calm face inside the crystals, small quartz shards orbiting it",
   "evo": ""
  },
  "magmaw": {
@@ -722,7 +722,7 @@
  "coralis": {
   "name": "Coralis",
   "types": "Water/Fae",
-  "look": "a legendary graceful mermaid-like reef spirit with a body of pink coral and pearl, flowing fins like silk, a crown of coral and starfish, glowing gently",
+  "look": "a legendary graceful reef spirit shaped like a giant floating sea slug with frilly pink and coral-orange ruffled fins like silk, pearl spots, a crown of coral and starfish, glowing gently",
   "evo": ""
  },
  "azuron": {
