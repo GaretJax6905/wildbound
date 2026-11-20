@@ -746,7 +746,7 @@ export const LOOKS = {
   fennick: { skin: '#e0c0a8', hair: '#70c040', shirt: '#383040', pants: '#584878', spiky: true },
   ysolde: { skin: '#f0e8f0', hair: '#c8c0e0', shirt: '#584870', pants: '#302840', long: true, coat: true },
   bram: { skin: '#c88858', hair: '#a04020', shirt: '#706050', pants: '#383028', beard: true },
-  nevia: { skin: '#f8e0d8', hair: '#f0f0f8', shirt: '#a8d8f0', pants: '#f8f8f8', long: true },
+  nevia: { skin: '#f8e0d8', hair: '#181820', shirt: '#f8f8f8', pants: '#283860' },
   corwin: { skin: '#d8b090', hair: '#181820', shirt: '#282838', pants: '#181828', coat: true },
   calla: { skin: '#c89070', hair: '#30a0b0', shirt: '#58c8d0', pants: '#f8f8f8', long: true },
   dorran: { skin: '#a87048', hair: '#504030', shirt: '#a06838', pants: '#584028', beard: true },

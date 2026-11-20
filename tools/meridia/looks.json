@@ -26,7 +26,7 @@
  "forgecko": {
   "name": "Forgecko",
   "types": "Fire",
-  "look": "a lean red-orange lizard standing upright, dark iron-like scale plates on its back and forearms, its tail ends in a glowing hammer-shaped club, sparks around it",
+  "look": "a sturdy four-legged blacksmith gecko walking low like a monitor lizard, red-orange scales with soot patches, riveted iron plates along its spine, glowing cracks, and a tail ending in a glowing hot iron ingot",
   "evo": "smeltwyrm:36"
  },
  "smeltwyrm": {
@@ -38,7 +38,7 @@
  "splotter": {
   "name": "Splotter",
   "types": "Water",
-  "look": "a cute blue otter pup with a pale cream belly, round ears, whiskers, holding a smooth pebble, a little water droplet curl on its head",
+  "look": "a tiny sea-otter pup floating belly-up in a ring of water hugging a pebble, steel-blue fur, a pale sandy face, a curly water-spout tuft on its head and a flat paddle tail",
   "evo": "surfotter:16"
  },
  "surfotter": {
@@ -458,7 +458,7 @@
  "gravepup": {
   "name": "Gravepup",
   "types": "Spirit",
-  "look": "a small translucent pale ghost puppy with floppy ears, a wispy tail, a little collar with a bell",
+  "look": "a small lavender-gray ghost puppy with floppy ears, cyan eyes, a collar with a brass bell and a curling ghost tail instead of hind feet",
   "evo": "hollowhound:34"
  },
  "hollowhound": {
@@ -596,13 +596,13 @@
  "sparkshade": {
   "name": "Sparkshade",
   "types": "Electric/Spirit",
-  "look": "a small floating ghostly spark with a blue body, a yellow lightning-shaped tail and a cute face, glowing",
+  "look": "a small round ghost of fluffy indigo storm cloud with stubby cloud arms, big yellow eyes and a yellow spark core in its chest",
   "evo": "stormwisp:duskstone"
  },
  "stormwisp": {
   "name": "Stormwisp",
   "types": "Electric/Spirit",
-  "look": "a floating ghostly storm phantom made of ball lightning and blue mist, with forked lightning arms and a crackling halo",
+  "look": "a floating thundercloud phantom with a dark navy and violet cloud body, a crown of yellow lightning horns, crackling yellow claws and a long cloud tail",
   "evo": ""
  },
  "armorghast": {

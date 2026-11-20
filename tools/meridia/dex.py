@@ -32,15 +32,15 @@ c('briarbruin', 'Briarbruin', 'Grass/Brawl', 530, 'phys', '', '', 'biped', '#3e7
 c('cindergecko', 'Cindergecko', 'Fire', 309, 'fast', 'forgecko:16', 'static:whisperwood', 'biped', '#e86a30,#f8c048,#fbe2a0', 'eyes=cute tail=flame',
   'This little gecko licks embers out of campfires. Its tail glows brighter the happier it is.',
   'a small orange gecko lizard with glowing ember spots along its back, a tail tip that glows like a hot coal, sticky toe pads and big amber eyes')
-c('forgecko', 'Forgecko', 'Fire', 405, 'spec', 'smeltwyrm:36', '', 'biped', '#c84a20,#f0a038,#f8d890', 'eyes=mean tail=flame',
-  'Its scales harden into plates of iron as it grows. It hammers stones with its tail to shape them.',
-  'a lean red-orange lizard standing upright, dark iron-like scale plates on its back and forearms, its tail ends in a glowing hammer-shaped club, sparks around it')
+c('forgecko', 'Forgecko', 'Fire', 405, 'spec', 'smeltwyrm:36', '', 'quad', '#c84a20,#f0a038,#f8d890', 'eyes=mean tail=flame',
+  'Iron plates are starting to grow along its back. It shapes stones by pounding them with the hot ingot on its tail.',
+  'a sturdy four-legged blacksmith gecko walking low like a monitor lizard, red-orange scales with soot patches, riveted iron plates along its spine, glowing cracks, and a tail ending in a glowing hot iron ingot')
 c('smeltwyrm', 'Smeltwyrm', 'Fire/Metal', 530, 'spec', '', '', 'dragon', '#a83818,#8a8c98,#f8c060', 'eyes=mean horn=two tail=flame',
   'Molten metal flows in channels along its armor. Blacksmiths say a blade forged in its breath never dulls.',
   'a large armored fire lizard-dragon with steel plating riveted over red scales, glowing molten-orange seams running between the plates, a forge-chimney spine, glowing eyes')
 c('splotter', 'Splotter', 'Water', 314, 'bal', 'surfotter:16', 'static:whisperwood', 'quad', '#4a90c8,#a8d8f0,#f0f8ff', 'eyes=cute',
-  'A playful otter pup that splashes everyone it meets. It floats on its back to sleep, holding a pebble.',
-  'a cute blue otter pup with a pale cream belly, round ears, whiskers, holding a smooth pebble, a little water droplet curl on its head')
+  'A sea-otter pup that spends its whole day floating on its back. It never lets go of its favorite pebble.',
+  'a tiny sea-otter pup floating belly-up in a ring of water hugging a pebble, steel-blue fur, a pale sandy face, a curly water-spout tuft on its head and a flat paddle tail')
 c('surfotter', 'Surfotter', 'Water', 405, 'fast', 'glaciotter:36', '', 'quad', '#3478b8,#8cc8e8,#e8f4fc', 'eyes=mean',
   'It rides the waves on a slab of driftwood it carved itself. It can outswim most boats.',
   'a sleek blue otter riding on a carved driftwood surfboard, a frothy wave crest mane, long flat tail like a rudder')
@@ -264,9 +264,9 @@ c('rustling', 'Rustling', 'Grass', 280, 'spdef', 'leafwraith:32', 'route16', 'bl
 c('leafwraith', 'Leafwraith', 'Grass/Spirit', 470, 'spec', '', '', 'floater', '#b84a28,#e8a040,#5a3a2a', 'eyes=mean glow',
   'A whirling spirit of fallen leaves that drifts through autumn woods at dusk, humming to itself.',
   'a tall floating spirit made of swirling autumn leaves with a hooded shape, glowing amber eyes and wispy branch-like arms')
-c('gravepup', 'Gravepup', 'Spirit', 290, 'phys', 'hollowhound:34', 'route16', 'quad', '#c8c8d8,#6a6a88,#f0f0f8', 'ears=floppy eyes=cute',
+c('gravepup', 'Gravepup', 'Spirit', 290, 'phys', 'hollowhound:34', 'route16', 'quad', '#a8a0c0,#5a5078,#e0d8f0', 'ears=floppy eyes=cute',
   'A ghostly puppy that follows lonely travelers home. It wags its tail even though nobody can pet it.',
-  'a small translucent pale ghost puppy with floppy ears, a wispy tail, a little collar with a bell')
+  'a small lavender-gray ghost puppy with floppy ears, cyan eyes, a collar with a brass bell and a curling ghost tail instead of hind feet')
 c('hollowhound', 'Hollowhound', 'Spirit/Shadow', 490, 'phys', '', '', 'quad', '#4a4a68,#80f0c8,#2a2a3a', 'ears=pointy eyes=mean glow',
   'Its eyes glow like lanterns on foggy nights. It guards the gates of Kingsgate\'s old castle.',
   'a large spectral hound with dark smoky fur, glowing mint-green eyes and paw-prints, ghostly chains, flames of mist along its back')
@@ -339,12 +339,12 @@ c('umbrapede', 'Umbrapede', 'Shadow/Bug', 300, 'phys', 'centigloom:34', 'stormca
 c('centigloom', 'Centigloom', 'Shadow/Toxic', 495, 'phys', '', '', 'serpent', '#2a1a2a,#c03860,#5a3a5a', 'eyes=mean fangs',
   'It coils through the deepest tunnels. Its venom makes the world go dark for a moment.',
   'a huge coiled centipede with black glossy armor, crimson legs, venomous fangs and dripping violet poison')
-c('sparkshade', 'Sparkshade', 'Electric/Spirit', 300, 'spec', 'stormwisp:duskstone', 'stormcave', 'floater', '#80a0f0,#f0e060,#c0d0ff', 'eyes=cute glow',
-  'A spark that wandered into the cave during a storm and never found its way out. It hums like a lightbulb.',
-  'a small floating ghostly spark with a blue body, a yellow lightning-shaped tail and a cute face, glowing')
-c('stormwisp', 'Stormwisp', 'Electric/Spirit', 490, 'spec', '', '', 'floater', '#4a68d0,#f8e040,#a0b8ff', 'eyes=mean glow',
-  'A phantom of ball lightning. Old miners say its crackle is the voice of the storm.',
-  'a floating ghostly storm phantom made of ball lightning and blue mist, with forked lightning arms and a crackling halo')
+c('sparkshade', 'Sparkshade', 'Electric/Spirit', 300, 'spec', 'stormwisp:duskstone', 'stormcave', 'floater', '#5a4aa0,#f0d040,#8a7ad0', 'eyes=cute',
+  'A wisp of storm cloud that wandered into the cave during a storm and never found its way out. The spark in its chest hums like a lightbulb.',
+  'a small round ghost of fluffy indigo storm cloud with stubby cloud arms, big yellow eyes and a yellow spark core in its chest')
+c('stormwisp', 'Stormwisp', 'Electric/Spirit', 490, 'spec', '', '', 'floater', '#38305a,#f8d040,#6a5aa0', 'eyes=mean',
+  'A thundercloud phantom crowned with lightning. Old miners say its crackle is the voice of the storm.',
+  'a floating thundercloud phantom with a dark navy and violet cloud body, a crown of yellow lightning horns, crackling yellow claws and a long cloud tail')
 c('armorghast', 'Armorghast', 'Spirit/Metal', 480, 'tank', '', 'stormcave', 'golem', '#7a7e8a,#60e0c0,#3a3e4a', 'eyes=mean glow',
   'An empty suit of armor that still patrols. Nobody knows which old knight it belonged to.',
   'an empty suit of medieval knight armor floating slightly, ghostly green light glowing from the gaps and the visor, holding a broken sword')
