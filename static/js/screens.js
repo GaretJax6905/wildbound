@@ -416,18 +416,20 @@ export async function optionsScreen() {
       { label: 'TEXT', right: ['SLOW', 'MID', 'FAST'][settings.textSpeed] },
       { label: 'MUSIC', right: settings.music ? 'ON' : 'OFF' },
       { label: 'SOUND', right: settings.sfx ? 'ON' : 'OFF' },
+      { label: 'DAY & NIGHT', right: settings.daylight === false ? 'OFF' : 'ON' },
       { label: 'EXPORT SAVE' },
       { label: 'IMPORT SAVE' },
       { label: 'BACK' },
     ];
     const r = await menu({ items, x: 60, y: 10, w: 176, index: idx });
-    if (r < 0 || r === 5) { saveSettings(); return; }
+    if (r < 0 || r === 6) { saveSettings(); return; }
     idx = r;
     if (r === 0) settings.textSpeed = (settings.textSpeed + 1) % 3;
     if (r === 1) { settings.music = !settings.music; applyVolumes(); }
     if (r === 2) { settings.sfx = !settings.sfx; applyVolumes(); }
-    if (r === 3) { exportSave(); await say('Your save file was downloaded!', 'Keep it somewhere safe. You can load it on any device with IMPORT SAVE.'); }
-    if (r === 4) {
+    if (r === 3) settings.daylight = settings.daylight === false;
+    if (r === 4) { exportSave(); await say('Your save file was downloaded!', 'Keep it somewhere safe. You can load it on any device with IMPORT SAVE.'); }
+    if (r === 5) {
       if (!(await yesNo('Load a save file? Your current progress will be replaced.'))) continue;
       const ok = await importSaveFile();
       if (ok) { await say('Save loaded! Restarting...'); location.reload(); return; }
@@ -454,7 +456,7 @@ class Title {
     drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 20, 82, 40, 48);
     this.menu.draw(g);
-    text(g, 'v3.12', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v3.13', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }

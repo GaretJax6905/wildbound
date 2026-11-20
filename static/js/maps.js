@@ -833,6 +833,17 @@ function beachify(m) {
     }
   }
   const warp = (x, y) => m.warps && m.warps[`${x},${y}`];
+  // little sea islands get a coconut palm on their outer corners
+  if (m.style === 'sea') {
+    const T2 = (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? 'water' : m.tiles[y][x]);
+    const busy = new Set([...m.npcs.map((n) => `${n.x},${n.y}`), ...m.items.map((i) => `${i.x},${i.y}`)]);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (m.tiles[y][x] !== 'sand' || busy.has(`${x},${y}`) || warp(x, y)) continue;
+      const wx = T2(x - 1, y) === 'water' ? -1 : T2(x + 1, y) === 'water' ? 1 : 0;
+      const wy = T2(x, y - 1) === 'water' ? -1 : T2(x, y + 1) === 'water' ? 1 : 0;
+      if (wx && wy && T2(x - wx, y) === 'sand' && T2(x, y - wy) === 'sand' && ((x * 7 + y * 3) % 2 === 0)) m.tiles[y][x] = 'palm';
+    }
+  }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const t = m.tiles[y][x], d = dist[y][x];
     if (d === 0 || d > 3 || warp(x, y)) continue;

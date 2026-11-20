@@ -1,5 +1,6 @@
 // Overworld: tile movement, NPCs, doors/edges, tall grass, trainers' line of sight,
 // and field moves (Slash bushes, Shatter rocks, Wave Ride water, Heave boulders, Glow dark caves).
+import { settings } from './state.js';
 import { W, H, T, input, wait, fadeOut, fadeIn, setScene, frame, chance, pick } from './engine.js';
 import { MAPS, SOLID, GRASSY, buildingSolid, GYMS } from './maps.js';
 import { tile, prop, person, building, itemBall, creature, setPlayerLook, pathEdge, drawPerson } from './art.js';
@@ -28,13 +29,43 @@ function groundOf(m) {
 }
 // ---- climate: falling rain, snow or volcanic ash over the outdoor maps that call for it ----
 const RAINY = new Set(['route4', 'route6']);
+// soft contact shadow under people, trees and rocks
+const TALL_PROPS = new Set(['tree', 'jungle', 'tpalm', 'palm', 'pine', 'mapletree', 'goldtree', 'deadtree', 'rock', 'shellrock', 'cactus', 'barrelcactus', 'statue', 'pillar', 'hibiscus', 'bush', 'crystal', 'crystal2', 'stalagmite']);
+function groundShadow(g, x, y, rx, ry) {
+  g.fillStyle = 'rgba(16, 24, 32, 0.22)';
+  g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); g.fill();
+}
+// Day and night follow the real clock outdoors: a pink dawn, golden sunset, violet dusk and a
+// blue night with fireflies over the grass. Can be turned off in OPTIONS.
+function skyTint() {
+  const h = new Date().getHours() + new Date().getMinutes() / 60;
+  if (h >= 5 && h < 7) return ['rgba(255, 168, 140, 0.12)', false];
+  if (h >= 7 && h < 17) return null;
+  if (h >= 17 && h < 19) return ['rgba(255, 140, 50, 0.18)', false];
+  if (h >= 19 && h < 21) return ['rgba(90, 60, 150, 0.22)', true];
+  return ['rgba(18, 30, 90, 0.34)', true];
+}
+const FLIES = Array.from({ length: 14 }, (_, i) => ({ x: (i * 53 + 17) % 240, y: (i * 89 + 31) % 160, p: i * 1.7 }));
+function drawDaylight(g, m, cx, cy) {
+  if (settings.daylight === false || m.interior || m.cave || m.dark) return;
+  const t = skyTint();
+  if (!t) return;
+  g.fillStyle = t[0]; g.fillRect(0, 0, W, H);
+  if (!t[1] || !['grass', 'forest', 'route', 'town', 'coast', 'autumn', 'ruins', 'swamp'].includes(m.style)) return;
+  for (const f of FLIES) {
+    const x = wrap(f.x - cx * 0.3 + Math.sin(frame / 70 + f.p) * 12, W), y = wrap(f.y - cy * 0.3 + Math.cos(frame / 55 + f.p) * 8, H);
+    const glow = 0.5 + 0.5 * Math.sin(frame / 18 + f.p * 3);
+    g.fillStyle = `rgba(230, 255, 140, ${0.35 * glow})`; g.fillRect(x - 1, y - 1, 3, 3);
+    g.fillStyle = `rgba(250, 255, 200, ${0.6 + 0.4 * glow})`; g.fillRect(x, y, 1, 1);
+  }
+}
 function weatherOf(m) {
   if (m.interior || m.cave) return null;
   if (m.weather !== undefined) return m.weather;
   if (m.style === 'desert') return 'sand';
   if (m.style === 'snow') return 'snow';
   if (m.style === 'ash') return 'ash';
-  if (RAINY.has(m.id) || m.style === 'sea') return 'rain';
+  if (RAINY.has(m.id) || (m.style === 'sea' && m.region !== 'azurine')) return 'rain';
   return null;
 }
 const FLAKES = Array.from({ length: 80 }, (_, i) => ({ x: (i * 97 + 13) % 240, y: (i * 61 + 7) % 160, s: 0.6 + ((i * 37) % 10) / 12, i }));
@@ -525,9 +556,21 @@ export const worldScene = {
           else if (tn === 'crack') shown = 'cavecrack';
         }
         const pr = prop(shown, vr);
-        if (pr) { const gr = localGround(m, tx, ty); g.drawImage(tile(gr === 'gymfloor' && m.gym && GYMS[m.gym] ? 'gf_' + GYMS[m.gym].type : gr, vr, af), X, Y); g.drawImage(pr, X, Y); }
+        if (pr) { const gr = localGround(m, tx, ty); g.drawImage(tile(gr === 'gymfloor' && m.gym && GYMS[m.gym] ? 'gf_' + GYMS[m.gym].type : gr, vr, af), X, Y); if (TALL_PROPS.has(shown)) groundShadow(g, X + 8, Y + 15, 7, 2.5); g.drawImage(pr, X, Y); }
         else {
           g.drawImage(tile(shown, vr, af), X, Y);
+          // round off the outside corners of tall-grass patches so they don't look like cut-out blocks
+          if (tn === 'tall') {
+            const gt = tile(groundOf(m), vr, af);
+            const open = (dx, dy) => viewTile(m, tx + dx, ty + dy) !== 'tall';
+            for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+              if (!open(dx, 0) || !open(0, dy)) continue;
+              for (let k = 0; k < 3; k++) {
+                const w = 3 - k, sy = dy < 0 ? k : 15 - k, sx = dx < 0 ? 0 : 16 - w;
+                g.drawImage(gt, sx, sy, w, 1, X + sx, Y + sy, w, 1);
+              }
+            }
+          }
           // a sprinkle of walk-over decoration on cave floors
           if (tn === 'cavefloor') {
             const h = (tx * 73856093 ^ ty * 19349663) >>> 0;
@@ -546,6 +589,7 @@ export const worldScene = {
         else if (tn === 'lava') edge(LAVA_BANK, 'lava');
       }
     }
+    for (const b of m.buildings) { g.fillStyle = 'rgba(16, 24, 32, 0.20)'; g.fillRect(b.x * T - cx + 4, (b.y + b.h) * T - cy - 3, b.w * T - 2, 4); g.fillRect((b.x + b.w) * T - cx - 2, b.y * T - cy + 10, 4, b.h * T - 12); }
     for (const b of m.buildings) { const bi = building(b.kind, b.w, b.h, b.door, m.style === 'snow'); g.drawImage(bi, b.x * T - cx, b.y * T - cy - (bi.over || 0)); }
     for (const it of m.items) if (!flag('item_' + it.id)) g.drawImage(itemBall(), it.x * T - cx, it.y * T - cy);
     for (const b of world.boulders) g.drawImage(tile('pushrock'), b.x * T - cx + (b.off ? b.off.x : 0), b.y * T - cy + (b.off ? b.off.y : 0));
@@ -567,6 +611,7 @@ export const worldScene = {
         continue;
       }
       const stepF = a.moving && a.off > 3 && a.off < 13 ? (a.walkPhase % 2 ? 1 : 2) : 0;
+      if (!GRASSY.has(tileAt(a.x, a.y)) && tileAt(a.x, a.y) !== 'water') groundShadow(g, ax + 8, ay + 14, 6, 2);
       drawPerson(g, person(a.look, a.dir, stepF), ax, ay - 3);
       const tx = a.moving && a.off > 8 ? a.tx : a.x, ty = a.moving && a.off > 8 ? a.ty : a.y;
       const under = tileAt(tx, ty);
@@ -581,6 +626,7 @@ export const worldScene = {
     }
     const wx = weatherOf(m);
     if (wx) drawWeather(g, wx, cx, cy);
+    drawDaylight(g, m, cx, cy);
     if (m.dark) {
       const r = world.glow ? 88 : 26;
       g.fillStyle = '#05050c';
