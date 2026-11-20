@@ -42,7 +42,8 @@ export function healFull(m) {
 }
 
 export function expYield(foe, trainer) {
-  return Math.floor((SPECIES[foe.sp].exp * foe.level) / 7 * (trainer ? 1.5 : 1));
+  // tuned in the balance pass: x3.5 keeps a team of four within a few levels of each Gym Leader
+  return Math.floor((SPECIES[foe.sp].exp * foe.level) / 7 * (trainer ? 1.5 : 1) * 3.5);
 }
 
 // Adds exp, returns list of {level, newMoves:[...]} for each level gained.

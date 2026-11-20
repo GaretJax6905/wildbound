@@ -4,9 +4,9 @@
 // Every region's hideout has its own look and layout.
 
 export const HIDEOUTS = {
-  aldermoor: { map: 'hideout_aldermoor', name: 'Eclipse Bunker', lvl: 54, types: ['Shadow', 'Toxic', 'Spirit'], prof: 'maple', champ: 'champion', entry: [6, 20], league: ['crown'] },
-  meridia: { map: 'hideout_meridia', name: 'Eclipse Foundry', lvl: 55, types: ['Shadow', 'Bug', 'Metal'], prof: 'cedar', champ: 'champion_meridia', entry: [7, 20], league: ['zenith'] },
-  azurine: { map: 'hideout_azurine', name: 'Eclipse Grotto', lvl: 58, types: ['Shadow', 'Water', 'Toxic'], prof: 'marlowe', champ: 'champion_azurine', entry: [6, 24], league: ['crownatoll'] },
+  aldermoor: { map: 'hideout_aldermoor', name: 'Eclipse Bunker', lvl: 50, types: ['Shadow', 'Toxic', 'Spirit'], prof: 'maple', champ: 'champion', entry: [6, 20], league: ['crown'] },
+  meridia: { map: 'hideout_meridia', name: 'Eclipse Foundry', lvl: 51, types: ['Shadow', 'Bug', 'Metal'], prof: 'cedar', champ: 'champion_meridia', entry: [7, 20], league: ['zenith'] },
+  azurine: { map: 'hideout_azurine', name: 'Eclipse Grotto', lvl: 54, types: ['Shadow', 'Water', 'Toxic'], prof: 'marlowe', champ: 'champion_azurine', entry: [6, 24], league: ['crownatoll'] },
 };
 
 export function buildHideouts(A) {

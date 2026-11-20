@@ -152,29 +152,29 @@ Object.assign(LEADERS, {
   scale: T('Leader Wyneth', 'wyneth', [['crestisk', 45], ['magmawyrm', 46], ['serpentide', 46], ['leviadrake', 47], ['scaleking', 50]], 180, 'I have raised dragons in this crater since before your parents were born. They decide who is worthy. Not me.', 'The dragons bow. So shall I.', 'With eight Azurine badges, sail west to Crown Atoll. The League awaits.', { potions: 3, reward: [['ultraorb', 5], ['maxpotion', 3]] }),
 });
 const ELITE3 = [
-  T('Elite Nalu', 'nalu', [['sailfinn', 55], ['lunajel', 56], ['turtidal', 56], ['sealord', 57], ['titanwhale', 58]], 250, 'Nalu of the Azurine Elite Four. I\'ve surfed every wave between these islands. Let\'s see you ride mine!', 'Wiped out... Nice ride. The next room awaits.', '', { potions: 2 }),
-  T('Elite Coralie', 'coralie', [['coralite', 56], ['quartzeen', 57], ['crystagger', 57], ['kingcoral', 58], ['coralossus', 59]], 250, 'I\'m Coralie. A reef takes a thousand years to grow, and only a moment to break. Mine won\'t break.', 'Shattered... and still so pretty. Go on.', '', { potions: 2 }),
-  T('Elite Haku', 'haku', [['ramblaze', 57], ['sulfurex', 58], ['lavalanche', 58], ['obsidrake', 59], ['magmawyrm', 60]], 250, 'Haku. I was raised on the rim of the volcano with dragons for siblings. Burn bright, or burn out!', 'The fire... has cooled. Go.', '', { potions: 2 }),
-  T('Elite Mira', 'mira', [['shalepard', 58], ['wreckwraith', 59], ['orcanine', 59], ['gloomray', 60], ['inkraken', 61]], 250, 'Mira, last of the Four. Below the waves there is no light at all. That is where my creatures live.', 'You brought light to the deep. The Champion awaits.', '', { potions: 3 }),
+  T('Elite Nalu', 'nalu', [['sailfinn', 51], ['lunajel', 52], ['turtidal', 52], ['sealord', 53], ['titanwhale', 54]], 250, 'Nalu of the Azurine Elite Four. I\'ve surfed every wave between these islands. Let\'s see you ride mine!', 'Wiped out... Nice ride. The next room awaits.', '', { potions: 2 }),
+  T('Elite Coralie', 'coralie', [['coralite', 52], ['quartzeen', 53], ['crystagger', 53], ['kingcoral', 54], ['coralossus', 55]], 250, 'I\'m Coralie. A reef takes a thousand years to grow, and only a moment to break. Mine won\'t break.', 'Shattered... and still so pretty. Go on.', '', { potions: 2 }),
+  T('Elite Haku', 'haku', [['ramblaze', 53], ['sulfurex', 54], ['lavalanche', 54], ['obsidrake', 55], ['magmawyrm', 56]], 250, 'Haku. I was raised on the rim of the volcano with dragons for siblings. Burn bright, or burn out!', 'The fire... has cooled. Go.', '', { potions: 2 }),
+  T('Elite Mira', 'mira', [['shalepard', 54], ['wreckwraith', 55], ['orcanine', 55], ['gloomray', 56], ['inkraken', 57]], 250, 'Mira, last of the Four. Below the waves there is no light at all. That is where my creatures live.', 'You brought light to the deep. The Champion awaits.', '', { potions: 3 }),
 ];
 function azurineChampion() {
-  return { ...rivalA('kai', 64, { ace: true, title: 'Champion' }), money: 120, potions: 3 };
+  return { ...rivalA('kai', 60, { ace: true, title: 'Champion' }), money: 120, potions: 3 };
 }
 const ELITE2 = [
-  T('Elite Calla', 'calla', [['driftsteed', 52], ['medusail', 53], ['reefortress', 53], ['gloomangler', 54], ['crystallix', 55]], 220, 'I am Calla of the Meridia Elite Four. The tide is turning, and it is turning against you!', 'Washed away... Go on, the next room awaits.', '', { potions: 2 }),
-  T('Elite Dorran', 'dorran', [['ramparch', 53], ['siroccor', 54], ['trilocrown', 54], ['sandrake', 55], ['titanore', 56]], 220, 'Dorran. I\'ve dug through every canyon in Meridia. Nothing has ever moved me. Let\'s see you try.', 'Hm. The mountain moved.', '', { potions: 2 }),
-  T('Elite Lyra', 'lyra', [['saguarro', 54], ['locustorm', 55], ['shellmoss', 55], ['arachnight', 56], ['leafwraith', 57]], 220, 'I\'m Lyra! Forests, swamps, deserts... life finds a way everywhere. My team is proof!', 'You\'re a force of nature yourself!', '', { potions: 2 }),
-  T('Elite Voss', 'voss', [['scarabolt', 55], ['galeon', 56], ['voltibex', 56], ['nimbulord', 57], ['stormwisp', 58]], 220, 'Voss, last of the Four. I was born in a thunderstorm on Skyspire. Let\'s make some lightning.', 'Grounded... The Champion is waiting.', '', { potions: 3 }),
+  T('Elite Calla', 'calla', [['driftsteed', 48], ['medusail', 49], ['reefortress', 49], ['gloomangler', 50], ['crystallix', 51]], 220, 'I am Calla of the Meridia Elite Four. The tide is turning, and it is turning against you!', 'Washed away... Go on, the next room awaits.', '', { potions: 2 }),
+  T('Elite Dorran', 'dorran', [['ramparch', 49], ['siroccor', 50], ['trilocrown', 50], ['sandrake', 51], ['titanore', 52]], 220, 'Dorran. I\'ve dug through every canyon in Meridia. Nothing has ever moved me. Let\'s see you try.', 'Hm. The mountain moved.', '', { potions: 2 }),
+  T('Elite Lyra', 'lyra', [['saguarro', 50], ['locustorm', 51], ['shellmoss', 51], ['arachnight', 52], ['leafwraith', 53]], 220, 'I\'m Lyra! Forests, swamps, deserts... life finds a way everywhere. My team is proof!', 'You\'re a force of nature yourself!', '', { potions: 2 }),
+  T('Elite Voss', 'voss', [['scarabolt', 51], ['galeon', 52], ['voltibex', 52], ['nimbulord', 53], ['stormwisp', 54]], 220, 'Voss, last of the Four. I was born in a thunderstorm on Skyspire. Let\'s make some lightning.', 'Grounded... The Champion is waiting.', '', { potions: 3 }),
 ];
 function meridiaChampion() {
-  return { ...rivalM('juno', 60, { ace: true, title: 'Champion' }), money: 100, potions: 3 };
+  return { ...rivalM('juno', 56, { ace: true, title: 'Champion' }), money: 100, potions: 3 };
 }
 
 const ELITE = [
-  T('Elite Frida', 'frida', [['clamorite', 52], ['glacieroo', 53], ['rimewing', 53], ['frostseer', 54], ['shadeclaw', 55]], 200, 'I am Frida of the Elite Four. My ice will freeze your hopes solid!', 'Melted... Go on.', '', { potions: 2 }),
-  T('Elite Morrow', 'morrow', [['hauntle', 53], ['gourdghast', 54], ['sonarwing', 54], ['pumpling', 54], ['shadeking', 56]], 200, 'Morrow is my name. Spirits whisper that you\'ll fall here...', 'The spirits were wrong.', '', { potions: 2 }),
-  T('Elite Raze', 'raze', [['pantherine', 54], ['dunejaw', 55], ['ravenlord', 55], ['cinderfang', 56], ['shadeclaw', 57]], 200, 'I\'m Raze. I fight dirty, and I fight to win.', 'Tch. You earned that.', '', { potions: 2 }),
-  T('Elite Ferrum', 'ferrum', [['dynamagnet', 55], ['armadrill', 56], ['beetank', 56], ['steelrhine', 57], ['mechatron', 58]], 200, 'Ferrum, last of the Four. Nothing breaks my iron wall!', 'My wall... crumbled. The Champion awaits.', '', { potions: 3 }),
+  T('Elite Frida', 'frida', [['clamorite', 48], ['glacieroo', 49], ['rimewing', 49], ['frostseer', 50], ['shadeclaw', 51]], 200, 'I am Frida of the Elite Four. My ice will freeze your hopes solid!', 'Melted... Go on.', '', { potions: 2 }),
+  T('Elite Morrow', 'morrow', [['hauntle', 49], ['gourdghast', 50], ['sonarwing', 50], ['pumpling', 50], ['shadeking', 52]], 200, 'Morrow is my name. Spirits whisper that you\'ll fall here...', 'The spirits were wrong.', '', { potions: 2 }),
+  T('Elite Raze', 'raze', [['pantherine', 50], ['dunejaw', 51], ['ravenlord', 51], ['cinderfang', 52], ['shadeclaw', 53]], 200, 'I\'m Raze. I fight dirty, and I fight to win.', 'Tch. You earned that.', '', { potions: 2 }),
+  T('Elite Ferrum', 'ferrum', [['dynamagnet', 51], ['armadrill', 52], ['beetank', 52], ['steelrhine', 53], ['mechatron', 54]], 200, 'Ferrum, last of the Four. Nothing breaks my iron wall!', 'My wall... crumbled. The Champion awaits.', '', { potions: 3 }),
 ];
 
 const CLASSES = {
@@ -421,7 +421,9 @@ const HOLDER_NAMES = { nyx: 'Nyx', corvo: 'Corvo', vex: 'Vex' };
 // and never your last creature. One of the bosses keeps it.
 async function snatch(list) {
   const pick = G.party.filter((m) => !SPECIES[m.sp].legend && !STARTER_LINES.has(m.sp));
-  if (G.party.length < 2 || !pick.length) return;
+  // a little grace for brand-new trainers: no snatching before your first badge in this region,
+  // and never when it would leave you with fewer than two creatures
+  if (G.party.length < 3 || !pick.length || regionBadges(G, G.region || 'aldermoor') < 1) return;
   const m = pick[Math.floor(Math.random() * pick.length)];
   G.party.splice(G.party.indexOf(m), 1);
   healFull(m);
@@ -768,7 +770,7 @@ const TRIGGERS = {
     await say(`KAI: ${G.name}. Hold it.`);
     const kai = await appear('tmp_kai', 'kai');
     await say('KAI: Juno went ahead. She already beat the Elite Four. She\'s the Champion now.', 'KAI: I sent for my old partner from Maple\'s lab. Before you face her, you face me. Full strength!');
-    const won = await fight(rivalM('kai', 52, { ace: true }));
+    const won = await fight(rivalM('kai', 49, { ace: true }));
     await say(won ? 'KAI: ...Fine. You\'re the one who should face her. Go win it.' : 'KAI: Heh. Maybe I should be the one challenging Juno...', 'KAI: Zenith Plateau is right through here. Good luck, rival.');
     setFlag('kaiSummit');
     await walkAway(kai);
@@ -900,7 +902,7 @@ const TRIGGERS = {
     await say('JUNO: Kai went in first this time. He beat all four of the Elite Four. He\'s the Champion of the Isles!',
       'JUNO: He called back his partners from Aldermoor AND Meridia for it. He really wants to beat you.',
       'JUNO: So I did the same! Let me be your warm-up. Everything I\'ve got!');
-    const won = await fight(rivalA('juno', 54, { ace: true }));
+    const won = await fight(rivalA('juno', 50, { ace: true }));
     await say(won ? 'JUNO: You\'re ready. Go show Kai what a real Champion looks like!' : 'JUNO: Hehe! Maybe rest up first. Kai\'s even stronger than me.', 'JUNO: Crown Atoll is right ahead. Good luck!');
     setFlag('junoAtoll');
     await walkAway(j);
@@ -1434,7 +1436,7 @@ const SCRIPTS = {
   async champion() {
     if (flag('e4_4')) { await say('KAI: Go on. The Hall of Fame is through there.'); return; }
     await say(`KAI: Hey, ${G.name}. Took you long enough.`, 'KAI: I beat the Elite Four before you. That makes ME the Champion.', 'KAI: You and me, one last time. For the title, and for the ferry to the next region!');
-    const won = await fight(rivalTrainer('kai', 60));
+    const won = await fight(rivalTrainer('kai', 56));
     if (!won) return;
     setFlag('e4_4');
     await say('KAI: ...I lost. To you. Again.', 'KAI: You know what? You earned it. You\'re the Champion of Aldermoor.', 'The door to the Hall of Fame opened!');
