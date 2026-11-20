@@ -7,7 +7,7 @@ function explore(ab) {
   const seen = new Set();
   // Aldermoor starts at home; Meridia and the Azurine Isles start on their ferry docks
   // Team Eclipse's hideouts open at run time, so each is walked from its own entrance
-  const q = [['house_player', 4, 3], ['solace', 13, 16], ['coralline', 13, 16], ['hideout_aldermoor', 6, 20], ['hideout_meridia', 7, 20], ['hideout_azurine', 6, 24]];
+  const q = [['house_player', 4, 3], ['solace', 13, 16], ['coralline', 13, 16], ['hideout_aldermoor', 6, 20], ['hideout_meridia', 7, 20], ['hideout_azurine', 6, 24], ['valorisle', 10, 17], ['tower_room', 4, 5]];
   const K = (m, x, y) => `${m}|${x}|${y}`;
   q.forEach((s) => seen.add(K(...s)));
   const ok = (m, x, y) => {

@@ -5,6 +5,7 @@ import { flag } from './state.js';
 import { buildMeridia, MERIDIA_LAYOUT } from './region2.js';
 import { buildAzurine, AZURINE_LAYOUT } from './region3.js';
 import { buildHideouts } from './hideouts.js';
+import { buildValor } from './tower.js';
 import { WILD2 } from './species2.js';
 import { WILD3 } from './species3.js';
 export const SOLID = new Set(['cactus', 'barrelcactus', 'mapletree', 'goldtree', 'pillar', 'grave', 'lamp', 'barrel', 'tree', 'water', 'fence', 'sign', 'rock', 'wall', 'counter', 'shelf', 'table', 'pc', 'healer', 'plant', 'bed', 'tv', 'statue', 'boulder', 'void',
@@ -416,7 +417,7 @@ function gateCol(m, x, P, K, obstacle, wall) {
 }
 
 // ---------- towns ----------
-const SIZES = { center: [5, 4, 2], mart: [5, 4, 2], house: [5, 4, 2], house2: [5, 4, 2], gym: [7, 5, 3], lab: [7, 4, 3], tower: [7, 6, 3], league: [9, 6, 4] };
+const SIZES = { center: [5, 4, 2], mart: [5, 4, 2], house: [5, 4, 2], house2: [5, 4, 2], gym: [7, 5, 3], lab: [7, 4, 3], tower: [7, 6, 3], league: [9, 6, 4], btower1: [3, 4, 1], btower2: [3, 4, 1], btower3: [3, 4, 1] };
 function mkTown(id, name, w, h, o) {
   const m = add(M(id, { name, w, h, music: o.music || 'town', base: o.base }));
   m.town = true; m.style = o.style || 'grass';
@@ -759,6 +760,9 @@ REGION.id = 'aldermoor';
 
 // ---------- Team Eclipse's hidden hideouts (hideouts.js), entrances opened in story.js ----------
 buildHideouts({ REGION, fill, dots, npc, interior });
+
+// ---------- Valor Isle and the Battle Tower (tower.js), reached by ferry ----------
+buildValor({ REGION, MAPS, mkTown, fill, sign, npc, interior, dots });
 
 // ---------- region layout for the Town Map ----------
 // [x, y] cell on a 28 x 20 grid, plus kind: town, route, cave, sea

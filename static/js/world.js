@@ -170,7 +170,9 @@ export function loadMap(id, x, y, dir) {
   world.npcs = [];
   refreshNpcs();
   G.pos = { map: id, x, y, dir: world.player.dir };
-  G.region = m.region;
+  // Valor Isle is a side trip: you stay in the region you sailed from
+  if (m.region !== 'valor') G.region = m.region;
+  G.inValor = m.region === 'valor';
   if (m.town) { G.visited = G.visited || {}; G.visited[id] = true; }
   playMusic(world.player.surf ? 'sea' : m.music);
   if (!m.interior) world.banner = { text: m.name, t: 150 };

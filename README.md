@@ -38,6 +38,7 @@ You're a trainer who travels from region to region. Like a long-running anime jo
 - **Rivals Kai & Juno** pick new starters in every region, battle you along the way and team up against you in tag battles. Each region's Champion is one of them.
 - **Team Eclipse:** a three-region villain story. Lose to them and they **snatch a creature** from your team (never a starter or a legend), and it turns up on a boss's team later, raised and sometimes evolved.
 - **Eclipse hideouts:** after you become Champion of a region, a hidden underground hideout opens somewhere random. It's a one-shot gauntlet with a single-use restore spring and Vex at the end holding your stolen creatures. Leave or lose and it caves in for good. Each region's hideout looks different.
+- **Valor Isle and the Battle Tower:** once you're Champion of Aldermoor, the ferry can take your whole team to Valor Isle. Its Battle Tower grows taller with every region you conquer: 7 battles at 3 stories, 14 at 6, and 21 against trainers from every region at 8, ending with Tower Tycoon Orion.
 - **Field moves** (Slash, Shatter, Wave Ride, Heave, Glow, Soar) gate new areas in order, and a checker proves each one is needed.
 - **Generated routes:** seeded paths, tall grass, trainers who spot you, visible and hidden items, with a checker that guarantees no part of a map is ever cut off.
 

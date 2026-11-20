@@ -6,6 +6,7 @@ import { G, flag, setFlag, save, addItem, addToCollection } from './state.js';
 import { SPECIES, SPECIES_LIST, ITEMS, BADGES, regionDex, regionBadges, OBEY_CAPS } from './data.js';
 import { MAPS, GYMS, SOLID, buildingSolid } from './maps.js';
 import { HIDEOUTS } from './hideouts.js';
+import { TOWER_TIERS, towerTier } from './tower.js';
 import { makeMon, healFull, name, expForLevel } from './mon.js';
 import { say, yesNo, choose, setNameHook, offerNickname, askName } from './ui.js';
 import { battle } from './battle.js';
@@ -500,6 +501,65 @@ async function openHideout(r) {
     `${PROF}: And the whole place is rigged to collapse. If you leave, or if you lose, the hideout is gone for good. You only get one shot!`,
     `${PROF}: Stock up, heal your team, and go when you're ready. Good luck!`);
   await walkAway(p);
+  save();
+}
+
+// ---------- the Battle Tower ----------
+const TOWER_CLASSES = [['Ace Trainer', 'acetrainer'], ['Veteran', 'oldman'], ['Black Belt', 'blackbelt'], ['Beauty', 'beauty'], ['Mystic', 'mystic'], ['Dragon Tamer', 'tamer'], ['Hiker', 'hiker'], ['Swimmer', 'swimmer'], ['Bird Keeper', 'birdkeeper'], ['Biker', 'biker'], ['Skier', 'skier']];
+function towerTrainer(tier, i) {
+  const TT = TOWER_TIERS[tier - 1];
+  const boss = i === TT.battles - 1;
+  const lvl = Math.round(TT.lv[0] + (TT.lv[1] - TT.lv[0]) * (i / Math.max(1, TT.battles - 1)));
+  const pool = SPECIES_LIST.filter((sp) => !SPECIES[sp].legend);
+  const party = []; const used = new Set();
+  const n = boss ? 6 : TT.size;
+  while (party.length < n) {
+    const sp = evolveFor(pool[Math.floor(Math.random() * pool.length)], lvl);
+    if (used.has(sp)) continue;
+    used.add(sp); party.push([sp, lvl + (boss ? 2 : 0)]);
+  }
+  if (boss) return T('Tower Tycoon Orion', 'acetrainer', party, 500, '', 'Remarkable. The top of the tower is yours.', '', { potions: 3, music: 'boss' });
+  const [cls, look] = TOWER_CLASSES[Math.floor(Math.random() * TOWER_CLASSES.length)];
+  return T(`${cls} ${NAMES[Math.floor(Math.random() * NAMES.length)]}`, look, party, 60 + lvl, '', '', '', { potions: tier });
+}
+async function towerChallenge(tier) {
+  const TT = TOWER_TIERS[tier - 1];
+  const tw = G.tower;
+  await fadeOut(20); loadMap('tower_room', 4, 5, 'up'); await fadeIn(20);
+  let streak = 0;
+  for (let i = 0; i < TT.battles; i++) {
+    G.party.forEach(healFull);
+    const boss = i === TT.battles - 1;
+    const t = towerTrainer(tier, i);
+    const foe = spawn({ id: 'tower_foe', look: t.look, x: 4, y: 2, dir: 'down' });
+    if (boss) await say(`Battle ${i + 1} of ${TT.battles}: the top floor!`, 'TYCOON ORION: So you\'ve climbed my tower. Few ever reach this room.', 'TYCOON ORION: Show me the team that conquered the regions!');
+    else await say(`Battle ${i + 1} of ${TT.battles}!`, `${t.name} wants to battle!`);
+    const won = await fight(t, { canLose: true });
+    despawn('tower_foe');
+    if (!won) break;
+    streak++;
+    G.money += t.money;
+    if (!boss) await say(`You won! Floor ${i + 1} cleared. Your team is healed for the next battle.`);
+  }
+  G.party.forEach(healFull);
+  tw.best[tier] = Math.max(tw.best[tier] || 0, streak);
+  await fadeOut(20); loadMap('tower_lobby', 5, 4, 'up'); await fadeIn(20);
+  if (streak < TT.battles) {
+    await say(`RECEPTIONIST: Your streak ended at ${streak} win${streak === 1 ? '' : 's'}. Your best is ${tw.best[tier]}.`, 'RECEPTIONIST: Please come back and try again!');
+  } else {
+    const firstClear = !tw.cleared[tier];
+    tw.cleared[tier] = true;
+    sfx('badge');
+    await say(`RECEPTIONIST: Incredible! You beat all ${TT.battles} battles!`);
+    if (firstClear) {
+      const candies = [5, 10, 20][tier - 1];
+      addItem('masterorb', tier === 3 ? 2 : 1); addItem('lvcandy', candies);
+      await say(`For your first clear, you receive ${tier === 3 ? '2 MASTER ORBS' : 'a MASTER ORB'} and ${candies} Level Candies!`);
+    } else {
+      addItem('lvcandy', 3 * tier);
+      await say(`You receive ${3 * tier} Level Candies!`);
+    }
+  }
   save();
 }
 
@@ -1225,12 +1285,28 @@ async function rivalsArrive3() {
 // The ferry offers every region you may sail to from here. The Isles open once you're
 // Champion of Meridia.
 const REGION_NAMES = { aldermoor: 'Aldermoor', meridia: 'Meridia', azurine: 'Azurine Isles' };
+// Valor Isle is a round trip: your whole team comes along and nothing goes into a box
+async function sailValor(from) {
+  await say('SAILOR: Valor Isle, home of the Battle Tower! It\'s a short hop, so your whole team can come along.');
+  G.towerFrom = from;
+  await fadeOut(30); sfx('door');
+  loadMap('valorisle', 10, 17, 'up');
+  G.lastHeal = { map: 'center_valorisle', x: 5, y: 4, dir: 'up' };
+  save();
+  await fadeIn(30);
+  const first = !flag('visitedValor');
+  setFlag('visitedValor');
+  await say('The ferry docked at Valor Isle!');
+  if (first) await say(`The Battle Tower looms over the island. It's ${TOWER_TIERS[towerTier(flag) - 1].floors} stories tall.`);
+}
 async function ferryTo(here) {
   const dests = ['aldermoor', 'meridia', 'azurine'].filter((r) => r !== here && (r !== 'azurine' || flag('champion_meridia')));
   if (here === 'meridia' && !flag('champion_meridia')) await say('SAILOR: Ships to the Azurine Isles only take the Champion of Meridia, I\'m afraid.');
-  const opts = [...dests.map((r) => REGION_NAMES[r].toUpperCase()), 'STAY'];
+  if (flag('champion')) dests.push('valor');
+  const opts = [...dests.map((r) => (r === 'valor' ? 'VALOR ISLE' : REGION_NAMES[r].toUpperCase())), 'STAY'];
   const i = dests.length === 1 ? ((await yesNo(`Sail to ${REGION_NAMES[dests[0]]}?`)) ? 0 : 1) : await choose('Where would you like to sail?', opts);
   if (i < 0 || i >= dests.length) { await say(`SAILOR: Enjoy ${REGION_NAMES[here]}!`); return; }
+  if (dests[i] === 'valor') { await sailValor(here); return; }
   await say('Only one or two partners may travel with you. Everyone else waits in this region\'s PC.');
   const chosen = await partnerScreen();
   if (!chosen) { await say('SAILOR: Take your time.'); return; }
@@ -1347,6 +1423,33 @@ const SCRIPTS = {
   async ferryHome() {
     await say('SAILOR: Welcome to Meridia! This ferry runs to the other regions whenever you like.');
     await ferryTo('meridia');
+  },
+  async ferryValor() {
+    const from = G.towerFrom || G.region || 'aldermoor';
+    if (!(await yesNo(`SAILOR: Ready to head back to ${REGION_NAMES[from]}?`))) { await say('SAILOR: I\'ll be right here when you\'re done.'); return; }
+    await fadeOut(30); sfx('door');
+    const [map, x, y, dir, center] = PORTS[from];
+    G.lastHeal = { map: center, x: 5, y: 4, dir: 'up' };
+    loadMap(map, x, y, dir);
+    save();
+    await fadeIn(30);
+    await say(`The ferry docked back in ${REGION_NAMES[from]}!`);
+  },
+  async towerDesk() {
+    const tier = towerTier(flag); const T = TOWER_TIERS[tier - 1];
+    G.tower = G.tower || { best: {}, cleared: {} };
+    await say('RECEPTIONIST: Welcome to the Battle Tower!',
+      `RECEPTIONIST: The tower currently stands ${T.floors} stories tall. A challenge is ${T.battles} battles in a row against trainers from every region.`,
+      'RECEPTIONIST: Your team is fully healed between battles. Lose once and the challenge ends, but you won\'t black out.',
+      tier < 3 ? 'RECEPTIONIST: Each time a new region crowns you Champion, the tower grows taller and the challenge gets harder!' : 'RECEPTIONIST: You\'ve conquered every region, so the tower stands at its full height!');
+    if (G.party.length < 3) { await say('RECEPTIONIST: You\'ll need at least three creatures on your team to take part.'); return; }
+    if (!(await yesNo(`Take on the ${T.battles}-battle challenge?`))) { await say('RECEPTIONIST: We hope to see you soon!'); return; }
+    await towerChallenge(tier);
+  },
+  async towerRecords() {
+    G.tower = G.tower || { best: {}, cleared: {} };
+    const lines = TOWER_TIERS.map((T, i) => `${T.floors} STORIES: best streak ${G.tower.best[i + 1] || 0} of ${T.battles}${G.tower.cleared[i + 1] ? ' (cleared!)' : ''}`);
+    await say('RECORDS:', ...lines.slice(0, towerTier(flag)));
   },
   async ferryAzurine() {
     await say('SAILOR: Aloha! Welcome to the Azurine Isles. This ferry runs back to the other regions whenever you like.');
@@ -1560,7 +1663,11 @@ world.hooks = {
   },
   async menu() { await startMenu(); },
   async pc() { await pcScreen(); },
-  mapLoad() { if (G) applyHideouts(); },
+  mapLoad(m) {
+    if (!G) return;
+    applyHideouts();
+    if (m.id === 'valorisle') { const b = m.buildings.find((x) => x.to === 'tower_lobby'); if (b) b.kind = `btower${towerTier(flag)}`; }
+  },
   async arrive() {
     const m = world.map; const hs = hideouts();
     if (m.hideout) { if (hs[m.hideout]) hs[m.hideout].inside = true; return; }
