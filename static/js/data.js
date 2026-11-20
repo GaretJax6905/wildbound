@@ -2,6 +2,7 @@
 // Everything here is original.
 import { RAW_SPECIES, HAND_LEARNSETS } from './species.js';
 import { RAW_SPECIES2, HAND_LEARNSETS2 } from './species2.js';
+import { RAW_SPECIES3, HAND_LEARNSETS3 } from './species3.js';
 
 export const TYPES = ['Normal', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Brawl', 'Toxic', 'Ground', 'Flying', 'Mind', 'Bug', 'Rock', 'Spirit', 'Dragon', 'Shadow', 'Metal', 'Fae'];
 export const TYPE_COLORS = {
@@ -130,6 +131,14 @@ export const MOVES = {
   rimebreath: M('Rime Breath', 'Dragon', 75, 100, 15, { stat: { target: 'foe', stat: 'spe', n: -1, chance: 20 } }), duskclaw: M('Dusk Claw', 'Shadow', 70, 100, 15),
   gearsaw: M('Gear Saw', 'Metal', 70, 100, 15), magnetbash: M('Magnet Bash', 'Metal', 90, 90, 10),
   prismbeam: M('Prism Beam', 'Fae', 80, 100, 15), meridianray: M('Meridian Ray', 'Fae', 120, 90, 5),
+  // ---- the Azurine Isles' variations ----
+  palmslap: M('Palm Slap', 'Grass', 55, 100, 25), riptide: M('Riptide', 'Water', 65, 100, 20, { stat: { target: 'foe', stat: 'spe', n: -1, chance: 30 } }),
+  monsoon: M('Monsoon', 'Water', 110, 80, 5), magmaburst: M('Magma Burst', 'Fire', 85, 95, 10, { burn: 20 }),
+  lavacrush: M('Lava Crush', 'Fire', 110, 85, 5, { burn: 30 }), coralspike: M('Coral Spike', 'Rock', 60, 100, 20),
+  shellbash: M('Shell Bash', 'Rock', 80, 95, 15, { stat: { target: 'self', stat: 'def', n: 1, chance: 30 } }),
+  stormsurge: M('Storm Surge', 'Electric', 85, 95, 10, { par: 10 }), tropicstorm: M('Tropic Storm', 'Flying', 85, 95, 10),
+  pearlglow: M('Pearl Glow', 'Fae', 75, 100, 15, { stat: { target: 'foe', stat: 'spa', n: -1, chance: 20 } }),
+  scalestrike: M('Scale Strike', 'Dragon', 80, 100, 15), azurewave: M('Azure Wave', 'Dragon', 120, 90, 5),
 };
 
 // damaging moves of each type, weakest to strongest, and a signature status move
@@ -156,6 +165,14 @@ const POOL2 = {
   Dragon: ['galecoil', 'drakebreath', 'rimebreath', 'dracosurge'], Shadow: ['ambush', 'nightbite', 'duskclaw', 'nightfall'],
   Metal: ['ironclaw', 'gearsaw', 'chromebeam', 'magnetbash'], Fae: ['pixiebreeze', 'spritekiss', 'prismbeam', 'starfall'],
 };
+// the Isles' creatures: island twists on the familiar moves
+const POOL3 = {
+  ...POOL2,
+  Fire: ['ember', 'flamefang', 'magmaburst', 'lavacrush'], Water: ['waterjet', 'riptide', 'tidecrash', 'monsoon'],
+  Grass: ['leafflick', 'palmslap', 'vinelash', 'solarlance'], Electric: ['spark', 'zapbolt', 'stormsurge', 'thundercrash'],
+  Flying: ['gust', 'featherdart', 'tropicstorm', 'hurricane'], Rock: ['rocktoss', 'coralspike', 'shellbash', 'bouldercrash'],
+  Fae: ['pixiebreeze', 'spritekiss', 'pearlglow', 'starfall'], Dragon: ['galecoil', 'drakebreath', 'scalestrike', 'dracosurge'],
+};
 const STATUS = {
   Normal: 'powerup', Fire: 'scorchhaze', Water: 'tailwag', Grass: 'stunpollen', Electric: 'staticwave', Ice: 'chillmist', Brawl: 'brace',
   Toxic: 'poisonmist', Ground: 'sandtoss', Flying: 'quickstep', Mind: 'trance', Bug: 'silkshot', Rock: 'harden', Spirit: 'lullaby',
@@ -178,7 +195,7 @@ function autoLearnset(types, pool = POOL) {
 
 // ---- build SPECIES from the compact table ----
 export const SPECIES = {};
-const REGION_ROWS = [['aldermoor', RAW_SPECIES, HAND_LEARNSETS, POOL], ['meridia', RAW_SPECIES2, HAND_LEARNSETS2, POOL2]];
+const REGION_ROWS = [['aldermoor', RAW_SPECIES, HAND_LEARNSETS, POOL], ['meridia', RAW_SPECIES2, HAND_LEARNSETS2, POOL2], ['azurine', RAW_SPECIES3, HAND_LEARNSETS3, POOL3]];
 let dexNo = 0;
 for (const [region, rows, hand, pool] of REGION_ROWS) rows.forEach((r, i) => {
   const [id, name, types, base, evo, where, art, dex] = r;

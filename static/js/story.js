@@ -53,7 +53,7 @@ function homeLevel(sp) {
 }
 function poolFor(types, lvl, region = 'aldermoor') {
   const all = poolAll(types, lvl, region);
-  if (region !== 'meridia') return all;
+  if (region === 'aldermoor') return all;
   const near = all.filter((sp) => homeLevel(sp) <= lvl + 2);
   return near.length ? near : all;
 }

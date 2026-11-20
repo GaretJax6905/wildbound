@@ -5,7 +5,7 @@ const FILES = [
   '/', '/static/style.css', '/manifest.webmanifest',
   '/static/fonts/pixelify-sans-latin-400-normal.woff2', '/static/fonts/pixelify-sans-latin-600-normal.woff2',
   '/static/icons/icon-192.png', '/static/icons/icon-512.png', '/static/icons/apple-touch-icon.png',
-  ...['main', 'engine', 'font', 'ui', 'audio', 'state', 'data', 'mon', 'species', 'species2', 'art', 'maps', 'region2', 'region3', 'world', 'battle', 'screens', 'story'].map((f) => `/static/js/${f}.js`),
+  ...['main', 'engine', 'font', 'ui', 'audio', 'state', 'data', 'mon', 'species', 'species2', 'species3', 'art', 'maps', 'region2', 'region3', 'world', 'battle', 'screens', 'story'].map((f) => `/static/js/${f}.js`),
 ];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));

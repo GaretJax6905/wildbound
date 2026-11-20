@@ -5,6 +5,7 @@ import { flag } from './state.js';
 import { buildMeridia, MERIDIA_LAYOUT } from './region2.js';
 import { buildAzurine, AZURINE_LAYOUT } from './region3.js';
 import { WILD2 } from './species2.js';
+import { WILD3 } from './species3.js';
 export const SOLID = new Set(['cactus', 'barrelcactus', 'mapletree', 'goldtree', 'pillar', 'grave', 'lamp', 'barrel', 'tree', 'water', 'fence', 'sign', 'rock', 'wall', 'counter', 'shelf', 'table', 'pc', 'healer', 'plant', 'bed', 'tv', 'statue', 'boulder', 'void',
   'bush', 'crack', 'cavewall', 'pine', 'lava', 'shrine', 'console',
   'palm', 'deadtree', 'stump', 'stove', 'fridge', 'chair', 'crate', 'armchair']);
@@ -807,16 +808,16 @@ export const WILD = {
   route10: { land: [['ironhorn', 35], ['glacieroo', 30], ['frostseer', 20], ['drakelet', 15]], surf: [['clamorite', 50], ['kingpincer', 50]] },
   victoryroad: { land: [['sonarwing', 35], ['bouldox', 30], ['mucklord', 20], ['pterrock', 15]], surf: [['torrentail', 50], ['krakammon', 50]] },
 };
-Object.assign(WILD, WILD2);
+Object.assign(WILD, WILD2, WILD3);
 for (const [id, t] of Object.entries(WILD)) {
   const m = MAPS[id];
   const lv = m.lv || [5, 8];
   if (t.land) m.encounters = t.land.map(([sp, w]) => [sp, lv[0], lv[1], w]);
   if (t.surf) m.surfEnc = t.surf.map(([sp, w]) => [sp, lv[0], lv[1], w]);
-  if (m.region === 'meridia') hideRare(m);
+  if (m.region !== 'aldermoor') hideRare(m);
 }
 
-// Meridia: only a couple of creatures show up in a route's ordinary grass (or water). The rest
+// Meridia and the Isles: only a couple of creatures show up in a route's ordinary grass (or water). The rest
 // live in one out-of-the-way patch, far from the trail, so players have to go looking for them.
 function hideRare(m) {
   const split = (tab) => {
@@ -860,7 +861,7 @@ function hideRare(m) {
     }
     return zone;
   };
-  const TRAIL = new Set(['path', 'dirt', 'cavepath', 'snowpath', 'dock']);
+  const TRAIL = new Set(['path', 'dirt', 'cavepath', 'snowpath', 'dock', (STYLE[m.style] || {}).path].filter(Boolean));
   const tile = (x, y) => m.tiles[y][x];
   const blockedAt = (x, y) => SOLID.has(tile(x, y)) || m.boulders.some((b) => b.x === x && b.y === y);
   const [common, rare] = m.style === 'sea' ? [m.encounters, null] : split(m.encounters);

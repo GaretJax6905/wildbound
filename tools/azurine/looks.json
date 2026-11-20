@@ -1,0 +1,734 @@
+{
+ "batbud": {
+  "name": "Batbud",
+  "types": "Grass",
+  "look": "a tiny round fruit bat with leaf-green wing membranes shaped like palm fronds, an orange fuzzy body, big ears and a mango seed held in its feet",
+  "evo": "frondbat:16"
+ },
+ "frondbat": {
+  "name": "Frondbat",
+  "types": "Grass",
+  "look": "a medium fruit bat with big palm-frond leaf wings, orange fur, a mane of small leaves and sharp little fangs, gliding",
+  "evo": "canopteryx:36"
+ },
+ "canopteryx": {
+  "name": "Canopteryx",
+  "types": "Grass/Flying",
+  "look": "a large majestic fruit bat with huge layered palm-leaf wings, an orange and green mane of fronds and flowers, a crest of coconut-husk fur, powerful and regal",
+  "evo": ""
+ },
+ "cindershell": {
+  "name": "Cindershell",
+  "types": "Fire",
+  "look": "a small hermit crab with orange claws living inside a round black lava-rock shell with glowing orange cracks, big curious eye stalks",
+  "evo": "kilnshell:16"
+ },
+ "kilnshell": {
+  "name": "Kilnshell",
+  "types": "Fire",
+  "look": "a hermit crab carrying a chimney-shaped volcanic stone shell puffing smoke, red armored legs and one oversized claw glowing hot",
+  "evo": "calderacrab:36"
+ },
+ "calderacrab": {
+  "name": "Calderacrab",
+  "types": "Fire/Rock",
+  "look": "a huge armored hermit crab whose shell is a miniature erupting volcano with lava flowing down the sides, massive obsidian claws, molten glowing joints",
+  "evo": ""
+ },
+ "tuskle": {
+  "name": "Tuskle",
+  "types": "Water",
+  "look": "a cute chubby baby narwhal calf, pale blue with white speckles, a short stubby rounded tusk, little flippers and a happy face",
+  "evo": "lancetusk:16"
+ },
+ "lancetusk": {
+  "name": "Lancetusk",
+  "types": "Water",
+  "look": "a sleek young narwhal with a long straight spiral tusk like a fencing sword, blue back with white spots, a fin like a cape",
+  "evo": "narwhallant:36"
+ },
+ "narwhallant": {
+  "name": "Narwhallant",
+  "types": "Water/Metal",
+  "look": "a large heroic narwhal wearing natural steel armor plates like a knight's, a long gleaming metal lance tusk, a fin like a flowing blue cape",
+  "evo": ""
+ },
+ "sandpip": {
+  "name": "Sandpip",
+  "types": "Normal/Flying",
+  "look": "a small round sandpiper bird with speckled tan back, white belly, long thin legs and a long thin beak",
+  "evo": "shorewing:20"
+ },
+ "shorewing": {
+  "name": "Shorewing",
+  "types": "Normal/Flying",
+  "look": "a sleek shorebird with long pointed wings, speckled brown and white plumage, a black cap and a sharp long beak, skimming low",
+  "evo": ""
+ },
+ "cocolet": {
+  "name": "Cocolet",
+  "types": "Grass",
+  "look": "a round brown hairy coconut creature with a cracked opening showing a white face, two stubby feet and a green palm sprout on top",
+  "evo": "cocobrawl:24"
+ },
+ "cocobrawl": {
+  "name": "Cocobrawl",
+  "types": "Grass/Brawl",
+  "look": "a muscular creature with a coconut-shell head and shoulders, white fiber body, boxing-glove fists made of coconut husk and a palm leaf headband",
+  "evo": ""
+ },
+ "tidepup": {
+  "name": "Tidepup",
+  "types": "Water",
+  "look": "a chubby gray baby seal pup with white spots, huge dark eyes, whiskers and little flippers, lying on its belly",
+  "evo": "sealord:30"
+ },
+ "sealord": {
+  "name": "Sealord",
+  "types": "Water",
+  "look": "a huge proud bull seal with a thick gray hide, white whiskers like a mustache, a crown-shaped ridge of coral on its head",
+  "evo": ""
+ },
+ "skitterling": {
+  "name": "Skitterling",
+  "types": "Bug",
+  "look": "a tiny sand-colored flea-like bug with big springy back legs, translucent shell and long antennae",
+  "evo": "skitterjack:22"
+ },
+ "skitterjack": {
+  "name": "Skitterjack",
+  "types": "Bug/Ground",
+  "look": "a large sand-colored jumping bug with huge powerful spring legs, a shell like wet sand, sharp mandibles, crouched to leap",
+  "evo": ""
+ },
+ "leafrog": {
+  "name": "Leafrog",
+  "types": "Grass/Water",
+  "look": "a small bright green tree frog with huge red eyes, orange sticky toe pads and a leaf-shaped back pattern",
+  "evo": "rainfrog:28"
+ },
+ "rainfrog": {
+  "name": "Rainfrog",
+  "types": "Grass/Water",
+  "look": "a large green tree frog with a raincloud-shaped vocal sac, droplets falling around it, red eyes, leafy frills on its legs",
+  "evo": ""
+ },
+ "mischimp": {
+  "name": "Mischimp",
+  "types": "Normal/Grass",
+  "look": "a small mischievous brown monkey with a curly tail, a leaf hat, big grin and long arms, hanging by its tail",
+  "evo": "junglord:32"
+ },
+ "junglord": {
+  "name": "Junglord",
+  "types": "Normal/Grass",
+  "look": "a large powerful ape with brown fur, a mane of jungle vines and leaves, a crown of flowers and strong long arms",
+  "evo": ""
+ },
+ "parrotune": {
+  "name": "Parrotune",
+  "types": "Normal/Flying",
+  "look": "a small colorful parrot with red body, blue wing tips, yellow cheeks, a curved beak and a little crest, beak open singing",
+  "evo": "macawlure:30"
+ },
+ "macawlure": {
+  "name": "Macawlure",
+  "types": "Flying/Fae",
+  "look": "a large elegant macaw with brilliant red, blue and gold feathers, long sweeping tail plumes, glowing music-note shaped markings on its wings",
+  "evo": ""
+ },
+ "antlet": {
+  "name": "Antlet",
+  "types": "Bug",
+  "look": "a small orange leafcutter ant carrying a big green leaf fragment over its head like an umbrella",
+  "evo": "antarch:26"
+ },
+ "antarch": {
+  "name": "Antarch",
+  "types": "Bug/Grass",
+  "look": "a large armored leafcutter ant queen-knight standing upright, wearing a cape and crown made of cut leaves, strong mandibles",
+  "evo": ""
+ },
+ "drippet": {
+  "name": "Drippet",
+  "types": "Water",
+  "look": "a small round living droplet of clear blue water with a sleepy face, a tiny drip on top and a reflection shine",
+  "evo": "drippool:24"
+ },
+ "drippool": {
+  "name": "Drippool",
+  "types": "Water",
+  "look": "a wide puddle-shaped water creature like a living tide pool, with little shells, a starfish and pebbles floating inside it and a face on the surface",
+  "evo": ""
+ },
+ "stalaclam": {
+  "name": "Stalaclam",
+  "types": "Water/Rock",
+  "look": "a gray clam with a stony shell shaped like a stalactite tip, slightly open to show a white pearl and a sleepy face",
+  "evo": "pearlock:30"
+ },
+ "pearlock": {
+  "name": "Pearlock",
+  "types": "Water/Rock",
+  "look": "a large heavy clam with a rugged rocky shell covered in barnacles, open wide to show a giant glowing pearl and a stern face",
+  "evo": ""
+ },
+ "luminewt": {
+  "name": "Luminewt",
+  "types": "Water/Electric",
+  "look": "a small slender cave newt with translucent teal skin, glowing yellow spots along its back and frilly gills",
+  "evo": "voltnewt:28"
+ },
+ "voltnewt": {
+  "name": "Voltnewt",
+  "types": "Water/Electric",
+  "look": "a long cave salamander with glowing electric-yellow stripes, crackling sparks between its frilly gills, sleek teal body",
+  "evo": ""
+ },
+ "barnacreep": {
+  "name": "Barnacreep",
+  "types": "Rock/Water",
+  "look": "a small cluster of gray barnacles shaped like a little creature with stubby legs, tiny feather-like feelers poking out of the barnacles",
+  "evo": "barnacolossus:38"
+ },
+ "barnacolossus": {
+  "name": "Barnacolossus",
+  "types": "Rock/Water",
+  "look": "a huge golem made of an old wooden ship hull completely covered in barnacles, seaweed and starfish, with a glowing porthole eye",
+  "evo": ""
+ },
+ "ternlet": {
+  "name": "Ternlet",
+  "types": "Water/Flying",
+  "look": "a small white tern bird with a black cap, orange beak and pointed wings, mid-dive",
+  "evo": "stormtern:32"
+ },
+ "stormtern": {
+  "name": "Stormtern",
+  "types": "Water/Flying",
+  "look": "a sleek storm tern with gray and white plumage, very long forked tail streamers, black cap, sharp wings with rain droplets around it",
+  "evo": ""
+ },
+ "marinig": {
+  "name": "Marinig",
+  "types": "Rock/Water",
+  "look": "a small black marine iguana with red patches, spiky back crest and a salty white crust on its head, sunbathing",
+  "evo": "iguanox:34"
+ },
+ "iguanox": {
+  "name": "Iguanox",
+  "types": "Rock/Water",
+  "look": "a large armored marine iguana with jagged volcanic rock spines along its back, red and black scales, a powerful tail and a fierce face",
+  "evo": ""
+ },
+ "finlet": {
+  "name": "Finlet",
+  "types": "Water",
+  "look": "a small blue fish with a tall sail-shaped dorsal fin, a yellow stripe and big eyes",
+  "evo": "sailfinn:25"
+ },
+ "sailfinn": {
+  "name": "Sailfinn",
+  "types": "Water",
+  "look": "a sleek sailfish with a huge tall blue sail fin, a long pointed bill and gold stripes, leaping from the water",
+  "evo": ""
+ },
+ "jellune": {
+  "name": "Jellune",
+  "types": "Water/Fae",
+  "look": "a small translucent lavender moon jellyfish with a glowing crescent-moon mark on its bell and soft trailing tentacles",
+  "evo": "lunajel:30"
+ },
+ "lunajel": {
+  "name": "Lunajel",
+  "types": "Water/Fae",
+  "look": "a large glowing jellyfish with a bell like a full moon, a starry pattern inside, long ribbon tentacles trailing sparkles",
+  "evo": ""
+ },
+ "turtide": {
+  "name": "Turtide",
+  "types": "Water",
+  "look": "a small baby sea turtle with a green shell patterned like waves, little flippers and big friendly eyes",
+  "evo": "turtidal:35"
+ },
+ "turtidal": {
+  "name": "Turtidal",
+  "types": "Water/Grass",
+  "look": "a huge ancient sea turtle with a wide shell covered in a kelp forest and coral, with small fish swimming around it",
+  "evo": ""
+ },
+ "puffurr": {
+  "name": "Puffurr",
+  "types": "Water/Toxic",
+  "look": "a small round yellow pufferfish with brown spots, half puffed up with tiny spines, a surprised face",
+  "evo": "spinefugu:30"
+ },
+ "spinefugu": {
+  "name": "Spinefugu",
+  "types": "Water/Toxic",
+  "look": "a large fully puffed pufferfish covered in long purple-tipped poison spines, a scowling face and golden body",
+  "evo": ""
+ },
+ "kidling": {
+  "name": "Kidling",
+  "types": "Fire",
+  "look": "a small orange goat kid with tiny glowing horns, black hooves and a little ember tuft on its chin",
+  "evo": "ramblaze:32"
+ },
+ "ramblaze": {
+  "name": "Ramblaze",
+  "types": "Fire",
+  "look": "a strong mountain goat with huge curled horns glowing white-hot like lava, dark smoky fur and fiery hooves",
+  "evo": ""
+ },
+ "pumicorn": {
+  "name": "Pumicorn",
+  "types": "Rock/Fire",
+  "look": "a stocky rhinoceros made of light gray porous pumice stone with a single horn, small glowing embers in its pores",
+  "evo": ""
+ },
+ "smogfly": {
+  "name": "Smogfly",
+  "types": "Bug/Fire",
+  "look": "a small fly with smoky gray wings, an orange glowing abdomen like a coal and big compound eyes",
+  "evo": "magmoth:30"
+ },
+ "magmoth": {
+  "name": "Magmoth",
+  "types": "Bug/Fire",
+  "look": "a large moth with black wings veined with glowing molten-lava patterns, an ash-gray fluffy body and ember antennae",
+  "evo": ""
+ },
+ "obsidisk": {
+  "name": "Obsidisk",
+  "types": "Rock/Shadow",
+  "look": "a small creature shaped like a sharp shard of shiny black obsidian glass with a faint purple glow, two glowing eyes and little claws",
+  "evo": "obsidrake:40"
+ },
+ "obsidrake": {
+  "name": "Obsidrake",
+  "types": "Rock/Dragon",
+  "look": "a fierce dragon made of glossy black obsidian glass with sharp faceted edges, wings like broken glass panes glowing purple inside",
+  "evo": ""
+ },
+ "lavalump": {
+  "name": "Lavalump",
+  "types": "Fire",
+  "look": "a small round blob of glowing orange lava with a dark cooled crust on top like a hat, sleepy face",
+  "evo": "lavalanche:34"
+ },
+ "lavalanche": {
+  "name": "Lavalanche",
+  "types": "Fire/Rock",
+  "look": "a large boulder-like creature of black rock with rivers of lava pouring between the plates, rolling forward with a fierce face",
+  "evo": ""
+ },
+ "sulfurk": {
+  "name": "Sulfurk",
+  "types": "Toxic/Fire",
+  "look": "a small yellow salamander with crusty sulfur crystal bumps, puffs of yellow gas around it and a smug face",
+  "evo": "sulfurex:36"
+ },
+ "sulfurex": {
+  "name": "Sulfurex",
+  "types": "Toxic/Fire",
+  "look": "a large yellow salamander-lizard with a back covered in jagged sulfur crystals, breathing a yellow-green flaming gas, smoldering eyes",
+  "evo": ""
+ },
+ "quartzling": {
+  "name": "Quartzling",
+  "types": "Rock/Fae",
+  "look": "a small floating cluster of pink and clear quartz crystals with a cute face and sparkles",
+  "evo": "quartzeen:38"
+ },
+ "quartzeen": {
+  "name": "Quartzeen",
+  "types": "Rock/Fae",
+  "look": "a graceful floating crystal creature like a queen with a gown of rose quartz crystals, a tiara of amethyst points, rainbow light refracting",
+  "evo": ""
+ },
+ "magmaw": {
+  "name": "Magmaw",
+  "types": "Fire/Dragon",
+  "look": "a small chubby baby dragon with red-orange scales, a wide mouth showing glowing lava inside, stubby wings and a rocky belly",
+  "evo": "magmawyrm:42"
+ },
+ "magmawyrm": {
+  "name": "Magmawyrm",
+  "types": "Fire/Dragon",
+  "look": "a large dragon with dark volcanic rock scales cracked with glowing magma, huge wings with lava-fringed edges, horns like basalt columns",
+  "evo": ""
+ },
+ "skimmerkit": {
+  "name": "Skimmerkit",
+  "types": "Flying",
+  "look": "a small black and white skimmer bird with a long red-orange lower beak longer than the upper one, skimming the water",
+  "evo": "skimmerlance:35"
+ },
+ "skimmerlance": {
+  "name": "Skimmerlance",
+  "types": "Flying/Water",
+  "look": "a large skimmer bird with a long blade-like red beak, sharp black wings like a jet and a white chest, cutting through a wave",
+  "evo": ""
+ },
+ "conchurn": {
+  "name": "Conchurn",
+  "types": "Water/Mind",
+  "look": "a small sea snail living in a pink spiral conch shell, a dreamy face peeking out, faint psychic swirls around it",
+  "evo": "conchoracle:36"
+ },
+ "conchoracle": {
+  "name": "Conchoracle",
+  "types": "Water/Mind",
+  "look": "a floating mystical sea snail in a huge ornate spiral conch shell decorated with pearls, glowing purple eyes and a halo of swirling water",
+  "evo": ""
+ },
+ "dolphling": {
+  "name": "Dolphling",
+  "types": "Water",
+  "look": "a small playful blue dolphin calf with a pink cheek blush and a big smile, jumping",
+  "evo": "dolphinade:34"
+ },
+ "dolphinade": {
+  "name": "Dolphinade",
+  "types": "Water/Fae",
+  "look": "a graceful dolphin with shimmering blue and pink skin, star-shaped spots, leaping through a rainbow arc made of sea spray",
+  "evo": ""
+ },
+ "kelpie": {
+  "name": "Kelpie",
+  "types": "Water/Grass",
+  "look": "a small green seahorse with a flowing mane and tail made of kelp leaves, a curled tail and a cheerful face",
+  "evo": "kelpstallion:32"
+ },
+ "kelpstallion": {
+  "name": "Kelpstallion",
+  "types": "Water/Grass",
+  "look": "a horse-like sea creature with green scales, a long flowing mane and tail of kelp, front hooves of sea foam, galloping over waves",
+  "evo": ""
+ },
+ "squiddle": {
+  "name": "Squiddle",
+  "types": "Water/Shadow",
+  "look": "a small purple squid with big round eyes, short tentacles and a puff of dark ink behind it",
+  "evo": "inkraken:38"
+ },
+ "inkraken": {
+  "name": "Inkraken",
+  "types": "Water/Shadow",
+  "look": "a large dark violet kraken with long curling tentacles, glowing yellow eyes and clouds of black ink swirling around it",
+  "evo": ""
+ },
+ "leafydra": {
+  "name": "Leafydra",
+  "types": "Water/Dragon",
+  "look": "a small leafy sea dragon creature with leaf-like yellow-green fronds all over its body, a long snout and a curled tail",
+  "evo": "leviadrake:45"
+ },
+ "leviadrake": {
+  "name": "Leviadrake",
+  "types": "Water/Dragon",
+  "look": "a huge majestic sea serpent dragon with long golden-green leafy fins flowing like seaweed, a crest of fronds and a powerful coiled body",
+  "evo": ""
+ },
+ "cranelet": {
+  "name": "Cranelet",
+  "types": "Water/Flying",
+  "look": "a small white crane chick with blue wing tips, a yellow beak and long legs, standing on one leg",
+  "evo": "crestcrane:34"
+ },
+ "crestcrane": {
+  "name": "Crestcrane",
+  "types": "Water/Flying",
+  "look": "a tall elegant crane with white plumage, deep blue wing feathers like waves, a golden crest and long legs, dancing",
+  "evo": ""
+ },
+ "coralcat": {
+  "name": "Coralcat",
+  "types": "Fae",
+  "look": "a small pink kitten with a branching coral-shaped tail, coral bumps on its ears and big sparkly eyes",
+  "evo": "coralynx:34"
+ },
+ "coralynx": {
+  "name": "Coralynx",
+  "types": "Fae/Water",
+  "look": "a graceful lynx with pink and white fur, a long tail and ear tufts made of living branching coral, pearls dangling from its ears",
+  "evo": ""
+ },
+ "moonhare": {
+  "name": "Moonhare",
+  "types": "Fae/Normal",
+  "look": "a small white hare with very long ears tipped in lavender, a crescent moon mark on its forehead and a fluffy tail",
+  "evo": "lunahare:30"
+ },
+ "lunahare": {
+  "name": "Lunahare",
+  "types": "Fae/Normal",
+  "look": "a tall elegant hare with silver-lavender fur, very long ears with glowing star tips, a shimmering crescent-moon mane, mid-leap",
+  "evo": ""
+ },
+ "palmtort": {
+  "name": "Palmtort",
+  "types": "Grass/Ground",
+  "look": "a small tortoise with a sandy brown shell and a small palm tree sapling growing from the top, sleepy smile",
+  "evo": "palmtortoise:38"
+ },
+ "palmtortoise": {
+  "name": "Palmtortoise",
+  "types": "Grass/Ground",
+  "look": "a gigantic tortoise carrying a tiny tropical island on its back with palm trees, a sandy beach and a little waterfall",
+  "evo": ""
+ },
+ "glyphlet": {
+  "name": "Glyphlet",
+  "types": "Mind/Rock",
+  "look": "a small floating square stone tablet with glowing teal rune carvings and one big eye in the middle",
+  "evo": "glyphyx:38"
+ },
+ "glyphyx": {
+  "name": "Glyphyx",
+  "types": "Mind/Rock",
+  "look": "a floating totem of ancient carved stone blocks orbiting a glowing teal core eye, rune symbols spinning around it",
+  "evo": ""
+ },
+ "drownling": {
+  "name": "Drownling",
+  "types": "Spirit/Water",
+  "look": "a small translucent sea-green ghost wearing a tiny sailor cap, with drips of seawater and a sad cute face",
+  "evo": "wreckwraith:38"
+ },
+ "wreckwraith": {
+  "name": "Wreckwraith",
+  "types": "Spirit/Water",
+  "look": "a tall ghostly sea captain spirit in a tattered coat and tricorn hat, seaweed hanging from it, holding a lantern with a green flame, no legs",
+  "evo": ""
+ },
+ "idolith": {
+  "name": "Idolith",
+  "types": "Rock/Spirit",
+  "look": "a large carved stone idol head with moss and barnacles, glowing teal eyes and a wide mouth, hovering slightly off the ground",
+  "evo": ""
+ },
+ "coilfin": {
+  "name": "Coilfin",
+  "types": "Water/Electric",
+  "look": "a small dark blue eel with yellow lightning stripes and a sharp grin, coiled around a broken pillar",
+  "evo": "voltacoil:40"
+ },
+ "voltacoil": {
+  "name": "Voltacoil",
+  "types": "Water/Electric",
+  "look": "a huge long eel with deep blue body, bright yellow glowing lightning patterns, electricity crackling along fin ridges, menacing fangs",
+  "evo": ""
+ },
+ "sparkgull": {
+  "name": "Sparkgull",
+  "types": "Electric/Flying",
+  "look": "a seagull with white and gray feathers, yellow lightning-shaped wing tips and crackling sparks around its beak",
+  "evo": ""
+ },
+ "shalecat": {
+  "name": "Shalecat",
+  "types": "Rock",
+  "look": "a small gray cat with fur made of layered slate shale plates, a striped tail and sharp little claws",
+  "evo": "shalepard:40"
+ },
+ "shalepard": {
+  "name": "Shalepard",
+  "types": "Rock/Shadow",
+  "look": "a large sleek leopard with a coat of dark layered slate plates with shadowy spots, glowing eyes and sharp stone claws",
+  "evo": ""
+ },
+ "tunarrow": {
+  "name": "Tunarrow",
+  "types": "Water",
+  "look": "a streamlined tuna fish with a dark blue back, silver sides, yellow finlets and an arrow-shaped head",
+  "evo": ""
+ },
+ "stormray": {
+  "name": "Stormray",
+  "types": "Water/Electric",
+  "look": "a flat electric ray with dark gray wings patterned with glowing yellow circles, sparks along its edges and a long tail",
+  "evo": ""
+ },
+ "coralith": {
+  "name": "Coralith",
+  "types": "Rock/Water",
+  "look": "a small creature made of branching orange and pink coral with tiny fish hiding in it and a cute face",
+  "evo": "coralossus:42"
+ },
+ "coralossus": {
+  "name": "Coralossus",
+  "types": "Rock/Water",
+  "look": "a towering golem built from a whole colorful coral reef, sea anemones and fish living in its body, glowing blue eyes",
+  "evo": ""
+ },
+ "whaleling": {
+  "name": "Whaleling",
+  "types": "Water",
+  "look": "a chubby baby blue whale with a pale belly, a tiny spout of water above its head and a sweet smile",
+  "evo": "titanwhale:48"
+ },
+ "titanwhale": {
+  "name": "Titanwhale",
+  "types": "Water/Normal",
+  "look": "a colossal ancient whale with barnacles and a small palm island growing on its back, a giant spout of water and a wise old eye",
+  "evo": ""
+ },
+ "crystag": {
+  "name": "Crystag",
+  "types": "Rock/Fae",
+  "look": "a small fawn with tan fur, white spots and little crystal antlers like clear quartz",
+  "evo": "crystagger:36"
+ },
+ "crystagger": {
+  "name": "Crystagger",
+  "types": "Rock/Fae",
+  "look": "a majestic stag with stone-gray fur and enormous branching antlers made of glowing blue crystals",
+  "evo": ""
+ },
+ "condorock": {
+  "name": "Condorock",
+  "types": "Flying/Rock",
+  "look": "a large condor with dark plumage, a white neck ruff and wings tipped with stone-gray rocky feathers, soaring",
+  "evo": ""
+ },
+ "scalet": {
+  "name": "Scalet",
+  "types": "Dragon",
+  "look": "a small purple baby dragon with a pale yellow belly, little horn nubs, tiny wings and big eyes, gnawing a pebble",
+  "evo": "scalewyrm:35"
+ },
+ "scalewyrm": {
+  "name": "Scalewyrm",
+  "types": "Dragon",
+  "look": "a medium purple dragon with thick overlapping shield-like scales, a golden belly, two sharp horns and folded wings",
+  "evo": "scaleking:50"
+ },
+ "scaleking": {
+  "name": "Scaleking",
+  "types": "Dragon/Rock",
+  "look": "a huge regal dragon with deep purple armored scales edged in gold, a crown of rock spikes, massive wings and a commanding pose",
+  "evo": ""
+ },
+ "crestisk": {
+  "name": "Crestisk",
+  "types": "Dragon/Shadow",
+  "look": "a long lizard-dragon with dark green scales, a tall frilled crest that glows red, slitted glowing eyes and a whip tail",
+  "evo": ""
+ },
+ "albatrice": {
+  "name": "Albatrice",
+  "types": "Flying",
+  "look": "a huge albatross with enormous long white wings with dark tips, a peaceful face and a golden beak, gliding",
+  "evo": ""
+ },
+ "palmdrake": {
+  "name": "Palmdrake",
+  "types": "Dragon/Grass",
+  "look": "a small brown baby dragon with a crest of green palm fronds on its head, scales like palm bark and a coconut held in its arms",
+  "evo": "palmwyrm:48"
+ },
+ "palmwyrm": {
+  "name": "Palmwyrm",
+  "types": "Dragon/Grass",
+  "look": "a large tall dragon with bark-textured scales, huge palm leaf wings, a crown of coconuts and fronds, sturdy legs like tree trunks",
+  "evo": ""
+ },
+ "orcanine": {
+  "name": "Orcanine",
+  "types": "Water/Shadow",
+  "look": "a powerful orca with glossy black and white markings shaped like a wolf mask, a tall dorsal fin and sharp teeth",
+  "evo": ""
+ },
+ "swordmarl": {
+  "name": "Swordmarl",
+  "types": "Water/Brawl",
+  "look": "a muscular marlin fish with a long sharp sword-like bill, a tall blue sail fin and battle scars, poised like a fencer",
+  "evo": ""
+ },
+ "serpentide": {
+  "name": "Serpentide",
+  "types": "Water/Dragon",
+  "look": "a long sea serpent with deep teal scales, glowing aqua stripes like bioluminescent waves, finned crest and a dragon head",
+  "evo": ""
+ },
+ "gloomray": {
+  "name": "Gloomray",
+  "types": "Water/Shadow",
+  "look": "a huge dark manta ray with an inky purple back speckled with tiny glowing star-like spots, wide wings and a long whip tail",
+  "evo": ""
+ },
+ "coralite": {
+  "name": "Coralite",
+  "types": "Rock/Fae",
+  "look": "a floating gem-like creature of pink fossilized coral and crystal, glowing softly, with a gentle face",
+  "evo": ""
+ },
+ "anemonix": {
+  "name": "Anemonix",
+  "types": "Water/Toxic",
+  "look": "a sea anemone creature with long waving magenta tentacles with glowing tips, a round base with a sleepy face and a small striped fish hiding inside",
+  "evo": ""
+ },
+ "trenchfang": {
+  "name": "Trenchfang",
+  "types": "Water/Dragon",
+  "look": "a deep-sea dragon-fish with a huge jaw full of needle fangs, dark navy scales, a glowing red lure dangling from its head",
+  "evo": ""
+ },
+ "pearlking": {
+  "name": "Pearlking",
+  "types": "Water/Metal",
+  "look": "a giant oyster with a polished silver metal shell, slightly open to reveal an enormous glowing pearl, a crown of smaller pearls on top",
+  "evo": ""
+ },
+ "hibiscat": {
+  "name": "Hibiscat",
+  "types": "Grass/Fae",
+  "look": "an elegant cat with green fur, big red hibiscus flowers for ears and a flowered tail, a lei of flowers around its neck",
+  "evo": ""
+ },
+ "rootstrider": {
+  "name": "Rootstrider",
+  "types": "Grass/Water",
+  "look": "a walking mangrove tree creature standing on tall arched stilt roots, leafy canopy head with a sleepy face, small crabs on its roots",
+  "evo": ""
+ },
+ "solarbird": {
+  "name": "Solarbird",
+  "types": "Fire/Flying",
+  "look": "a radiant bird with flame-orange and golden plumage, sunburst tail feathers and wings glowing like a tropical sunset",
+  "evo": ""
+ },
+ "kingcoral": {
+  "name": "Kingcoral",
+  "types": "Rock/Water",
+  "look": "a stout regal creature made of red coral rock with a crown of colorful living coral and sea fans, stern face and a royal posture",
+  "evo": ""
+ },
+ "caldoros": {
+  "name": "Caldoros",
+  "types": "Fire/Dragon",
+  "look": "a legendary colossal volcano dragon with a body of black basalt and rivers of lava, a crater-shaped crown spewing fire and smoke, huge ash-gray wings",
+  "evo": ""
+ },
+ "maelstrix": {
+  "name": "Maelstrix",
+  "types": "Water/Flying",
+  "look": "a legendary giant sea bird with deep-blue and white storm-feathers, its long tail swirling into a whirlpool, wings trailing rain and spray",
+  "evo": ""
+ },
+ "coralis": {
+  "name": "Coralis",
+  "types": "Water/Fae",
+  "look": "a legendary graceful mermaid-like reef spirit with a body of pink coral and pearl, flowing fins like silk, a crown of coral and starfish, glowing gently",
+  "evo": ""
+ },
+ "azuron": {
+  "name": "Azuron",
+  "types": "Dragon/Fae",
+  "look": "a mythical long flowing serpent dragon with azure scales shifting from sky blue to deep sea blue, golden whiskers, feathery fins and a pearl held in its claw",
+  "evo": ""
+ }
+}

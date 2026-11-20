@@ -241,6 +241,33 @@ export function buildAzurine(A) {
     });
   }
 
+  // ---- special encounters: the starters gather in the Route 21 jungle; four legends hide around the Isles ----
+  const SOLIDISH = new Set(['tree', 'water', 'rock', 'cavewall', 'pine', 'cactus', 'barrelcactus', 'mapletree', 'goldtree', 'bush', 'crack', 'sign', 'fence', 'lava', 'palm', 'deadtree']);
+  const spot = (m, prefer) => {
+    const taken = new Set([...m.npcs.map((n) => `${n.x},${n.y}`), ...m.items.map((i) => `${i.x},${i.y}`)]);
+    const trail = new Set(['path', 'dirt', 'cavepath', 'snowpath', 'sand']);
+    const free = (x, y) => !SOLIDISH.has(m.tiles[y][x]) && !taken.has(`${x},${y}`) && !m.boulders.some((b) => b.x === x && b.y === y);
+    const N = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    let cands = [];
+    for (let y = 3; y < m.h - 3; y++) for (let x = 3; x < m.w - 3; x++) {
+      if (!free(x, y) || trail.has(m.tiles[y][x])) continue;
+      if (N.some(([dx, dy]) => trail.has(m.tiles[y + dy][x + dx]))) cands.push([x, y]);
+    }
+    // at sea: any spot of island shore you can surf up to
+    if (!cands.length) for (let y = 3; y < m.h - 3; y++) for (let x = 3; x < m.w - 3; x++) {
+      if (free(x, y) && N.some(([dx, dy]) => m.tiles[y + dy][x + dx] === 'water')) cands.push([x, y]);
+    }
+    cands.sort((a, b2) => Math.abs(a[0] - prefer[0]) + Math.abs(a[1] - prefer[1]) - Math.abs(b2[0] - prefer[0]) - Math.abs(b2[1] - prefer[1]));
+    return cands[0];
+  };
+  const special = (mapId, sp, level, prefer, show) => {
+    const m = MAPS[mapId]; const at = spot(m, prefer);
+    npc(m, { id: `legend_${sp}`, creature: sp, level, x: at[0], y: at[1], dir: 'down', move: 'static', script: 'legend', show: show || `!caught_${sp}` });
+  };
+  special('route21', 'batbud', 10, [12, 4]); special('route21', 'cindershell', 10, [18, 12]); special('route21', 'tuskle', 10, [26, 4]);
+  special('magmatunnel', 'caldoros', 55, [13, 10]); special('route26', 'maelstrix', 55, [13, 20]);
+  special('coraldepths', 'coralis', 58, [14, 10]); special('route28', 'azuron', 62, [19, 10]);
+
   // every trainer in the Isles waits for its roster (the Isles' own creatures come later)
   for (const m of Object.values(MAPS)) if (m.region === 'azurine') for (const n of m.npcs) if (n.trainer) n.pending = true;
 }
