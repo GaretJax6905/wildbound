@@ -27,7 +27,7 @@ export const MERIDIA_LAYOUT = {
 };
 
 export function buildMeridia(A) {
-  const { MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS } = A;
+  const { flag, MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS } = A;
   Object.assign(GYMS, MERIDIA_GYMS);
   const G = MERIDIA_GYMS;
 
@@ -167,7 +167,7 @@ export function buildMeridia(A) {
     dots(b, 'crate', [[1, 2], [2, 2], [16, 2], [15, 12], [16, 12]]);
     npc(b, { id: 'eb_g1', look: 'grunt', x: 4, y: 7, dir: 'right', trainer: 'eclipse_m1', sight: 3, sight: 3 });
     npc(b, { id: 'eb_g2', look: 'grunt', x: 13, y: 7, dir: 'left', trainer: 'eclipse_m2', sight: 3 });
-    npc(b, { id: 'eb_admin', look: 'nyx', x: 8, y: 3, dir: 'down', trainer: 'eclipse_m3', sight: 4 });
+    npc(b, { id: 'eb_admin', look: 'nyx', x: 8, y: 3, dir: 'down', trainer: 'eclipse_m3', sight: 4, show: '!eclipseFactory' });
   }
 
   // ---------- Route 17 (snow, Heave gate) -> Frostvale (Gym 7: Ice) ----------
@@ -260,12 +260,12 @@ export function buildMeridia(A) {
     cands.sort((a, b) => Math.abs(a[0] - prefer[0]) + Math.abs(a[1] - prefer[1]) - Math.abs(b[0] - prefer[0]) - Math.abs(b[1] - prefer[1]));
     return cands[0];
   };
-  const special = (mapId, sp, level, prefer) => {
+  const special = (mapId, sp, level, prefer, show) => {
     const m = MAPS[mapId]; const at = spot(m, prefer);
-    npc(m, { id: `legend_${sp}`, creature: sp, level, x: at[0], y: at[1], dir: 'down', move: 'static', script: 'legend', show: `!caught_${sp}` });
+    npc(m, { id: `legend_${sp}`, creature: sp, level, x: at[0], y: at[1], dir: 'down', move: 'static', script: 'legend', show: show || `!caught_${sp}` });
   };
   special('whisperwood', 'bramblecub', 10, [6, 4]); special('whisperwood', 'cindergecko', 10, [15, 4]); special('whisperwood', 'splotter', 10, [24, 4]);
   special('echocanyon', 'solkhan', 50, [13, 4]); special('route17', 'glacieth', 55, [4, 4]);
-  special('route18', 'thundrael', 55, [18, 3]); special('summitpass', 'meridion', 60, [15, 4]);
+  special('route18', 'thundrael', 55, [18, 3]); special('summitpass', 'meridion', 60, [15, 4], () => flag('eclipseSummit') && !flag('caught_meridion'));
 
 }

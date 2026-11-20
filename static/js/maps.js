@@ -747,7 +747,7 @@ link('victoryroad', 'north', 14, 'crown', 10);
 
 // ---------- Region 2: Meridia (region2.js), built with the same tools ----------
 REGION.id = 'meridia';
-buildMeridia({ MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS });
+buildMeridia({ flag, MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS });
 REGION.id = 'aldermoor';
 
 // ---------- region layout for the Town Map ----------

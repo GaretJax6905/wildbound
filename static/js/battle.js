@@ -102,6 +102,7 @@ function platform(g, x, y, rx, env) {
 }
 
 function drawBattle(g) {
+  if (!B) return;
   const env = B.env || 'meadow';
   g.drawImage(backdrop(env), 0, 0, W, 112);
   if (B.double) { platform(g, 176, 56, 58, env); platform(g, 64, 112, 60, env); } else { platform(g, 176, 58, 46, env); platform(g, 62, 112, 54, env); }

@@ -88,6 +88,14 @@ const TRAINERS = {
   nyx_hq: T('Eclipse Nyx', 'nyx', [['mesaruff', 36], ['nightpip', 37]], 40, '', 'NOT AGAIN!', ''),
   corvo_hq: T('Eclipse Corvo', 'corvo', [['bouldox', 36], ['hauntle', 37]], 40, '', 'I can\'t believe this!', ''),
   vex: T('Eclipse Leader Vex', 'vex', [['shadeclaw', 38], ['constricta', 38], ['cinderfang', 39], ['hauntle', 40]], 80, '', 'Impossible... beaten by a child?', '', { potions: 2, music: 'boss' }),
+  // Team Eclipse in Meridia: hunting the four legends
+  corvo_m1: T('Eclipse Corvo', 'corvo', [['murkit', 11], ['webbit', 12]], 30, '', 'Bah! I almost had them!', ''),
+  nyx_m2: T('Eclipse Nyx', 'nyx', [['vultyke', 19], ['scorpip', 20]], 35, '', 'The radar\'s fine! It\'s YOU that\'s the problem!', ''),
+  corvo_m2: T('Eclipse Corvo', 'corvo', [['coyip', 19], ['webbit', 20]], 35, '', 'Not in the canyon too!', ''),
+  eclipse_m4a: T('Eclipse Grunt', 'grunt', [['umbrastoat', 33], ['dunestinger', 34]], 35, '', 'Brr... beaten AND freezing.', ''),
+  eclipse_m4b: T('Eclipse Grunt', 'grunt', [['hollowhound', 34], ['vultrex', 34]], 35, '', 'The ice trap is busted...', ''),
+  vex_m: T('Eclipse Leader Vex', 'vex', [['umbrastoat', 49], ['centigloom', 50], ['vultrex', 50], ['shadeclaw', 52]], 120, '', 'Again... a child, again!', '', { potions: 2, music: 'boss' }),
+  corvo_m5: T('Eclipse Corvo', 'corvo', [['howlote', 48], ['arachnight', 49], ['hollowhound', 50]], 60, '', 'Boss, I\'m sorry!', '', { potions: 1 }),
   // Team Eclipse's Meridia factory in Ironhaven
   eclipse_m1: T('Eclipse Grunt', 'grunt', [['gravepup', 31], ['howlote', 32]], 30, 'Hey! This factory is off-limits!', 'Ugh... Nyx is gonna be furious.', 'We\'re building machines to track Meridia\'s legends. Don\'t tell anyone.'),
   eclipse_m2: T('Eclipse Grunt', 'grunt', [['murkit', 31], ['dunestinger', 32], ['hivelet', 31]], 30, 'You again?! You\'re the Aldermoor Champion!', 'Champion or not, you\'re a pain!', 'Our machines can sense the four legends of Meridia. The boss wants them all.'),
@@ -125,8 +133,7 @@ const ELITE2 = [
   T('Elite Voss', 'voss', [['scarabolt', 55], ['galeon', 56], ['voltibex', 56], ['nimbulord', 57], ['stormwisp', 58]], 220, 'Voss, last of the Four. I was born in a thunderstorm on Skyspire. Let\'s make some lightning.', 'Grounded... The Champion is waiting.', '', { potions: 3 }),
 ];
 function meridiaChampion() {
-  const ace = G.rivals && G.rivals.juno ? [[evolveFor(G.rivals.juno, 62), 62]] : [];
-  return { name: 'Champion Juno', look: 'juno', party: [['driftsteed', 58], ['aurorine', 58], ['crystallix', 59], ['galeon', 59], ['rimewyrm', 60], ...ace], money: 100, music: 'boss', potions: 3 };
+  return { ...rivalM('juno', 60, { ace: true, title: 'Champion' }), money: 100, potions: 3 };
 }
 
 const ELITE = [
@@ -209,6 +216,20 @@ function rivalTrainer(who, lvl, extra) {
   }
   party.push([evolveFor(G.rivals[who], lvl), lvl]);
   return { name: who === 'kai' ? 'Kai' : 'Juno', look: who, party, money: 40, music: 'boss', potions: lvl > 30 ? 2 : 0 };
+}
+
+// In Meridia the rivals start fresh: a Meridia starter plus creatures they catch on the way.
+// They left their Aldermoor teams with Maple, and only bring their old starter back for the big finale.
+const COUNTER2 = { bramblecub: 'cindergecko', cindergecko: 'splotter', splotter: 'bramblecub' };
+const RIVAL_POOLS_M = { kai: ['coyip', 'zaphog', 'squirebeetle', 'rimelet'], juno: ['flurrybun', 'chirpip', 'driftling', 'crysmite'] };
+function rivalM(who, lvl, o = {}) {
+  const party = [];
+  const count = o.ace ? 4 : Math.min(4, Math.floor(lvl / 12));
+  RIVAL_POOLS_M[who].slice(0, count).forEach((sp, i) => { const l = lvl - 2 - (i % 3); party.push([evolveFor(sp, l), l]); });
+  party.push([evolveFor(G.rivals2[who], lvl), lvl]);
+  if (o.ace && G.rivals && G.rivals[who]) party.push([evolveFor(G.rivals[who], lvl + 2), lvl + 2]);
+  const nm = who === 'kai' ? 'Kai' : 'Juno';
+  return { name: o.title ? `${o.title} ${nm}` : nm, look: who, party, money: 60, music: 'boss', potions: lvl > 30 ? 2 : lvl > 15 ? 1 : 0 };
 }
 
 // the rival names the player picked (defaults Kai / Juno)
@@ -505,6 +526,136 @@ const TRIGGERS = {
     await walkAway(j);
     return true;
   },
+  // ---------- Meridia: rivals ----------
+  async kaiRoute12() {
+    if (flag('kaiR12') || !flag('rivalsMeridia') || !G.badges.includes('hive')) return false;
+    await say(`KAI: Hey! ${G.name}!`);
+    const kai = await appear('tmp_kai', 'kai');
+    await say('KAI: First badge, huh? Me too. Let\'s see whose new team is better!');
+    const won = await fight(rivalM('kai', 15));
+    await say(won ? 'KAI: Tch. My team\'s still young. Next time!' : 'KAI: Ha! Fresh start, same result... for you!', 'KAI: Sunscar\'s just ahead. The sand gets everywhere.');
+    setFlag('kaiR12');
+    await walkAway(kai);
+    return true;
+  },
+  async junoMesa() {
+    if (flag('junoMesa') || !flag('rivalsMeridia') || !G.badges.includes('dune')) return false;
+    await say(`JUNO: ${G.name}! Over here!`);
+    const j = await appear('tmp_juno', 'juno');
+    await say('JUNO: I\'ve been training on the mesa all week. The wind here is amazing! Battle me!');
+    const won = await fight(rivalM('juno', 21));
+    await say(won ? 'JUNO: You\'re still so strong... I\'m going to get there, you\'ll see.' : 'JUNO: Yes! I won! Kai is never going to believe this!', 'JUNO: Leader Aeron loves Flying types. Bring something that can bring them down!');
+    setFlag('junoMesa');
+    await walkAway(j);
+    return true;
+  },
+  async rivalsKingsgate() {
+    if (flag('rivalsKing') || !flag('rivalsMeridia') || !G.badges.includes('bog')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say(`KAI: There you are, ${G.name}!`);
+    const kai = await appear('tmp_kai', 'kai');
+    const s = freeNear(world.player);
+    spawn({ id: 'tmp_juno', look: 'juno', x: s.x, y: s.y, dir: opposite[s.d] });
+    await say('JUNO: We decided we\'re done losing one at a time.', 'KAI: Two against one. Let\'s go!');
+    const won = await fight([rivalM('kai', 30), rivalM('juno', 30)], { double: true });
+    await say(won ? 'KAI: ...Even together? Seriously?' : 'JUNO: Teamwork wins!', 'JUNO: Have you seen the people in dark uniforms around here? They were asking about legends.', 'KAI: Team Eclipse. They followed us all the way to Meridia. Keep your eyes open.');
+    setFlag('rivalsKing');
+    const jn = npcById('tmp_juno');
+    await Promise.all([walkAway(kai), jn ? walkAway(jn) : null]);
+    return true;
+  },
+  async rivalsStorm() {
+    if (flag('rivalsStorm') || !flag('rivalsMeridia') || !G.badges.includes('rime')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say(`JUNO: ${G.name}! Wait up!`);
+    const j = await appear('tmp_juno', 'juno');
+    const s = freeNear(world.player);
+    spawn({ id: 'tmp_kai', look: 'kai', x: s.x, y: s.y, dir: opposite[s.d] });
+    await say('KAI: Seven badges each. One storm. Let\'s settle who\'s really ahead!', 'JUNO: Tag battle! No holding back this time!');
+    const won = await fight([rivalM('kai', 41), rivalM('juno', 41)], { double: true });
+    await say(won ? 'JUNO: Okay, okay, you\'re ahead. For now!' : 'KAI: That\'s how it\'s done!', 'KAI: Skyspire\'s past Storm Cave. Light it up or you\'ll get lost.', 'JUNO: See you at the League!');
+    setFlag('rivalsStorm');
+    const k = npcById('tmp_kai');
+    await Promise.all([walkAway(j), k ? walkAway(k) : null]);
+    return true;
+  },
+  async kaiSummit() {
+    if (flag('kaiSummit') || !flag('rivalsMeridia') || regionBadges(G, 'meridia') < 8) return false;
+    await say(`KAI: ${G.name}. Hold it.`);
+    const kai = await appear('tmp_kai', 'kai');
+    await say('KAI: Juno went ahead. She already beat the Elite Four. She\'s the Champion now.', 'KAI: I sent for my old partner from Maple\'s lab. Before you face her, you face me. Full strength!');
+    const won = await fight(rivalM('kai', 52, { ace: true }));
+    await say(won ? 'KAI: ...Fine. You\'re the one who should face her. Go win it.' : 'KAI: Heh. Maybe I should be the one challenging Juno...', 'KAI: Zenith Plateau is right through here. Good luck, rival.');
+    setFlag('kaiSummit');
+    await walkAway(kai);
+    return true;
+  },
+  // ---------- Meridia: Team Eclipse ----------
+  async eclipseWood() {
+    if (flag('eclipseWood') || !flag('cedarStarter')) return false;
+    await say('???: Come on, hold STILL, you little...!');
+    const c = await appear('ec_corvo', 'corvo');
+    await say('CORVO: Huh?! YOU again?! What are you doing in Meridia?!', 'CORVO: Team Eclipse is here on official business. Those three partner creatures in these woods are coming with me!', 'CORVO: Vex says rare creatures make the best bait for legends. Now beat it!');
+    const won = await fight(TRAINERS.corvo_m1);
+    if (!won) { despawn('ec_corvo'); return true; }
+    await say('CORVO: Ugh! Fine! Keep your forest critters!', 'CORVO: But we\'ve got a radar that can sense all four of Meridia\'s legends. You can\'t stop all of us!');
+    setFlag('eclipseWood');
+    await vanish('ec_corvo');
+    return true;
+  },
+  async eclipseCanyon() {
+    if (flag('eclipseCanyon') || !G.badges.includes('dune')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say('NYX: The radar is going crazy! The sun legend has to be close!');
+    await appear('ec_nyx', 'nyx');
+    const cs = freeNear(world.player);
+    spawn({ id: 'ec_corvo', look: 'corvo', x: cs.x, y: cs.y, dir: opposite[cs.d] });
+    playMusic('boss');
+    await say('CORVO: Nyx! It\'s that kid from the woods!', 'NYX: Oh, it\'s THIS one. The one who wrecked everything in Aldermoor.', ...MOTTO, 'NYX: Solkhan, the lion of the sun, sleeps in this canyon. Vex wants it, and you\'re in the way!');
+    const won = await fight([TRAINERS.nyx_m2, TRAINERS.corvo_m2], { double: true });
+    if (!won) { despawn('ec_nyx'); despawn('ec_corvo'); playMusic(world.map.music); return true; }
+    await say('NYX: Grr... fine. The radar needs recharging anyway.', 'CORVO: We\'ll be at the factory in Ironhaven, working on something big. Not that you\'ll ever find it!', 'NYX: Corvo!! You just TOLD them!', 'BOTH: Team Eclipse is blasting off!');
+    setFlag('eclipseCanyon');
+    await vanish('ec_nyx', 'ec_corvo');
+    playMusic(world.map.music);
+    return true;
+  },
+  async eclipseGlacier() {
+    if (flag('eclipseGlacier') || !flag('eclipseFactory')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say('GRUNT: Keep the freezer cannon steady! The ice serpent is waking up!');
+    await appear('ec_g1', 'grunt');
+    const s = freeNear(world.player);
+    spawn({ id: 'ec_g2', look: 'grunt', x: s.x, y: s.y, dir: opposite[s.d] });
+    playMusic('boss');
+    await say('GRUNT: The Champion?! Stop them, quick!', 'GRUNT: We\'re trapping Glacieth in a block of ice so Vex can carry it to Summit Pass!');
+    const won = await fight([TRAINERS.eclipse_m4a, TRAINERS.eclipse_m4b], { double: true });
+    if (!won) { despawn('ec_g1'); despawn('ec_g2'); playMusic(world.map.music); return true; }
+    await say('GRUNT: The cannon\'s wrecked... Retreat!', 'GRUNT: It doesn\'t matter! Vex only needs ONE legend\'s energy to wake Meridion!');
+    setFlag('eclipseGlacier');
+    await vanish('ec_g1', 'ec_g2');
+    playMusic(world.map.music);
+    return true;
+  },
+  async eclipseSummit() {
+    if (flag('eclipseSummit') || !G.badges.includes('dusk')) return false;
+    if (G.party.filter((m) => m.hp > 0).length < 2) return false;
+    await say('VEX: At last. The peak of Meridia, where the sun and the storm meet.');
+    await appear('ec_vex', 'vex');
+    const s = freeNear(world.player);
+    spawn({ id: 'ec_corvo', look: 'corvo', x: s.x, y: s.y, dir: opposite[s.d] });
+    playMusic('boss');
+    await say('VEX: You. The child who drove me out of Aldermoor.', 'VEX: Meridion sleeps beneath this mountain. Whoever controls it controls the weather of the whole region.', 'VEX: With our beacon, Team Eclipse will cover Meridia in endless night. Corvo! We finish this together!', 'CORVO: Yes, boss!');
+    const won = await fight([TRAINERS.vex_m, TRAINERS.corvo_m5], { double: true });
+    if (!won) { despawn('ec_vex'); despawn('ec_corvo'); playMusic(world.map.music); return true; }
+    await say('VEX: ...The beacon... it\'s overloading!', 'Rumble...!', 'VEX: The mountain is waking up! Corvo, fall back! FALL BACK!', 'VEX: This isn\'t over. There are other regions, and Team Eclipse is patient.');
+    setFlag('eclipseSummit');
+    await vanish('ec_vex', 'ec_corvo');
+    playMusic(world.map.music);
+    refreshNpcs();
+    await say('...Something enormous stirs deeper in the pass. Meridion has awakened!');
+    return true;
+  },
   async badgeGate() {
     if (G.badges.length >= 8) return false;
     await say(`GUARD: Halt! Only trainers with all eight Aldermoor badges may enter Victory Road.`, `You have ${G.badges.length}. Come back when you have them all!`);
@@ -522,6 +673,18 @@ const TRIGGERS = {
   t('route8', 1, MAPS.route8.h - 4, MAPS.route8.w - 2, 1, 'rivalsLumen');
   t('route9', 20, 1, 1, MAPS.route9.h - 2, 'eclipseFinal');
   t('victoryroad', 1, MAPS.victoryroad.h - 3, MAPS.victoryroad.w - 2, 1, 'junoVictory');
+  // Meridia: rivals and Team Eclipse
+  const col = (m, x, script) => t(m, x, 1, 1, MAPS[m].h - 2, script);
+  const row = (m, y, script) => t(m, 1, y, MAPS[m].w - 2, 1, script);
+  col('whisperwood', 14, 'eclipseWood');
+  col('route12', MAPS.route12.w - 5, 'kaiRoute12');
+  row('echocanyon', 3, 'eclipseCanyon');
+  row('mesaridge', MAPS.mesaridge.h - 3, 'junoMesa');
+  row('kingsgate', 4, 'rivalsKingsgate');
+  row('route17', 7, 'eclipseGlacier');
+  col('route18', MAPS.route18.w - 5, 'rivalsStorm');
+  col('summitpass', MAPS.summitpass.w - 6, 'eclipseSummit');
+  col('summitpass', 3, 'kaiSummit');
 })();
 
 // ---------- talk scripts ----------
@@ -618,12 +781,13 @@ async function cedarTalk() {
     sfx('item');
     await say(`${G.name} received 10 Capture Orbs!`, 'CEDAR: Your DEX already has Meridia\'s pages loaded. Fill them in for me!',
       'CEDAR: The other two partners like to wander in Whisperwood, east of Mossbrook. You might meet them there.',
-      'CEDAR: Oh, and another trainer from Aldermoor came through a while ago. A girl with orange hair. She went straight for the League!',
       'CEDAR: Mossbrook is north up Route 11. That\'s where the first Gym is. Good luck!');
     refreshNpcs();
+    await rivalsArrive();
     save();
     return;
   }
+  if (!flag('rivalsMeridia')) { await rivalsArrive(); save(); return; }
   const MER = regionDex('meridia');
   const c = MER.filter((x) => G.dex.caught[x]).length;
   await say(`CEDAR: You've caught ${c} of ${MER.length} kinds of creatures in Meridia.`);
@@ -631,6 +795,29 @@ async function cedarTalk() {
   else if (c >= 60 && !flag('cedarGift2')) { setFlag('cedarGift2'); addItem('masterorb', 1); sfx('item'); await say('CEDAR: Over half of Meridia! You\'ve earned a MASTER ORB. Use it on a legend.'); }
   else if (c >= MER.length) await say('CEDAR: Every creature in Meridia! You and Maple will have to write a book together.');
   else await say('CEDAR: Some creatures only show up in one patch of grass, far off the trail. Search every corner!');
+}
+
+// Kai and Juno take the next ferry and pick the other two Meridia starters
+async function rivalsArrive() {
+  if (flag('rivalsMeridia')) return;
+  const p = world.player;
+  await say('???: Wait! Don\'t give them all away!');
+  const kai = spawn({ id: 'tmp_kai', look: 'kai', x: 4, y: 8, dir: 'up' });
+  const juno = spawn({ id: 'tmp_juno', look: 'juno', x: 6, y: 8, dir: 'up' });
+  await Promise.all([walk(kai, ['up', 'up'], 1), walk(juno, ['up', 'up'], 1)]);
+  p.dir = 'down';
+  await say(`KAI: ${G.name}! You didn't think we'd let you have Meridia to yourself, did you?`,
+    'JUNO: We caught the very next ferry! We left our teams with Professor Maple. A fresh start, so it\'s fair.',
+    'CEDAR: My! More trainers from Aldermoor. Well, there are two partners left...');
+  G.rivals2 = { kai: COUNTER2[G.starter2], juno: MERIDIA_STARTERS.find((x) => x !== G.starter2 && x !== COUNTER2[G.starter2]) };
+  sfx('item');
+  await say(`KAI: Then I'll take ${SPECIES[G.rivals2.kai].name}! It has the edge on yours. Again.`,
+    `JUNO: And ${SPECIES[G.rivals2.juno].name} is coming with me! Hello, partner!`,
+    `KAI: We're going to catch a whole new team out there. Next time we meet, we battle. Both of us, if we feel like it!`,
+    'JUNO: See you on the road!');
+  setFlag('rivalsMeridia');
+  await Promise.all([walk(kai, ['down', 'down', 'down'], 1), walk(juno, ['down', 'down', 'down'], 1)]);
+  despawn('tmp_kai'); despawn('tmp_juno');
 }
 
 async function heal(where) {
@@ -819,7 +1006,7 @@ const SCRIPTS = {
   },
   async champion2() {
     if (flag('e4m_4')) { await say('JUNO: Go on through. Professor Cedar is waiting for you.'); return; }
-    await say(`JUNO: ${G.name}! I knew you'd make it here.`, 'JUNO: I sailed to Meridia right after you became Champion of Aldermoor. I wanted a title of my own.', 'JUNO: I\'m the Champion here now. And this time, I\'m not losing to you!');
+    await say(`JUNO: ${G.name}! I knew you'd make it here.`, 'JUNO: I beat the Elite Four first this time. I\'m Meridia\'s Champion!', 'JUNO: And I brought my partner from Aldermoor back for this. Everything I\'ve got, against everything you\'ve got!');
     const won = await fight(meridiaChampion());
     if (!won) return;
     setFlag('e4m_4');
@@ -890,6 +1077,19 @@ async function trainerBattle(n) {
   if (t.intro) await say(`${short}: ${t.intro}`);
   const won = await fight(t);
   if (won) setFlag('beat_' + n.trainer);
+  if (won && n.trainer === 'eclipse_m3') await eclipseFactory(n);
+}
+
+// after Nyx falls in the Ironhaven factory, she lets the plan slip
+async function eclipseFactory(n) {
+  await say('NYX: Ugh! Fine! You want to know so badly? Here!',
+    'NYX: This factory built a radar that can track all four of Meridia\'s legends, and a beacon to control the strongest one.',
+    'NYX: Solkhan in the canyon, Glacieth in the snow, Thundrael in the storms... and Meridion, the one that rules them all, sleeping under Summit Pass.',
+    'NYX: Vex already took the beacon. Our grunts are heading south to trap Glacieth for its power. You\'re too late!');
+  setFlag('eclipseFactory');
+  await vanish(n.id);
+  refreshNpcs();
+  await say('The factory machines powered down. Team Eclipse is heading for Route 17!');
 }
 
 // for tests and debugging
