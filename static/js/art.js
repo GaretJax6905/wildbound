@@ -599,6 +599,23 @@ export function loadCustomArt() {
     })))))).catch(() => {});
 }
 export const hasCustomArt = (sp) => !!CUSTOM[sp];
+// A thin dark rim around hand-drawn art, so pale or white parts never melt into a light
+// battle backdrop (snow, sky, sand). Art that already has a dark outline barely changes.
+function addRim(c, w = 3, color = 'rgba(24, 22, 40, 0.92)') {
+  const t = mk(c.width, c.height), g = t.getContext('2d');
+  for (let dy = -w; dy <= w; dy++) for (let dx = -w; dx <= w; dx++) {
+    if (dx * dx + dy * dy > w * w + 1 || (!dx && !dy)) continue;
+    g.drawImage(c, dx, dy);
+  }
+  g.globalCompositeOperation = 'source-in';
+  g.fillStyle = color; g.fillRect(0, 0, t.width, t.height);
+  g.globalCompositeOperation = 'source-over';
+  g.drawImage(c, 0, 0);
+  const cg = c.getContext('2d');
+  cg.clearRect(0, 0, c.width, c.height); cg.drawImage(t, 0, 0);
+  return c;
+}
+
 export function creature(sp, size = 56, back = false) {
   const key = `c:${sp}:${size}:${back}`;
   if (cache.has(key)) return cache.get(key);
@@ -611,7 +628,8 @@ export function creature(sp, size = 56, back = false) {
     const st = (s.art && s.art.stage) || s.stage || 1;
     const k = st === 1 ? 0.82 : st === 2 ? 0.92 : 1;
     const d = n * k;
-    g.drawImage(art, (n - d) / 2, n - d, d, d);
+    g.drawImage(art, (n - d) / 2, n - d - 3, d, d);
+    addRim(c);
     c.hd = true;
     cache.set(key, c);
     return c;
@@ -927,7 +945,8 @@ export function trainerPortrait(lookId, pose = 'ready') {
   if (art) {
     const R = 6, c = mk(56 * R, 76 * R), g = c.getContext('2d');
     g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-    g.drawImage(art, 0, 0, c.width, c.height);
+    g.drawImage(art, 3, 0, c.width - 6, c.height - 3);
+    addRim(c);
     c.hd = true;
     cache.set(key, c);
     return c;
