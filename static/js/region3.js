@@ -5,14 +5,14 @@
 // Built with the same tools as Aldermoor and Meridia (maps.js passes them in).
 
 export const AZURINE_GYMS = {
-  bloom: { id: 'bloom', type: 'Grass', look: 'kalea', tlook: 'beauty', layout: 2, region: 'azurine' },
-  reef: { id: 'reef', type: 'Water', look: 'marlin', tlook: 'swimmer', layout: 3, region: 'azurine' },
-  magma: { id: 'magma', type: 'Fire', look: 'cinda', tlook: 'hiker', layout: 1, region: 'azurine' },
-  cirrus: { id: 'cirrus', type: 'Flying', look: 'skye', tlook: 'birdkeeper', layout: 2, region: 'azurine' },
-  pearl: { id: 'pearl', type: 'Fae', look: 'perla', tlook: 'lass', layout: 3, region: 'azurine' },
-  beacon: { id: 'beacon', type: 'Electric', look: 'arc', tlook: 'acetrainer', layout: 1, region: 'azurine' },
-  crag: { id: 'crag', type: 'Rock', look: 'basalt', tlook: 'hiker', layout: 2, region: 'azurine' },
-  scale: { id: 'scale', type: 'Dragon', look: 'wyneth', tlook: 'tamer', layout: 3, region: 'azurine' },
+  bloom: { id: 'bloom', type: 'Grass', look: 'kalea', tlook: 'beauty', layout: 2, region: 'azurine', tip: 'Fire, Ice, Flying, Bug and Toxic moves wilt grass!' },
+  reef: { id: 'reef', type: 'Water', look: 'marlin', tlook: 'swimmer', layout: 3, region: 'azurine', tip: 'Grass and Electric moves make the reef shudder!' },
+  magma: { id: 'magma', type: 'Fire', look: 'cinda', tlook: 'hiker', layout: 1, region: 'azurine', tip: 'Water, Rock and Ground moves douse the flames!' },
+  cirrus: { id: 'cirrus', type: 'Flying', look: 'skye', tlook: 'birdkeeper', layout: 2, region: 'azurine', tip: 'Electric, Ice and Rock moves bring fliers down!' },
+  pearl: { id: 'pearl', type: 'Fae', look: 'perla', tlook: 'lass', layout: 3, region: 'azurine', tip: 'Metal and Toxic moves dull a Fae\'s shine!' },
+  beacon: { id: 'beacon', type: 'Electric', look: 'arc', tlook: 'acetrainer', layout: 1, region: 'azurine', tip: 'Ground types shrug off electricity completely!' },
+  crag: { id: 'crag', type: 'Rock', look: 'basalt', tlook: 'hiker', layout: 2, region: 'azurine', tip: 'Water, Grass, Brawl, Ground and Metal moves crack stone!' },
+  scale: { id: 'scale', type: 'Dragon', look: 'wyneth', tlook: 'tamer', layout: 3, region: 'azurine', tip: 'Ice, Dragon and Fae moves are a dragon\'s bane.' },
 };
 
 // where things sit on the Isles' Town Map (same 28 x 20 grid)
@@ -269,7 +269,8 @@ export function buildAzurine(A) {
     npc(m, { id: `legend_${sp}`, creature: sp, level, x: at[0], y: at[1], dir: 'down', move: 'static', script: 'legend', show: show || `!caught_${sp}` });
   };
   special('route21', 'batbud', 10, [12, 4]); special('route21', 'cindershell', 10, [18, 12]); special('route21', 'tuskle', 10, [26, 4]);
-  special('magmatunnel', 'caldoros', 55, [13, 10]); special('route26', 'maelstrix', 55, [13, 20]);
+  special('magmatunnel', 'caldoros', 55, [13, 10], () => flag('eclipseVolcano') && !flag('caught_caldoros'));
+  special('route26', 'maelstrix', 55, [13, 20], () => flag('eclipseStorm') && !flag('caught_maelstrix'));
   special('coraldepths', 'coralis', 58, [14, 10]); special('route28', 'azuron', 62, [19, 10], () => flag('eclipseSea') && !flag('caught_azuron'));
 
 }

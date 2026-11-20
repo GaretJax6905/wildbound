@@ -475,7 +475,7 @@ function martInterior(id, stock) {
   return m;
 }
 const GYM_DECOR = { Grass: 'plant', Electric: 'console', Water: 'water', Brawl: 'statue', Mind: 'plant', Fire: 'lava', Dragon: 'statue', Rock: 'boulder',
-  Bug: 'plant', Ground: 'boulder', Flying: 'statue', Toxic: 'water', Spirit: 'grave', Metal: 'console', Ice: 'statue', Shadow: 'pillar' };
+  Bug: 'plant', Ground: 'boulder', Flying: 'statue', Toxic: 'water', Spirit: 'grave', Metal: 'console', Ice: 'statue', Shadow: 'pillar', Fae: 'water' };
 function gymInterior(id, gym) {
   const m = interior(id, 'Gym', 12, 14, [[5, 13], [6, 13]], { base: 'gymfloor', music: 'indoor' });
   const d = GYM_DECOR[gym.type] || 'statue';

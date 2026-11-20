@@ -425,7 +425,7 @@ async function interact() {
     if (u) { p.surf = true; playMusic('sea'); await stepActor(p, p.dir, 1); G.pos = { map: m.id, x: p.x, y: p.y, dir: p.dir }; }
     return;
   }
-  const flavor = { tv: 'A show about creature trainers traveling to faraway regions is on.', shelf: 'It\'s crammed with books about creatures.', bed: 'A comfy-looking bed.', healer: 'A machine that heals creatures in seconds.', console: 'Screens full of maps of Aldermoor... and an eclipse symbol.', lava: 'Bubbling hot lava! Better not touch it.', plant: 'A well-watered plant.' };
+  const flavor = { tv: 'A show about creature trainers traveling to faraway regions is on.', shelf: 'It\'s crammed with books about creatures.', bed: 'A comfy-looking bed.', healer: 'A machine that heals creatures in seconds.', console: 'Screens full of maps and readings... and an eclipse symbol in the corner.', lava: 'Bubbling hot lava! Better not touch it.', plant: 'A well-watered plant.' };
   if (t === 'statue') { await say(`${m.name.toUpperCase()}\nBadge holders: ${G.badges.length ? G.name : 'none yet!'}`); return; }
   if (flavor[t]) await say(flavor[t]);
 }

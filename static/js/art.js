@@ -758,7 +758,7 @@ export const LOOKS = {
   marlin: { skin: '#e0b088', hair: '#2858a0', shirt: '#204870', pants: '#183050', spiky: true },
   cinda: { skin: '#b87850', hair: '#e04820', shirt: '#f0a030', pants: '#a02818', long: true },
   skye: { skin: '#f0d0b0', hair: '#f0f0f0', shirt: '#58b8e8', pants: '#e8e8f0', hat: '#e8d040', hatB: '#a08020' },
-  perla: { skin: '#f8e0d0', hair: '#f0a8c8', shirt: '#f8f0f8', pants: '#e888b8', long: true },
+  perla: { skin: '#f8e0d0', hair: '#f0a8c8', shirt: '#b83860', pants: '#30a0a0', long: true },
   arc: { skin: '#c89070', hair: '#383838', shirt: '#f0c830', pants: '#304060', long: true, hat: '#f8f8f8', hatB: '#c0c0c8' },
   basalt: { skin: '#a06840', hair: '#585858', shirt: '#808078', pants: '#484038', beard: true },
   wyneth: { skin: '#e0c0a0', hair: '#c8c8d0', shirt: '#583878', pants: '#302040', long: true, coat: true },
@@ -1340,6 +1340,7 @@ const TILE_DRAW = {
   gf_Spirit(px) { px(0, 0, 16, 16, '#5e5a70'); px(0, 0, 16, 1, '#6e6a82'); px(0, 0, 1, 16, '#6e6a82'); px(0, 15, 16, 1, '#46425a'); px(15, 0, 1, 16, '#46425a'); px(5, 6, 6, 1, '#7a76a0'); px(7, 4, 2, 5, '#7a76a0'); px(7, 6, 2, 1, '#b8b0e8'); },
   gf_Metal(px) { px(0, 0, 16, 16, '#9098a4'); px(0, 0, 16, 1, '#b0b8c4'); px(0, 0, 1, 16, '#b0b8c4'); px(0, 15, 16, 1, '#646c78'); px(15, 0, 1, 16, '#646c78'); for (let i = 2; i < 14; i += 3) px(i, i, 2, 1, '#a4acb8'); for (const [x, y] of [[2, 2], [13, 2], [2, 13], [13, 13]]) px(x, y, 1, 1, '#545c68'); },
   gf_Ice(px) { TILE_DRAW.icefloor(px, srand(3)); px(0, 0, 16, 1, '#e8f6ff'); px(0, 0, 1, 16, '#e8f6ff'); },
+  gf_Fae(px) { px(0, 0, 16, 16, '#f4d8e4'); px(0, 0, 8, 8, '#ecc8da'); px(8, 8, 8, 8, '#ecc8da'); px(0, 15, 16, 1, '#d8a8c0'); px(15, 0, 1, 16, '#d8a8c0'); px(3, 3, 2, 2, '#fff8fc'); px(3, 3, 1, 1, '#ffffff'); px(11, 11, 2, 2, '#fff8fc'); px(11, 11, 1, 1, '#ffffff'); },
   gf_Shadow(px) { px(0, 0, 16, 16, '#2e2a3a'); px(8, 0, 8, 8, '#363246'); px(0, 8, 8, 8, '#363246'); px(7, 7, 2, 2, '#8a48c8'); px(0, 0, 1, 1, '#5a3a88'); },
   // ---- interior wall styles ----
   stonewall(px) { px(0, 0, 16, 16, '#8c8a86'); for (let y = 3, row = 0; y < 16; y += 4, row++) { px(0, y, 16, 1, '#6a6864'); for (let x = (row % 2) * 4; x < 16; x += 8) px(x, y, 1, 4, '#6a6864'); px((row % 2) * 4 + 2, y + 1, 3, 1, '#a4a29c'); } px(0, 0, 16, 3, '#55524e'); px(0, 0, 16, 1, '#76736e'); },
