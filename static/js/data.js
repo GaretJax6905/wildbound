@@ -248,9 +248,12 @@ export const BADGES = [
   // Meridia's eight (the 4th field is the region)
   ['hive', 'Honeycomb', '#d8b020', 'meridia'], ['dune', 'Dune', '#d0a058', 'meridia'], ['gale', 'Gale', '#88c8f0', 'meridia'], ['bog', 'Bog', '#8858a8', 'meridia'],
   ['wraith', 'Wraith', '#706890', 'meridia'], ['forge', 'Forge', '#a0a8b8', 'meridia'], ['rime', 'Rime', '#a8e0f0', 'meridia'], ['dusk', 'Dusk', '#403858', 'meridia'],
+  // the Azurine Isles' eight
+  ['bloom', 'Bloom', '#58c060', 'azurine'], ['reef', 'Reef', '#38a8d8', 'azurine'], ['magma', 'Magma', '#e05828', 'azurine'], ['cirrus', 'Cirrus', '#c8e0f8', 'azurine'],
+  ['pearl', 'Pearl', '#f0b8d0', 'azurine'], ['beacon', 'Beacon', '#f0d030', 'azurine'], ['crag', 'Crag', '#a08868', 'azurine'], ['scale', 'Scale', '#6048c8', 'azurine'],
 ];
 // how many badges the player holds from one region
 export const regionBadges = (G, region) => BADGES.filter((b) => (b[3] || 'aldermoor') === region && G.badges.includes(b[0])).length;
-// Obedience: in Meridia, creatures above this level may ignore orders until more badges are earned
+// Obedience: in every region after Aldermoor, creatures above this level may ignore orders until more badges are earned
 export const OBEY_CAPS = [15, 20, 25, 30, 35, 40, 45, 50, 100];
-export const obeyCap = (G) => (G.region === 'meridia' ? OBEY_CAPS[regionBadges(G, 'meridia')] : 100);
+export const obeyCap = (G) => (G.region && G.region !== 'aldermoor' ? OBEY_CAPS[regionBadges(G, G.region)] : 100);

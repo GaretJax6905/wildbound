@@ -2,6 +2,7 @@
 // trainer card, options, title and the evolution scene.
 import { W, H, input, open, wait, frame, fx } from './engine.js';
 import { creature, silhouette, person, drawCreature, trainerPortrait, blit } from './art.js';
+import { AZURINE_ISLANDS } from './region3.js';
 import { SPECIES, SPECIES_LIST, MOVES, ITEMS, TYPE_COLORS, STATUS_NAMES, BADGES, FIELD, canLearnField, regionDex } from './data.js';
 import { MAPS, LAYOUTS } from './maps.js';
 const layout = () => LAYOUTS[G.region] || LAYOUTS.aldermoor;
@@ -208,7 +209,7 @@ class BoxList extends ListScreen {
     }
   }
 }
-export function regionName(id) { return { aldermoor: 'ALDERMOOR', meridia: 'MERIDIA' }[id] || id.toUpperCase(); }
+export function regionName(id) { return { aldermoor: 'ALDERMOOR', meridia: 'MERIDIA', azurine: 'AZURINE ISLES' }[id] || id.toUpperCase(); }
 
 export async function pcScreen() {
   sfx('select');
@@ -453,7 +454,7 @@ class Title {
     drawCreature(g, sp, 56, 176, 74 + Math.round(Math.sin(this.t / 15) * 2));
     g.drawImage(person('player', 'down', 0), 20, 82, 40, 48);
     this.menu.draw(g);
-    text(g, 'v3.5', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
+    text(g, 'v3.6', 236, 150, '#ffffffcc', null, FONT_SMALL, 'right');
   }
 }
 export function titleScreen(items) { return open(new Title(items)); }
@@ -610,7 +611,9 @@ class TownMap {
     g.fillStyle = '#4880c8'; for (let y = 0; y < H; y += 6) g.fillRect(0, y, W, 1);
     // land mass
     g.fillStyle = '#88c070';
-    if (G.region === 'meridia') {
+    if (G.region === 'azurine') {
+      for (const [x0, y0, x1, y1, c] of AZURINE_ISLANDS) { g.fillStyle = c; g.fillRect(CX(x0), CY(y0), CX(x1) - CX(x0), CY(y1) - CY(y0)); }
+    } else if (G.region === 'meridia') {
       const R = (x0, y0, x1, y1, c) => { g.fillStyle = c; g.fillRect(CX(x0), CY(y0), CX(x1) - CX(x0), CY(y1) - CY(y0)); };
       R(1, 6.5, 28, 16.6, '#88c070'); R(9.5, -1, 22, 6.5, '#88c070');
       R(7.5, 1.5, 14.5, 9.5, '#d8c088');   // desert and canyon

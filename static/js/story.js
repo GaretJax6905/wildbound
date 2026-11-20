@@ -723,7 +723,7 @@ async function starterSequence() {
 
 // Take the ferry to another region: only the chosen partners come along; everyone else
 // waits in this region's PC box until you return.
-const PORTS = { meridia: ['solace', 13, 16, 'up', 'center_solace'], aldermoor: ['pebbleton', 12, 1, 'up', 'center_peb'] };
+const PORTS = { meridia: ['solace', 13, 16, 'up', 'center_solace'], aldermoor: ['pebbleton', 12, 1, 'up', 'center_peb'], azurine: ['coralline', 13, 16, 'up', 'center_coralline'] };
 async function sail(to, chosen) {
   const keep = new Set(chosen.map((m) => m.uid));
   const stay = G.party.filter((m) => !keep.has(m.uid));
@@ -744,12 +744,17 @@ async function sail(to, chosen) {
   refreshNpcs();
   save();
   await fadeIn(30);
-  const where = to === 'meridia' ? 'Meridia' : 'Aldermoor';
+  const where = REGION_NAMES[to];
   await say(`After a long voyage, the ferry docked in ${where}!`);
   if (first && to === 'meridia') {
     sfx('item');
     await say('...Your phone is ringing!', `MOM: ${G.name}! Did you make it to Meridia safe and sound?`, 'MOM: I promised I\'d send you a map of every new region. Check your TOWN MAP: Meridia is on it now!', 'MOM: Professor Cedar\'s lab is right there in Port Solace. Go say hello. Love you!');
     setFlag('gotMap_meridia');
+  }
+  if (first && to === 'azurine') {
+    sfx('item');
+    await say('...Your phone is ringing!', `MOM: ${G.name}! A third region? You're turning into a real world traveller!`, 'MOM: I sent the map of the Azurine Isles to your TOWN MAP. So many islands!', 'MOM: Professor Marlowe has a lab right there in Coralline Bay. Say hi for me!');
+    setFlag('gotMap_azurine');
   }
 }
 
@@ -818,6 +823,21 @@ async function rivalsArrive() {
   setFlag('rivalsMeridia');
   await Promise.all([walk(kai, ['down', 'down', 'down'], 1), walk(juno, ['down', 'down', 'down'], 1)]);
   despawn('tmp_kai'); despawn('tmp_juno');
+}
+
+// The ferry offers every region you may sail to from here. The Isles open once you're
+// Champion of Meridia.
+const REGION_NAMES = { aldermoor: 'Aldermoor', meridia: 'Meridia', azurine: 'Azurine Isles' };
+async function ferryTo(here) {
+  const dests = ['aldermoor', 'meridia', 'azurine'].filter((r) => r !== here && (r !== 'azurine' || flag('champion_meridia')));
+  if (here === 'meridia' && !flag('champion_meridia')) await say('SAILOR: Ships to the Azurine Isles only take the Champion of Meridia, I\'m afraid.');
+  const opts = [...dests.map((r) => REGION_NAMES[r].toUpperCase()), 'STAY'];
+  const i = dests.length === 1 ? ((await yesNo(`Sail to ${REGION_NAMES[dests[0]]}?`)) ? 0 : 1) : await choose('Where would you like to sail?', opts);
+  if (i < 0 || i >= dests.length) { await say(`SAILOR: Enjoy ${REGION_NAMES[here]}!`); return; }
+  await say('Only one or two partners may travel with you. Everyone else waits in this region\'s PC.');
+  const chosen = await partnerScreen();
+  if (!chosen) { await say('SAILOR: Take your time.'); return; }
+  await sail(dests[i], chosen);
 }
 
 async function heal(where) {
@@ -921,18 +941,24 @@ const SCRIPTS = {
     }
     await say('SAILOR: Champion! The ferry will take you to a brand new region whenever you\'re ready. There\'s no rush.', 'Only one or two partners may travel with you. Everyone else stays here with Professor Maple until you come back.');
     if (!(await yesNo('Do you want to choose your traveling partners now?'))) { await say('SAILOR: Take your time. Aldermoor isn\'t going anywhere.'); return; }
-    const chosen = await partnerScreen();
-    if (!chosen) { await say('SAILOR: Take your time.'); return; }
-    await sail('meridia', chosen);
+    await ferryTo('aldermoor');
   },
   async ferryHome() {
-    await say('SAILOR: Welcome to Meridia! This ferry runs back to Aldermoor whenever you like.');
-    if (!(await yesNo('Sail back to Aldermoor?'))) { await say('SAILOR: Enjoy Meridia!'); return; }
-    const chosen = await partnerScreen();
-    if (!chosen) { await say('SAILOR: Take your time.'); return; }
-    await sail('aldermoor', chosen);
+    await say('SAILOR: Welcome to Meridia! This ferry runs to the other regions whenever you like.');
+    await ferryTo('meridia');
+  },
+  async ferryAzurine() {
+    await say('SAILOR: Aloha! Welcome to the Azurine Isles. This ferry runs back to the other regions whenever you like.');
+    await ferryTo('azurine');
   },
   async cedar() { await cedarTalk(); },
+  async marlowe() {
+    if (!flag('metMarlowe')) {
+      setFlag('metMarlowe');
+      await say(`MARLOWE: Ahoy! You must be ${G.name}. Two regions conquered already? Cedar wrote me all about you!`, 'MARLOWE: I\'m Professor Marlowe. I study the creatures that live between the islands: on reefs, in lagoons, up on the volcano.');
+    }
+    await say('MARLOWE: The Isles\' three partner creatures are still out on the reefs. I\'m tracking them down!', 'MARLOWE: Until then, have a look around. Eight islands, eight Gyms. Palmhaven is just up the beach.');
+  },
   async cedarAide() {
     if (!flag('cedarStarter')) { await say('AIDE: The three partner creatures arrived this morning!', 'AIDE: Go talk to the professor. She\'s been waiting for you!'); return; }
     const cap = OBEY_CAPS[regionBadges(G, 'meridia')];

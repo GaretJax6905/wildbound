@@ -5,8 +5,8 @@ import { MAPS, SOLID, buildingSolid } from '../static/js/maps.js';
 
 function explore(ab) {
   const seen = new Set();
-  // Aldermoor starts at home; Meridia starts on the ferry dock at Port Solace
-  const q = [['house_player', 4, 3], ['solace', 13, 16]];
+  // Aldermoor starts at home; Meridia and the Azurine Isles start on their ferry docks
+  const q = [['house_player', 4, 3], ['solace', 13, 16], ['coralline', 13, 16]];
   const K = (m, x, y) => `${m}|${x}|${y}`;
   q.forEach((s) => seen.add(K(...s)));
   const ok = (m, x, y) => {

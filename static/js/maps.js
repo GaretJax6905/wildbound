@@ -3,6 +3,7 @@
 import { SPECIES } from './data.js';
 import { flag } from './state.js';
 import { buildMeridia, MERIDIA_LAYOUT } from './region2.js';
+import { buildAzurine, AZURINE_LAYOUT } from './region3.js';
 import { WILD2 } from './species2.js';
 export const SOLID = new Set(['cactus', 'barrelcactus', 'mapletree', 'goldtree', 'pillar', 'grave', 'lamp', 'barrel', 'tree', 'water', 'fence', 'sign', 'rock', 'wall', 'counter', 'shelf', 'table', 'pc', 'healer', 'plant', 'bed', 'tv', 'statue', 'boulder', 'void',
   'bush', 'crack', 'cavewall', 'pine', 'lava', 'shrine', 'console',
@@ -748,6 +749,10 @@ link('victoryroad', 'north', 14, 'crown', 10);
 // ---------- Region 2: Meridia (region2.js), built with the same tools ----------
 REGION.id = 'meridia';
 buildMeridia({ flag, MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS });
+
+// ---------- Region 3: the Azurine Isles (region3.js) ----------
+REGION.id = 'azurine';
+buildAzurine({ flag, MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS });
 REGION.id = 'aldermoor';
 
 // ---------- region layout for the Town Map ----------
@@ -761,7 +766,7 @@ export const LAYOUT = {
   cinderpeak: [21, 5, 'town'], route9: [23, 5, 'route', 21, 5, 25, 5], skyreach: [25, 5, 'town'], route10: [25, 3, 'route', 25, 5, 25, 2],
   victoryroad: [25, 2, 'cave'], crown: [25, 0.6, 'town'],
 };
-export const LAYOUTS = { aldermoor: LAYOUT, meridia: MERIDIA_LAYOUT };
+export const LAYOUTS = { aldermoor: LAYOUT, meridia: MERIDIA_LAYOUT, azurine: AZURINE_LAYOUT };
 
 // ---------------- link doors <-> interiors ----------------
 for (const m of Object.values(MAPS)) {
