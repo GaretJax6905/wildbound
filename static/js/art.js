@@ -1089,7 +1089,7 @@ const PROP_TILES = {
   stalagmite: ['cavefloor', 'stalagmite'], caveboulder: ['cavefloor', 'caveboulder'], rockpile: ['cavefloor', 'rockpile'],
   magmarock: ['cavefloor', 'magmarock'], cavecrack: ['cavefloor', 'cavecrack'], boulder: ['gymfloor', 'caveboulder'],
   cactus: ['sand', 'cactus'], barrelcactus: ['sand', 'barrelcactus'], mapletree: ['grass', 'mapletree'], goldtree: ['grass', 'goldtree'],
-  pillar: ['grass', 'pillar'], grave: ['grass', 'grave'], lamp: ['path', 'lamp'], barrel: ['path', 'barrel'],
+  pillar: ['grass', 'pillar'], grave: ['grass', 'grave'], lamp: ['path', 'lamp'], barrel: ['path', 'barrel'], spring: ['dkfloor', 'spring'], ehole: ['grass', 'ehole'],
   crystal: ['cavefloor', 'crystal'], crystal2: ['cavefloor', 'crystal2'], mushroom: ['cavefloor', 'mushroom'], redshroom: ['cavefloor', 'redshroom'], pebbles: ['cavefloor', 'pebbles'],
 };
 const CENTERED_PROPS = new Set(['mat', 'crack', 'pushrock', 'table', 'cavecrack', 'pebbles', 'mushroom', 'redshroom']);

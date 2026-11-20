@@ -4,8 +4,9 @@ import { wait, fadeOut, fadeIn, fx, setScene } from './engine.js';
 import { world, warp, walk, spawn, despawn, npcById, refreshNpcs, faceEachOther, showEmote, pathTo, blocked, opposite, stepActor, loadMap, fieldUser } from './world.js';
 import { G, flag, setFlag, save, addItem, addToCollection } from './state.js';
 import { SPECIES, SPECIES_LIST, ITEMS, BADGES, regionDex, regionBadges, OBEY_CAPS } from './data.js';
-import { MAPS, GYMS } from './maps.js';
-import { makeMon, healFull, name } from './mon.js';
+import { MAPS, GYMS, SOLID, buildingSolid } from './maps.js';
+import { HIDEOUTS } from './hideouts.js';
+import { makeMon, healFull, name, expForLevel } from './mon.js';
 import { say, yesNo, choose, setNameHook, offerNickname, askName } from './ui.js';
 import { battle } from './battle.js';
 import { starterScreen, shopScreen, pcScreen, startMenu, checkEvolutions, partyScreen, townMapScreen, partnerScreen } from './screens.js';
@@ -242,6 +243,23 @@ function getTrainer(id) {
     const party = [0, 1].map((i) => { const sp = pool.length ? pickR(pool) : 'bunnip'; return [evolveFor(sp, lv + i), lv + i]; });
     t = T(`Gym Trainer ${pickR(NAMES)}`, gym.tlook || 'guide', party, 40, `You'll have to beat me before you face our Leader!`, 'Our Leader is even stronger than me!', gym.tip || 'Good luck!');
   }
+  else if (kind === 'hideout') {
+    const H = HIDEOUTS[a];
+    const team = (count, lv0, ace) => {
+      const party = [];
+      for (let i = 0; i < count; i++) {
+        const lvl = lv0 + (i % 2);
+        const pool = poolFor(H.types, lvl, a);
+        party.push([evolveFor(pool.length ? pickR(pool) : 'shadeclaw', lvl), lvl]);
+      }
+      if (ace) party.push(ace);
+      return party;
+    };
+    if (b === 'vex') t = T('Eclipse Leader Vex', 'vex', team(4, H.lvl + 6, ['shadeclaw', H.lvl + 9]), 300, '', 'Beaten in my own stronghold... by YOU.', '', { potions: 3, music: 'boss' });
+    else if (b === '4') t = T('Eclipse Nyx', 'nyx', team(4, H.lvl + 4), 120, 'You found our hideout?! Nobody gets past me!', 'Nooo! Boss, they\'re coming!', 'Go on, then. Vex is waiting at the end.', { potions: 2 });
+    else if (b === '5') t = T('Eclipse Corvo', 'corvo', team(4, H.lvl + 4), 120, 'Not you! Not HERE!', 'Why is it always you?!', 'The boss is gonna be SO mad...', { potions: 2 });
+    else t = T('Eclipse Grunt', 'grunt', team(3, H.lvl + +b), 80, pickR(['Intruder! Stop right there!', 'This hideout is top secret! How did you get in?!', 'You\'re not getting past me!', 'For Team Eclipse!']), pickR(['Ugh! Too strong...', 'The Champion... of course...', 'Retreat!']), 'Vex is waiting at the end. You\'ll never win!');
+  }
   genCache[id] = t;
   return t;
 }
@@ -300,7 +318,21 @@ setNameHook((str) => {
   return str.replace(/\bKAI\b/g, k.toUpperCase()).replace(/\bKai\b/g, k).replace(/\bJUNO\b/g, j.toUpperCase()).replace(/\bJuno\b/g, j);
 });
 
-function build(t) { return { ...t, party: t.party.map(([sp, l]) => makeMon(sp, l, { ot: t.name })) }; }
+// Nyx, Corvo and Vex bring along creatures Team Eclipse snatched from you in this region,
+// raised to fit their team (and evolved if they're high enough)
+function build(t) {
+  const party = t.party.map(([sp, l]) => makeMon(sp, l, { ot: t.name }));
+  if (HOLDERS.includes(t.look) && G.snatched) {
+    const top = Math.max(...t.party.map((p) => p[1]));
+    for (const s of G.snatched) {
+      if (party.length >= 6) break;
+      if (s.rescued || s.holder !== t.look || s.region !== (G.region || 'aldermoor')) continue;
+      const lvl = Math.max(s.mon.level, top - 1);
+      party.push(makeMon(evolveFor(s.mon.sp, lvl), lvl, { ot: t.name, nick: s.mon.nick }));
+    }
+  }
+  return { ...t, party };
+}
 
 // ---------- shared helpers ----------
 async function whiteout() {
@@ -310,12 +342,15 @@ async function whiteout() {
   if (world.map.e4 !== undefined || world.map.id === 'league_lobby') ['e4_0', 'e4_1', 'e4_2', 'e4_3', 'leagueOpen'].forEach((f) => setFlag(f, false));
   if (world.map.e4m !== undefined || world.map.id === 'league2_lobby') ['e4m_0', 'e4m_1', 'e4m_2', 'e4m_3', 'league2Open'].forEach((f) => setFlag(f, false));
   if (world.map.e4a !== undefined || world.map.id === 'league3_lobby') ['e4a_0', 'e4a_1', 'e4a_2', 'e4a_3', 'league3Open'].forEach((f) => setFlag(f, false));
+  const inHideout = world.map.hideout;
+  if (inHideout) closeHideout(inHideout);
   const h = G.lastHeal;
   loadMap(h.map, h.x, h.y, h.dir);
   save();
   await wait(10);
   await fadeIn(20);
   await say(`${G.name} hurried back to safety and healed up. Half the money was lost in the scramble...`);
+  if (inHideout) await say('Somewhere far away, the Eclipse hideout rumbled and caved in. It\'s sealed for good.');
 }
 
 async function afterBattle(result) {
@@ -330,6 +365,7 @@ async function fight(trainers, o = {}) {
   const list = (Array.isArray(trainers) ? trainers : [trainers]).map(build);
   const r = await battle({ trainers: list, double: o.double, canLose: o.canLose, music: list[0].music || 'boss' });
   if (o.canLose && r === 'lose') { playMusic(world.map.music); G.party.forEach(healFull); return false; }
+  if (r === 'lose' && list.some((t) => ECLIPSE_LOOKS.has(t.look))) await snatch(list);
   await afterBattle(r);
   return r === 'win';
 }
@@ -377,6 +413,94 @@ async function walkAway(n) {
   despawn(n.id);
 }
 async function vanish(...ids) { fx.flash = 1; fx.flashColor = '#fff'; sfx('door'); ids.forEach(despawn); await wait(8); }
+// ---------- Team Eclipse snatches creatures, and hides them underground ----------
+const ECLIPSE_LOOKS = new Set(['grunt', 'nyx', 'corvo', 'vex']);
+const HOLDERS = ['nyx', 'corvo', 'vex'];
+const HOLDER_NAMES = { nyx: 'Nyx', corvo: 'Corvo', vex: 'Vex' };
+// losing to Team Eclipse costs you a creature from your team: never a legend or a starter,
+// and never your last creature. One of the bosses keeps it.
+async function snatch(list) {
+  const pick = G.party.filter((m) => !SPECIES[m.sp].legend && !STARTER_LINES.has(m.sp));
+  if (G.party.length < 2 || !pick.length) return;
+  const m = pick[Math.floor(Math.random() * pick.length)];
+  G.party.splice(G.party.indexOf(m), 1);
+  healFull(m);
+  const holder = HOLDERS[Math.floor(Math.random() * HOLDERS.length)];
+  (G.snatched = G.snatched || []).push({ mon: m, region: G.region || 'aldermoor', holder });
+  const thief = list.find((t) => ECLIPSE_LOOKS.has(t.look));
+  const short = thief.name.split(' ').pop().toUpperCase();
+  sfx('bump');
+  await say(`${short}: Hah! While you're down, we'll be taking THIS!`, `${name(m)} was snatched by Team Eclipse!`,
+    holder === thief.look ? `${short}: This one's mine now.` : `${short}: ${HOLDER_NAMES[holder]} is gonna love this one!`);
+}
+
+function hideouts() { return (G.hideouts = G.hideouts || {}); }
+// put open entrances on the map (and take collapsed ones away); safe to run any time
+function applyHideouts() {
+  for (const [r, h] of Object.entries(hideouts())) {
+    const m = MAPS[h.map]; const H = HIDEOUTS[r];
+    if (!m || !H) continue;
+    const key = `${h.x},${h.y}`;
+    if (h.state === 'open') {
+      m.tiles[h.y][h.x] = 'ehole';
+      m.warps[key] = { map: H.map, x: H.entry[0], y: H.entry[1], dir: 'up' };
+      MAPS[H.map].exitTo = { map: h.map, x: h.ex, y: h.ey, dir: 'down' };
+    } else if (m.tiles[h.y][h.x] === 'ehole') {
+      m.tiles[h.y][h.x] = h.orig;
+      delete m.warps[key];
+    }
+  }
+}
+function closeHideout(r, state = 'closed') {
+  const h = hideouts()[r];
+  if (!h || h.state !== 'open') return;
+  h.state = state; h.inside = false;
+  applyHideouts();
+  save();
+}
+const TRAIL = new Set(['path', 'dirt', 'sand', 'snowpath']);
+const OPEN_GROUND = new Set(['grass', 'sand', 'dirt', 'snow', 'ash', 'path', 'flower']);
+function hideoutSpot(r, avoid) {
+  const H = HIDEOUTS[r];
+  const maps = Object.values(MAPS).filter((m) => m.region === r && !m.interior && !m.hideout && m.style !== 'sea' && !m.cave && !m.dark
+    && (m.lv || m.town) && m.id !== avoid && !H.league.includes(m.id));
+  for (let tries = 0; tries < 40 && maps.length; tries++) {
+    const m = maps[Math.floor(Math.random() * maps.length)];
+    const busy = new Set([...m.npcs.map((n) => `${n.x},${n.y}`), ...m.items.map((i) => `${i.x},${i.y}`), ...Object.keys(m.warps), ...Object.keys(m.signs || {})]);
+    const spots = [];
+    for (let y = 2; y < m.h - 3; y++) for (let x = 2; x < m.w - 2; x++) {
+      if (!OPEN_GROUND.has(m.tiles[y][x]) || !TRAIL.has(m.tiles[y + 1][x])) continue;
+      if (busy.has(`${x},${y}`) || busy.has(`${x},${y + 1}`) || buildingSolid(m, x, y) || buildingSolid(m, x, y + 1) || buildingSolid(m, x, y - 1)) continue;
+      if (m.boulders.some((b) => (b.x === x && (b.y === y || b.y === y + 1)))) continue;
+      spots.push([x, y]);
+    }
+    if (spots.length) { const [x, y] = spots[Math.floor(Math.random() * spots.length)]; return { map: m.id, x, y, ex: x, ey: y + 1, orig: m.tiles[y][x] }; }
+  }
+  return null;
+}
+// once you're Champion of a region, Team Eclipse's hideout there surfaces somewhere random
+async function openHideout(r) {
+  const H = HIDEOUTS[r];
+  const spot = hideoutSpot(r, world.map.id);
+  if (!spot) return;
+  hideouts()[r] = { state: 'open', ...spot };
+  applyHideouts();
+  const stolen = (G.snatched || []).filter((s) => s.region === r && !s.rescued);
+  const PROF = H.prof.toUpperCase();
+  await say(`???: ${G.name}! ${G.name}!!`);
+  const p = await appear('tmp_prof', H.prof);
+  await say(`${PROF}: Oh, thank goodness I found you! Something terrible has happened!`,
+    `${PROF}: Our instruments picked up a huge Team Eclipse signal underground, at ${MAPS[spot.map].name}!`,
+    'A hidden stairway just opened up in the ground there. It\'s their secret hideout!',
+    stolen.length ? `${PROF}: And they're holding the creatures they stole from you down there. ${stolen.length === 1 ? name(stolen[0].mon) : stolen.length + ' of them'}! You have to get ${stolen.length === 1 ? 'it' : 'them'} back!` : `${PROF}: Whatever Vex is planning down there, it can't be good.`,
+    `${PROF}: Be careful. The members guarding it are as strong as the Elite Four.`,
+    `${PROF}: There's said to be a restore spring inside, but its power only lasts for one use.`,
+    `${PROF}: And the whole place is rigged to collapse. If you leave, or if you lose, the hideout is gone for good. You only get one shot!`,
+    `${PROF}: Stock up, heal your team, and go when you're ready. Good luck!`);
+  await walkAway(p);
+  save();
+}
+
 const MOTTO = ['NYX: When daylight fades and stars descend...', 'CORVO: ...the shadow falls, the dark ascends!', 'NYX: Nyx!', 'CORVO: Corvo!', 'BOTH: Team Eclipse! We cover every region in shadow!'];
 
 // ---------- intro ----------
@@ -1251,6 +1375,35 @@ const SCRIPTS = {
     refreshNpcs();
     await say('...A strange presence stirs in the back of the room.');
   },
+  async hideoutBoss() {
+    const r = world.map.hideout; const h = hideouts()[r];
+    const stolen = (G.snatched || []).filter((s) => s.region === r && !s.rescued);
+    await say(`VEX: So. You found my sanctuary.`,
+      stolen.length ? `VEX: I suppose you've come for these. ${stolen.map((s) => name(s.mon)).join(', ')}... They're stronger under my care than they ever were with you.` : 'VEX: Every region you visit, you tear down what I build. Not here. Not in my own stronghold.',
+      'VEX: Beat me, and you can have whatever you came for. Lose, and this place becomes your tomb. Well... figuratively.');
+    const won = await fight(getTrainer(`hideout:${r}:vex`));
+    if (!won) return;
+    await say('VEX: ...Enough. Take them and go. Team Eclipse will remember this.');
+    for (const s of stolen) {
+      const m = s.mon;
+      const lvl = Math.max(m.level, HIDEOUTS[r].lvl);
+      const before = SPECIES[m.sp].name, was = name(m);
+      m.sp = evolveFor(m.sp, lvl); m.level = lvl; m.exp = expForLevel(lvl); healFull(m);
+      s.rescued = true;
+      const where = G.party.length < 6 ? (G.party.push(m), 'team') : ((G.boxes[r] = G.boxes[r] || []).push(m), 'PC box');
+      sfx('badge');
+      await say(`${G.name} rescued ${was}!${before !== SPECIES[m.sp].name ? ` It evolved into ${SPECIES[m.sp].name} while it was gone!` : ''}`, `${name(m)} rejoined your ${where} at Lv${lvl}.`);
+    }
+    G.money += 10000; addItem('masterorb', 1); addItem('maxpotion', 5);
+    sfx('item');
+    await say(`${G.name} found $10000, a MASTER ORB and 5 Max Potions in Vex's vault!`, 'VEX: Hmph. Enjoy it while it lasts.');
+    await vanish('hx_vex');
+    await say('Rumble...! The hideout is starting to collapse! Get out!');
+    closeHideout(r, 'cleared');
+    await warp(h.map, h.ex, h.ey, 'down');
+    await say('You made it out just as the stairway caved in. Team Eclipse\'s hideout is gone!');
+    save();
+  },
   async legend(n) {
     const sp = n.creature;
     sfx('encounter');
@@ -1405,6 +1558,28 @@ world.hooks = {
   },
   async menu() { await startMenu(); },
   async pc() { await pcScreen(); },
+  mapLoad() { if (G) applyHideouts(); },
+  async arrive() {
+    const m = world.map; const hs = hideouts();
+    if (m.hideout) { if (hs[m.hideout]) hs[m.hideout].inside = true; return; }
+    for (const [r, h] of Object.entries(hs)) {
+      if (h.state !== 'open' || !h.inside) continue;
+      closeHideout(r);
+      if (m.id === h.map) await say('Rumble...! Behind you, the hideout entrance caves in!', 'The Eclipse hideout is sealed for good.');
+    }
+    const r = m.region; const H = HIDEOUTS[r];
+    if (!m.interior && H && flag(H.champ) && !hs[r]) await openHideout(r);
+  },
+  async confirmLeave() {
+    return yesNo('If you leave now, the hideout will cave in behind you and you can never come back. Leave anyway?');
+  },
+  async spring() {
+    const h = hideouts()[world.map.hideout];
+    if (!h || h.spring) { await say('The spring has gone still. Its power is spent.'); return; }
+    h.spring = true;
+    await fadeOut(10); G.party.forEach(healFull); sfx('heal'); await wait(60); await fadeIn(10);
+    await say('The restore spring glows softly... Your creatures are fully healed!', 'The light fades from the water. It won\'t work again.');
+  },
   async townMap() { await townMapScreen(); },
 };
 
@@ -1443,4 +1618,4 @@ async function eclipseFactory(n) {
 }
 
 // for tests and debugging
-export const _debug = { getTrainer, LEADERS, ELITE2, ELITE3, ELITE, meridiaChampion, azurineChampion, rivalA, TRAINERS };
+export const _debug = { build, getTrainer, LEADERS, ELITE2, ELITE3, ELITE, meridiaChampion, azurineChampion, rivalA, TRAINERS };

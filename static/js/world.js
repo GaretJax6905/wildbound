@@ -166,6 +166,7 @@ export function loadMap(id, x, y, dir) {
   world.player.off = 0; world.player.moving = false;
   world.player.surf = m.tiles[y] && m.tiles[y][x] === 'water';
   if (!sameMap) { world.cleared = new Set(); world.glow = false; world.heave = false; world.boulders = m.boulders.map((b) => ({ ...b })); }
+  if (world.hooks && world.hooks.mapLoad) world.hooks.mapLoad(m);
   world.npcs = [];
   refreshNpcs();
   G.pos = { map: id, x, y, dir: world.player.dir };
@@ -196,6 +197,7 @@ export async function warp(mapId, x, y, dir, o = {}) {
       else if (!u) await say('It\'s pitch dark in here... A creature that knows Glow would help.');
     } finally { world.busy--; }
   }
+  if (world.hooks && world.hooks.arrive) { world.busy++; try { await world.hooks.arrive(); } finally { world.busy--; } }
 }
 
 // ---------- collision ----------
@@ -290,6 +292,7 @@ async function tryMove(dir) {
   const nx = p.x + dx, ny = p.y + dy;
   p.dir = dir;
   if (m.interior && dir === 'down' && m.tiles[p.y][p.x] === 'mat' && m.exitTo) {
+    if (m.hideout && world.hooks.confirmLeave) { world.busy++; let ok; try { ok = await world.hooks.confirmLeave(); } finally { world.busy--; } if (!ok) return; }
     const e = m.exitTo;
     await warp(e.map, e.x, e.y, e.dir);
     return;
@@ -432,6 +435,7 @@ async function interact() {
   }
   if (m.signs[`${x},${y}`]) { await say(m.signs[`${x},${y}`]); return; }
   if (t === 'pc') { await world.hooks.pc(); return; }
+  if (t === 'spring' && world.hooks.spring) { await world.hooks.spring(); return; }
   if (t === 'bush') { if (await fieldPrompt('slash', 'A thorny bush blocks the way.')) { sfx('hit'); world.cleared.add(`${x},${y}`); } return; }
   if (t === 'crack') { if (await fieldPrompt('shatter', 'A cracked boulder blocks the way.')) { sfx('superhit'); world.cleared.add(`${x},${y}`); } return; }
   if (t === 'water' && !p.surf) {

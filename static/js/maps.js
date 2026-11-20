@@ -4,11 +4,12 @@ import { SPECIES } from './data.js';
 import { flag } from './state.js';
 import { buildMeridia, MERIDIA_LAYOUT } from './region2.js';
 import { buildAzurine, AZURINE_LAYOUT } from './region3.js';
+import { buildHideouts } from './hideouts.js';
 import { WILD2 } from './species2.js';
 import { WILD3 } from './species3.js';
 export const SOLID = new Set(['cactus', 'barrelcactus', 'mapletree', 'goldtree', 'pillar', 'grave', 'lamp', 'barrel', 'tree', 'water', 'fence', 'sign', 'rock', 'wall', 'counter', 'shelf', 'table', 'pc', 'healer', 'plant', 'bed', 'tv', 'statue', 'boulder', 'void',
   'bush', 'crack', 'cavewall', 'pine', 'lava', 'shrine', 'console',
-  'palm', 'deadtree', 'stump', 'stove', 'fridge', 'chair', 'crate', 'armchair']);
+  'palm', 'deadtree', 'stump', 'stove', 'fridge', 'chair', 'crate', 'armchair', 'spring', 'ehole']);
 // tiles where wild creatures appear
 export const GRASSY = new Set(['tall', 'snowgrass', 'drygrass', 'reeds']);
 
@@ -755,6 +756,9 @@ buildMeridia({ flag, MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, 
 REGION.id = 'azurine';
 buildAzurine({ flag, MAPS, fill, dots, sign, npc, item, genRoute, mkTown, link, carve, interior, gateRow, gateCol, GYMS });
 REGION.id = 'aldermoor';
+
+// ---------- Team Eclipse's hidden hideouts (hideouts.js), entrances opened in story.js ----------
+buildHideouts({ REGION, fill, dots, npc, interior });
 
 // ---------- region layout for the Town Map ----------
 // [x, y] cell on a 28 x 20 grid, plus kind: town, route, cave, sea
